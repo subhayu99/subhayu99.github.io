@@ -1,8 +1,8 @@
-<span id="a">root@subhayu.me</span>:<span id="b">~</span><span id="c">$</span> cd My_Portfolio/<!-- kjsdfhkjdhsfkjdshfkj -->About_Me
-<span id="a">root@subhayu.me</span>:<span id="b">~</span><span id="c">$</span> cat <!-- kjsdfhkjdhsfkjdshfkj -->profile.txt<br/><br/>
+<span id="a">guest@subhayu.me</span>:<span id="b">~</span><span id="c">$</span> cd My_Portfolio/<!-- kjsdfhkjdhsfkjdshfkj -->About_Me
+<span id="a">guest@subhayu.me</span>:<span id="b">~</span><span id="c">$</span> cat <!-- kjsdfhkjdhsfkjdshfkj -->profile.txt<br/><br/>
 My favorite code quote, "<span id="k">Trying to be a better biological specimen in the era of machines!!!</span>". <!-- sjkfhskjf -->
 
-Hey There! This is the portflio website in the skin of a terminal.<!-- laglaglaglaglaglaglaglaglaglaglaglag --><p>You can see that, this is how your portfolio would look like.</p>
+Hey There! This is the portflio website in the skin of Linux terminal.<!-- laglaglaglaglaglaglaglaglaglaglaglag --><p>You can see that, this is how your portfolio would look like.</p>
 <p>You can introduce yourself here.</p> <!-- ksjdokhdfgdufdfkjhfkjahdfkjhafkjhakf -->
 <p> You can also tell what you've worked and known and what skills you have, you can also give link to your professional portfolio here<a href="link"> portfolio</a>.</p><!-- kjdhjhgdgldjhgdwtoiewotwotjdfkjdfffsf -->
 <p>Tell more about yourself. <br><br><br>Give your project links or something like that. <a href="link"> Here you go</a>.</p><!-- hsdgfhjfkdjhfkjsdhfkjdshfkjsdhfkjsdhkfjhdskjfhksdjhfkdsj -->
