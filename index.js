@@ -57,7 +57,7 @@ var Typer = {
       var rtn = new RegExp('\n', 'g');
 
       $('#console').html(text.replace(rtn, '<br/>'));
-      window.scrollBy(0, 50);
+      window.scrollBy(0, 10);
     }
 
     if (key.preventDefault && key.keyCode != 122) {
@@ -99,7 +99,7 @@ Typer.speed = 10;
 Typer.file = 'portfolio.txt';
 Typer.init();
 
-var timer = setInterval('t();', 30);
+var timer = setInterval('t();', 10);
 function t() {
   Typer.addText({ keyCode: 123748 });
 
