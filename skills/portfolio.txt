@@ -6,4 +6,3 @@
 <p><span style="font-weight: 400;"> <strong> <span id="skillHead">Tools:</span> </strong> <span style="font-weight: 400;"> Docker, Kubernetes, VMs, Jenkins, Git, Blender, Unity <br /> </span> </span></p>
 <p><span style="font-weight: 400;"> <span style="font-weight: 400;"> <strong> <span id="skillHead">Databases:</span>  </strong> <span style="font-weight: 400;"> MySQL, Postgres, MongoDB, Google Cloud Databases </span> </span> <br /> </span></p>
 <p><span style="font-weight: 400;"> <strong> <span id="skillHead">Platforms:</span> </strong> <span style="font-weight: 400;"> Linux (Debian, RedHat based systems), Cloud (Microsoft Azure, GCP) </span> </span></p>
-<p>Hope to see you soon! Have an awesome day...</p>
