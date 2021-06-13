@@ -1,9 +1,3 @@
-// Daniel Shiffman
-// http://codingtra.in
-// http://patreon.com/codingtrain
-// Code for: https://youtu.be/AaGK-fj-BAM
-
-//this operator refers to the owner object, in our case it will be s i.e snake
 function Snake() {
   this.x = width/2; //position along x
   this.y = width/2; //positon along y
