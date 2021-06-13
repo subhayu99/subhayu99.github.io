@@ -22,6 +22,10 @@ a {
 	text-decoration: none;
 }
 
+#proj {
+	color: #00FFAE;
+}
+
 #companies {
 	color: #00E8FF;
 }
@@ -36,10 +40,6 @@ a {
 
 #b {
 	color: #ff0096;
-}
-
-#myname {
-	color: #FF1A4D;
 }
 
 #k {

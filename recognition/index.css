@@ -22,8 +22,12 @@ a {
 	text-decoration: none;
 }
 
-#companies {
-	color: #00E8FF;
+#numb {
+	color: #FF0046;
+}
+
+#importants {
+	color: #FFF02E;
 }
 
 #a {
@@ -36,10 +40,6 @@ a {
 
 #b {
 	color: #ff0096;
-}
-
-#myname {
-	color: #FF1A4D;
 }
 
 #k {

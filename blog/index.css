@@ -38,12 +38,12 @@ a {
 	color: #ff0096;
 }
 
-#myname {
-	color: #FF1A4D;
+#k {
+    animation: change 1s;
 }
 
-#k {
-    	animation: change 1s;
+#link {
+	color: #FF0051;
 }
 
 #op{

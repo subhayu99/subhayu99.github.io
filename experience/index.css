@@ -22,10 +22,6 @@ a {
 	text-decoration: none;
 }
 
-#companies {
-	color: #00E8FF;
-}
-
 #a {
 	color: #0f0;
 }
@@ -38,10 +34,6 @@ a {
 	color: #ff0096;
 }
 
-#myname {
-	color: #FF1A4D;
-}
-
 #k {
     	animation: change 1s;
 }
@@ -49,6 +41,14 @@ a {
 #op{
     	color: #888888;
 }
+
+#companies {
+	color: #ffffff;
+}
+
+#position {
+	color: #FF34BA;
+{
 
 @keyframes change {
     	0%  { color:  #0f0; }

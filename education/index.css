@@ -22,10 +22,6 @@ a {
 	text-decoration: none;
 }
 
-#companies {
-	color: #00E8FF;
-}
-
 #a {
 	color: #0f0;
 }
@@ -38,16 +34,20 @@ a {
 	color: #ff0096;
 }
 
-#myname {
-	color: #FF1A4D;
-}
-
 #k {
     	animation: change 1s;
 }
 
 #op{
     	color: #888888;
+}
+
+#degree {
+	color: #A05BFF;
+{
+
+#school {
+	color: #ffffff;
 }
 
 @keyframes change {
