@@ -50,6 +50,11 @@ a {
     	color: #888888;
 }
 
+#resume {
+	color: #ff1414;
+ font-weight: 620;
+}
+
 @media screen and (min-width: 414px) {
   div.example {
     font-size: 8px;
