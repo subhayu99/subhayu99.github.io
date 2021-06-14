@@ -50,6 +50,11 @@ a {
     	color: #888888;
 }
 
+#resume {
+	color: #ff1414;
+ font-weight: 620;
+}
+
 @keyframes change {
     	0%  { color:  #0f0; }
     	50% { color:  #0f0; }

@@ -47,7 +47,12 @@ a {
 }
 
 #skillHead {
-	color: #FF1717;
+	color: #ff772e;
+}
+
+#resume {
+	color: #ff1414;
+ font-weight: 620;
 }
 
 @keyframes change {

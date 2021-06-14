@@ -50,6 +50,18 @@ a {
     	color: #888888;
 }
 
+@media screen and (min-width: 414px) {
+  div.example {
+    font-size: 8px;
+  }
+}
+
+@media screen and (max-width: 413px) {
+  div.example {
+    font-size: 8px;
+  }
+}
+
 @keyframes change {
     	0%  { color:  #0f0; }
     	50% { color:  #0f0; }
