@@ -42,12 +42,40 @@ a {
     	color: #888888;
 }
 
+#skillHead {
+	color: #FF1717;
+}
+
+#numb {
+	color: #FF0046;
+}
+
+#importants {
+	color: #FFF02E;
+}
+
+#proj {
+	color: #00FFAE;
+}
+
 #companies {
 	color: #ffffff;
 }
 
 #position {
 	color: #FF34BA;
+}
+
+#link {
+	color: #FF0051;
+}
+
+#degree {
+	color: #FFFC00;
+{
+
+#school {
+	color: #ffffff;
 }
 
 @keyframes change {
