@@ -55,15 +55,15 @@ a {
  font-weight: 620;
 }
 
-@media screen and (min-width: 414px) {
+@media screen and (min-width: 1001px) {
   div.example {
-    font-size: 8px;
+    font-size: 9px;
   }
 }
 
-@media screen and (max-width: 413px) {
+@media screen and (max-width: 1000px) {
   div.example {
-    font-size: 8px;
+    font-size: 9px;
   }
 }
 
