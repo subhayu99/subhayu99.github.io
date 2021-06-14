@@ -5,5 +5,4 @@
 <p><strong> <a href="https://github.com/subhayu99/dog_breed_classifier"> <span id="proj">Dog Breed Classifier</span> </a>    </strong> -  In this project, I have built a Convolutional Neural Network (CNN) that can classify the breed of dog from any user-supplied image. If the image is of a human and not a dog, the algorithm will provide an estimate of the dog breed that is most resembling. <strong> <br /> </strong></p>
 <p><strong> <a href="https://github.com/subhayu99/tv_script_generator">  <span id="proj">TV Script Generator</span> </a>   </strong> -  In this project, I have constructed a RNN model to generate it's own Seinfeld TV scripts by using a Seinfeld dataset of scripts from 9 seasons. The Neural Network generated a new, "fake" TV script for a hypothetical Season 10 of the show. <strong> <br /> </strong></p>
 <p><strong> <a href="https://github.com/subhayu99/Azure-telemetry-service"> <span id="proj">Azure Telemetry Service</span> </a>   </strong> -  This project is based on Microsoft Azure's feature: IoT Hub. This project is all about sending telemetry messages to devices like raspberry pi and get back their topological info through a VM (Virtual Machine).</p>
-
-<p>You can checkout the projects individually by clicking on the project topics.</p>
+<p>You can checkout the projects individually by clicking on the their topics.</p>
