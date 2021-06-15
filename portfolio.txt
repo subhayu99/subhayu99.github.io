@@ -12,7 +12,7 @@
     &nbsp;&nbsp;<span id="a">-</span> At any point the file marked <strong>white</strong> indicates the page you are in.
     &nbsp;&nbsp;<span id="a">-</span> To see the contents of any file -&gt; Click on it.
     &nbsp;&nbsp;<span id="a">-</span> To list everything onto one page -&gt; Click on <strong>all.txt</strong>.
-    &nbsp;&nbsp;<span id="a">-</span> If something is either <strong>bold</strong> [and/or] <span id="myname">highlited</span> or <span id="undln">underlined</span> it'll probably a <strong>link</strong> to something.
+    &nbsp;&nbsp;<span id="a">-</span> If something is either <strong>bold</strong> [and/or] <span id="myname">highlited</span> or <span id="undln">underlined</span> it'll probably be a <strong>link</strong> to something.
     &nbsp;&nbsp;<span id="a">-</span> At last, you should try out the <strong>Snake Game</strong>.</p>
 <p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span> ls
     <span id="j"><a href="all/index.html">all.txt</a> <a href="blog/index.html">blog.txt</a> <a href="contact/index.html">contactMe.txt</a> <a href="education/index.html">education.txt</a> <a href="experience/index.html">experience.txt</a> intro.txt <a href="projects/index.html">projects.txt</a> <a href="recognition/index.html">recognition.txt</a> <a href="skills/index.html">skills.txt</a> <a href="SubhayuKumarBalaResume.pdf"> <span id="resume">resume.pdf</span></a> <a href="snakeGame/index.html"><span id="a">snakeGame.sh</span></a> </span>
