@@ -26,13 +26,6 @@
 <p>To read the full article, click the title above.</p>
 
 <p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span>  cat contactMe.txt <br /><br /> Feel free to reach out to me on<br />      -  <a href="https://www.linkedin.com/in/subhayu-kumar-bala" target="_blank">LinkedIn</a><br />      -  <a href="https://github.com/subhayu99" target="_blank">Github</a><br />      -  <a href="https://twitter.com/subhayu99" target="_blank">Twitter</a><br />      -  <a href="mailto:balasubhayu99@gmail.com" target="_blank">Email</a><br />      -  <a href="https://instagram.com/_s.u.b.h.a.y.u_" target="_blank">Instagram</a><br />      -  <a href="https://www.facebook.com/subhayu99" target="_blank">Facebook</a><br />      -  <a href="https://medium.com/@balasubhayu99" target="_blank">Medium</a></p>
-
-<p>C'mon, don't be shy! Connect with me on my profiles.</p>
 <p><a href="#pageHead">Click here</a> to scroll to top.</p>
-
-
-
-
-
 
 
