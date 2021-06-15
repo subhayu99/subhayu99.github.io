@@ -55,18 +55,6 @@ a {
  font-weight: 620;
 }
 
-@media screen and (min-width: 1001px) {
-  div.example {
-    font-size: 9px;
-  }
-}
-
-@media screen and (max-width: 1000px) {
-  div.example {
-    font-size: 9px;
-  }
-}
-
 @keyframes change {
     	0%  { color:  #0f0; }
     	50% { color:  #0f0; }
