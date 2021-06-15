@@ -18,6 +18,6 @@
 </p>
 <p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span> cat intro.txt
     <br /> Hey there! I am <strong><span id="myname"><a href="https://subhayu.codes/">Subhayu Kumar Bala</a></span></strong>, a Developer, Open Source enthusiast and a Junior pursuing my Bachelors in Information Technology. 
-    <br /> &nbsp;&nbsp;&nbsp;&nbsp;I have attached my resume above. If you need you can download it by clicking on the 'resume.pdf' file listed above.
-    <br /> &nbsp;&nbsp;&nbsp;&nbsp;As a side note, I love Linux and so I made this portfolio website similar to the Linux terminal.</p>
+<br /> &nbsp;&nbsp;&nbsp;&nbsp;I have attached my resume above. If you need you can download it by clicking on the 'resume.pdf' file listed above. 
+<br /> &nbsp;&nbsp;&nbsp;&nbsp;As a side note, I love Linux and so I made this portfolio website similar to the Linux terminal.</p>
 <p>Hey wait!!! Check the other files too...</p>

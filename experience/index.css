@@ -43,7 +43,11 @@ a {
 }
 
 #companies {
-	color: #ffffff;
+	color: #FFFFFF;
+ text-decoration-line: underline;
+ text-decoration-style: solid;
+ text-decoration-thickness: 1px;
+ text-underline-position: under;
 }
 
 #position {
