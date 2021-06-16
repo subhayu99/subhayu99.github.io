@@ -1,2 +1,3 @@
-# subhayu99.github.io
+# subhayu.codes
 
+My portfolio website made to look like the Linux terminal.
