@@ -19,5 +19,5 @@
 </p>
 <p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span> cat intro.txt <br /><br /> Hey there! I am <strong><span id="myname"><a href="/">Subhayu Kumar Bala</a></span></strong>, a Developer, Open Source enthusiast and a Junior pursuing my Bachelors in Information Technology. I am keenly interested in any of the Computer Science subdomains, Astrophysics, Astronomy and a little bit of Philosophy.<br />
 &nbsp;&nbsp;&nbsp;&nbsp;At times when I'm not being a nerd, I love to make new friends, listen to music, play games(who doesn't?), watch movies and try making some origami.<br />
-&nbsp;&nbsp;&nbsp;&nbsp;I have attached my resume above. If you need you can download it by clicking on the 'resume.pdf' file listed above. <br /></p>
+&nbsp;&nbsp;&nbsp;&nbsp;If you need you can download my resume by clicking on the 'resume.pdf' file listed above. <br /></p>
 <p>Wait!!! Check out the other files too...</p>
