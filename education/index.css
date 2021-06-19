@@ -22,11 +22,6 @@ a {
 	text-decoration: none;
 }
 
-#resume {
-	color: #ff1414;
- font-weight: 620;
-}
-
 #a {
 	color: #0f0;
 }
@@ -45,6 +40,11 @@ a {
 
 #op{
     	color: #888888;
+}
+
+#resume {
+	color: #ff1414;
+ font-weight: 620;
 }
 
 #degree {
