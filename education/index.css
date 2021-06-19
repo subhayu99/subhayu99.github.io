@@ -22,6 +22,11 @@ a {
 	text-decoration: none;
 }
 
+#resume {
+	color: #ff1414;
+ font-weight: 620;
+}
+
 #a {
 	color: #0f0;
 }
@@ -48,11 +53,6 @@ a {
 
 #school {
 	color: #ffffff;
-}
-
-#resume {
-	color: #ff1414;
- font-weight: 620;
 }
 
 @keyframes change {
