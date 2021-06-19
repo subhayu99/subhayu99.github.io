@@ -1,4 +1,15 @@
-<p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span> ls <br /> <span id="j"> <a href="../all">all.txt</a> <a href="../blog">blog.txt</a> <a href="../contact">contactMe.txt</a> <a href="../educatiom">education.txt</a> <a href="../experience">experience.txt</a> <a href="/">intro.txt</a> projects.txt <a href="../recognition">recognition.txt</a> <a href="../skills">skills.txt</a> <a href="../SubhayuKumarBalaResume.pdf"><span id="resume">resume.pdf</span></a> <a href="../snakeGame"><span id="a">snakeGame.sh</span></a> </span></p>
+<p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span> ls -w 1
+<span id="j"> <a href="../all">all.txt</a> 
+<a href="../blog">blog.txt</a> 
+<a href="../contact">contactMe.txt</a> 
+<a href="../educatiom">education.txt</a> 
+<a href="../experience">experience.txt</a> 
+<a href="/">intro.txt</a> 
+projects.txt 
+<a href="../recognition">recognition.txt</a> 
+<a href="../skills">skills.txt</a> 
+<a href="../SubhayuKumarBalaResume.pdf"><span id="resume">resume.pdf</span></a> 
+<a href="../snakeGame"><span id="a">snakeGame.sh</span></a> </span></p>
 <p><span id="a"> guest@subhayu.codes</span>:<span id="b">~</span><span id="c">$</span>  cat projects.txt <br /><br /> <strong> <a href="https://github.com/subhayu99/Flappy-Bird/releases/tag/v5.0"> <span id="proj">Flappy Bird</span> </a>   </strong> -  It is the very famous Flappy Bird game made using Processing which is an open-source graphical library and integrated development environment (IDE) and it uses Java as a language. As I have coded the game on my phone, I have made it to be playable on mobile devices only by keeping the orientation as portrait. <strong> <br /> </strong></p>
 <p><strong> <a href="https://github.com/subhayu99/Snake-Game"> <span id="proj">Snake Game</span> </a>    </strong> - <strong>    </strong> A Snake Game built using P5.js which is a library of JavaScript. The game is built by keeping the orientation as portrait to be playable on a mobile phone. <strong> <br /> </strong></p>
 <p><strong> <a href="https://covid-hero.herokuapp.com/"> <span id="proj">Covid HERO</span> </a>   </strong> -  This was a submission project made for The Open Hacks hackathon, organised by MLH. The goal of the project was to create a chatbot that can give the users relevant information about COVID-19 during the start of pandemic. <strong> <br /> </strong></p>
