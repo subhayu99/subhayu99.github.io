@@ -96,7 +96,7 @@ function replaceUrls(text) {
 }
 
 Typer.speed = 15;
-Typer.file = 'portfolio.txt';
+Typer.file = 'portfolio.html';
 Typer.init();
 
 var timer = setInterval('t();', 8);
