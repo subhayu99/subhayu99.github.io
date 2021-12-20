@@ -6,8 +6,10 @@ body {
 	background-color: #000
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200&display=swap');
+
 #console {
-	font-family: courier, monospace;
+	font-family: 'Inconsolata', monospace;
 	color: #fff;
 	width:850px;
 	margin-left:30px;
