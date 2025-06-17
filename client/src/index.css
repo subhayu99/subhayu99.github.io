@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(120, 100%, 50%);
+  --muted: hsl(120, 100%, 10%);
+  --muted-foreground: hsl(120, 50%, 70%);
+  --popover: hsl(0, 0%, 0%);
+  --popover-foreground: hsl(120, 100%, 50%);
+  --card: hsl(0, 0%, 0%);
+  --card-foreground: hsl(120, 100%, 50%);
+  --border: hsl(120, 100%, 20%);
+  --input: hsl(120, 100%, 20%);
+  --primary: hsl(120, 100%, 50%);
+  --primary-foreground: hsl(0, 0%, 0%);
+  --secondary: hsl(120, 100%, 10%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(120, 100%, 20%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(120, 100%, 50%);
+  --radius: 0.5rem;
+  
+  --terminal-green: hsl(120, 100%, 50%);
+  --terminal-bright-green: hsl(120, 100%, 60%);
+  --terminal-black: hsl(0, 0%, 0%);
+  --terminal-white: hsl(0, 0%, 100%);
+  --terminal-red: hsl(0, 100%, 50%);
+  --terminal-yellow: hsl(60, 100%, 50%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 0%);
+  --foreground: hsl(120, 100%, 50%);
+  --muted: hsl(120, 100%, 10%);
+  --muted-foreground: hsl(120, 50%, 70%);
+  --popover: hsl(0, 0%, 0%);
+  --popover-foreground: hsl(120, 100%, 50%);
+  --card: hsl(0, 0%, 0%);
+  --card-foreground: hsl(120, 100%, 50%);
+  --border: hsl(120, 100%, 20%);
+  --input: hsl(120, 100%, 20%);
+  --primary: hsl(120, 100%, 50%);
+  --primary-foreground: hsl(0, 0%, 0%);
+  --secondary: hsl(120, 100%, 10%);
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(120, 100%, 20%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(120, 100%, 50%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-mono antialiased bg-terminal-black text-terminal-green overflow-hidden;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    body {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    body {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  }
+}
+
+@layer utilities {
+  .terminal-scanlines::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(transparent 50%, rgba(0, 255, 0, 0.03) 50%);
+    background-size: 100% 4px;
+    opacity: 0.1;
+  }
+
+  @media (max-width: 768px) {
+    .terminal-scanlines::before {
+      background-size: 100% 2px;
+      opacity: 0.05;
+    }
+  }
+  
+  .terminal-glow {
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2), inset 0 0 20px rgba(0, 255, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .terminal-glow {
+      box-shadow: 0 0 10px rgba(0, 255, 0, 0.15), inset 0 0 10px rgba(0, 255, 0, 0.05);
+    }
+  }
+
+  .scrollbar-terminal {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .scrollbar-terminal::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-terminal::-webkit-scrollbar-track {
+    background: var(--terminal-black);
+  }
+  
+  .scrollbar-terminal::-webkit-scrollbar-thumb {
+    background: var(--terminal-green);
+    border-radius: 4px;
+  }
+  
+  .scrollbar-terminal::-webkit-scrollbar-thumb:hover {
+    background: var(--terminal-bright-green);
+  }
+
+  @media (max-width: 768px) {
+    .scrollbar-terminal::-webkit-scrollbar {
+      width: 4px;
+    }
+  }
+
+  .blink {
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  .typewriter {
+    overflow: hidden;
+    white-space: nowrap;
+    animation: typewriter 0.05s steps(1, end) forwards;
+  }
+
+  @keyframes typewriter {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+}

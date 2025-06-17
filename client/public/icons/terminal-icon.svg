@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#000000" rx="64"/>
+  <rect x="32" y="64" width="448" height="384" fill="#001100" stroke="#00FF00" stroke-width="4" rx="8"/>
+  
+  <!-- Terminal header with dots -->
+  <rect x="32" y="64" width="448" height="48" fill="#002200" stroke="#00FF00" stroke-width="2"/>
+  <circle cx="60" cy="88" r="8" fill="#FF0000"/>
+  <circle cx="88" cy="88" r="8" fill="#FFFF00"/>
+  <circle cx="116" cy="88" r="8" fill="#00FF00"/>
+  
+  <!-- Terminal text lines -->
+  <rect x="60" y="140" width="120" height="4" fill="#00FF00"/>
+  <rect x="60" y="160" width="200" height="4" fill="#00AA00"/>
+  <rect x="60" y="180" width="160" height="4" fill="#00FF00"/>
+  <rect x="60" y="200" width="240" height="4" fill="#00AA00"/>
+  <rect x="60" y="220" width="100" height="4" fill="#00FF00"/>
+  
+  <!-- Command prompt -->
+  <text x="60" y="280" font-family="monospace" font-size="24" fill="#00FF00">$</text>
+  <rect x="80" y="265" width="8" height="20" fill="#00FF00" opacity="0.8"/>
+  
+  <!-- Decorative code elements -->
+  <text x="60" y="320" font-family="monospace" font-size="18" fill="#00AA00">portfolio@terminal:~</text>
+  <text x="60" y="350" font-family="monospace" font-size="16" fill="#00FF00">{ "skills": "TypeScript, React" }</text>
+  <text x="60" y="380" font-family="monospace" font-size="16" fill="#00AA00">git commit -m "success"</text>
+  
+  <!-- Border glow effect -->
+  <rect x="30" y="62" width="452" height="388" fill="none" stroke="#00FF00" stroke-width="2" rx="10" opacity="0.5"/>
+</svg>

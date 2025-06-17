@@ -1,0 +1,160 @@
+cv:
+  name: "Subhayu Kumar Bala"
+  location: "Kolkata, India"
+  email: "balasubhayu99@gmail.com"
+  phone: "tel:+91-9382877751"
+  social_networks:
+    - network: "LinkedIn"
+      username: "subhayu-kumar-bala"
+    - network: "GitHub"
+      username: "subhayu99"
+    # - network: "ORCID"
+    #   username: "0000-0001-8195-3118"
+  sections:
+    intro:
+      - "Data and infrastructure engineer with 3+ years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP)."
+      - "Track record of exceptional performance optimization, including reducing a 27-hour SQL procedure to 5 seconds by implementing innovative Python-based solutions for processing 80M+ rows of data."
+      - "Expert in building scalable architectures through event-driven design, containerization, and agentic LLM systems, consistently delivering solutions that transform complex business requirements into technical reality."
+    
+    technologies:
+      - label: "Core Programming"
+        details: "Python, SQL, BASH, JavaScript"
+      
+      - label: "Data Engineering & Processing"
+        details: "Pandas, NumPy, DuckDB, PySpark, ETL/ELT Pipelines, DBT, Data Modeling"
+        
+      - label: "Data Orchestration & Workflow"
+        details: "Airflow, GCP Workflows, Kafka, Treasure Data, Microsoft Fabric, ADF"
+        
+      - label: "AI & LLM Engineering"
+        details: "OpenAI APIs, Gemini, Agentic Architecture, MCP, A2A, LangChain, Axolotl, LLM Integration, Prompt Engineering, RAG, SerpAPI, LLM Fine-tuning, TensorFlow, Keras, SKLearn"
+        
+      - label: "Cloud Infrastructure"
+        details: "AWS, Azure, GCP, S3, Terraform, Pulumi, ARM Templates"
+        
+      - label: "DevOps & CI/CD"
+        details: "Docker, Kubernetes, Azure DevOps, CI/CD, Linux, NGINX, Jenkins, Git, Message Queues"
+        
+      - label: "Databases & Vector Stores"
+        details: "MongoDB, PostgreSQL, MySQL, MS SQL Server, BigQuery, Chroma, FAISS, Neo4j"
+        
+      - label: "API & Application Development"
+        details: "FastAPI, Django, DRF, Flask, Typer CLI, REST APIs"
+        
+      - label: "Data Visualization"
+        details: "Looker Studio, PowerBI, Matplotlib, Streamlit, Plotly"
+        
+      - label: "Specialized Technologies"
+        details: "Web Scraping, CDP, SFMC, Quantum Computing Simulation"
+    
+    experience:
+      - company: "FiftyFive Technologies"
+        position: "Data Engineer"
+        location: "Gurugram, India (Remote)"
+        start_date: "2022-06"
+        highlights:
+          - "**Data Engineering & Analytics:** Built ETL/ELT pipelines processing millions of healthcare and marketing records using Python, SQL, PySpark, and cloud platforms (AWS/Azure/GCP), with expertise in performance optimization achieving 99.8% runtime improvements."
+          - "**AI/LLM Integration:** Developed production AI systems using OpenAI APIs, LangChain, and fine-tuned models (Mistral, Llama) for document processing, outreach automation, and agent-based architectures with 95%+ accuracy."
+          - "**Backend, Cloud Infra & DevOps:** Managed containerized deployments with Docker/Kubernetes, implemented CI/CD workflows, and built FastAPI applications serving 100k+ users with real-time dashboards and REST APIs."
+      - company: "FiftyFive Technologies"
+        position: "Software Engineer Intern"
+        location: "Gurugram, India (Remote)"
+        start_date: "2022-01"
+        end_date: "2022-05"
+        highlights:
+          - "**Backend Development:** Built Django/DRF applications with PostgreSQL/MongoDB databases, developed REST APIs, and created automation tools for cable network management using geospatial data processing."
+          - "**DevOps Implementation:** Established Azure DevOps CI/CD pipelines for platforms serving 50k+ daily users, managed database migrations, and integrated third-party APIs for operational automation."
+    
+    education:
+      - institution: "CIEM"
+        location: "Kolkata"
+        area: "Information Technology"
+        degree: "B.Tech"
+        start_date: "2018-07"
+        end_date: "2022-06"
+        highlights:
+          - "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+    
+    selected_projects:
+      - name: "Johnson & Johnson - Healthcare Data Platform"
+        date: "Feb 2025 – Jun 2025"
+        highlights:
+          - "Architected and maintained scalable data pipelines (Bronze-Silver-Gold layers) in Treasure Data using SQL, processing millions of records for JP and ANZ Healthcare Professionals' marketing analytics."
+          - "Engineered complex data transformation logic including a 12-scenario truth table for multichannel consent processing, integrating data across platforms (CDP, S3, Treasure Data, SFMC, GA4) using Python and APIs."
+          - "Ensured enterprise-grade data quality and pipeline reliability by implementing robust consistency checks and automated data processing workflows for regulated healthcare environments."
+      
+      - name: "Wade Insight - Cloud-Native Data Orchestration Platform"
+        date: "Nov 2024 – Feb 2025"
+        highlights:
+          - "Enhanced core pipeline orchestration features for WADE's Azure SaaS platform, implementing comprehensive continue_on_failure mechanisms with SQL dependency handling and advanced job execution tracking."
+          - "Led migration of enterprise data pipelines from Azure Data Factory to Microsoft Fabric Data Factory, managing ARM template adaptation and deployment for clients processing millions of records."
+          - "Developed automated healthcheck processes leveraging Azure APIs to monitor running pipelines, reducing manual troubleshooting overhead by 80% and enabling faster insight delivery."
+      
+      - name: "Prospexs - AI-Powered Outreach Platform"
+        date: "Jul 2024 – Oct 2024"
+        highlights:
+          - "Built an AI-powered outreach platform using Python/FastAPI and MongoDB, reducing manual prospecting effort by 60% through intelligent automation."
+          - "Integrated multiple APIs (OpenAI, Perplexity, LinkedIn) to validate profiles and generate personalized communications, improving client response rates by 45%."
+          - "Developed email generation system with dynamic tone adjustment capabilities, enabling scalable personalized outreach for B2B sales teams."
+      
+      - name: "QxLab - State-of-the-Art Agent-Based LLM System"
+        date: "Jan 2024 – Jun 2024"
+        highlights:
+          - "Built a production-ready agent-based LLM system using fine-tuned Mistral7B and Llama 13B models for real-time API data processing, achieving over 95% accuracy with custom schema management for tool orchestration."
+          - "Developed advanced CLI tool with Typer for language model fine-tuning and dataset manipulation, processing millions of data points and 10B+ tokens in minutes through optimized pipelines."
+          - "Orchestrated FastAPI deployment on Docker for GPU-accelerated model inference with multi-threading capabilities, enabling scalable AI model serving infrastructure."
+      
+      - name: "CV Advisors - High-Performance Financial Data Processing"
+        date: "Jan 2024 – Jan 2024"
+        highlights:
+          - "Developed a Python/Pandas/DuckDB proof-of-concept for financial data processing pipeline, reducing runtime of a 1900+ line SQL procedure from 27.5 hours to under 5 seconds."
+          - "Demonstrated Python's capability for high-performance data processing on 80M+ rows across 150 clients, enabling batch execution and significant operational efficiency improvements."
+      
+      - name: "LoopKitchen (now Loop) - Food Delivery Intelligence Platform"
+        date: "Sep 2022 – Jun 2023"
+        highlights:
+          - "Built core data infrastructure from scratch for a food delivery analytics startup using comprehensive GCP stack: FastAPI/SQLModel APIs on Cloud Run/Functions, BigQuery for data warehousing, Firestore for metadata, orchestrated via GCP Composer and Workflows."
+          - "Developed multi-platform data ingestion pipelines scraping and processing millions of orders from UberEats, DoorDash, and Grubhub APIs, enabling real-time performance analytics for restaurant brands and franchises."
+          - "Created custom Streamlit monitoring dashboard providing real-time visibility into complex orchestration workflows with granular tracking (brand→region→chain→store→order level), essential for debugging long-running processes across multiple third-party platforms."
+          - "Contributed as core team member (10-person startup) working directly with technical leadership, helping build the foundation for a platform that secured $6M Series A funding and now serves major restaurant chains like Dave's Hot Chicken and Freddy's."
+      - name: "Eningo"
+        date: "Apr 2022 — Aug 2022"
+        highlights:
+          - "Developed a cloud-based platform for automating cable network issue requests and processing geospatial data."
+          - "Migrated legacy data from Postgres to MongoDB, enhancing scalability and efficiency."
+      - name: "NIBE"
+        date: "Feb 2022 — Mar 2022"
+        highlights:
+          - "Created and managed CI/CD pipelines on Azure DevOps, impacting over 50k daily users."
+    
+    other_notable_projects:
+      - "**Logical Contract** (Oct 2023 - Dec 2023): Implemented an AI-powered system for startups, generating tailored employment agreements and a legal chatbot for inquiries."
+      - "**SlideNinja** (Jul 2023 - Oct 2023): Developed and deployed an AI-powered RAG platform for a McKinsey partner, leveraging GPT-3.5, LangChain, and SerpAPI to generate presentations from minimal input during the early GenAI boom."
+      - "**Eningo** (Apr 2022 - Aug 2022): Developed a cloud-based platform automating cable network issue requests with geospatial data processing and Postgres to MongoDB migration for enhanced scalability."
+      - "**NIBE** (Feb 2022 - Mar 2022): Managed CI/CD pipelines on Azure DevOps, impacting over 50,000 daily users."
+    
+    personal_projects:
+      - name: "DatasetPipeline"
+        date: "May 2025"
+        highlights:
+          - "Developed a production-ready CLI tool for transforming messy datasets into ML-ready formats; supports SFT, DPO, semantic deduplication, and quality analysis with plugin architecture."
+          - "Features smart role mapping, auto-formatting for OpenAI-style training, and reproducible workflows via YAML/JSON configuration for enterprise ML pipelines."
+          - "Published on [PyPI](https://pypi.org/project/datasetpipeline) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
+      
+      - name: "Smart Commit"
+        date: "May 2025"
+        highlights:
+          - "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity and project history quality."
+          - "Engineered deep repository analysis of tech stacks, commit patterns, and file changes with flexible global/local .toml configurations for project-specific conventions."
+          - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) and [GitHub](https://github.com/subhayu99/smart-commit) with Model Context Protocol (MCP) server for direct AI assistant integration."
+    
+    publication:
+      - title: "QuDiet: A Classical Simulation Platform for Qubit-Qudit Hybrid Quantum Systems"
+        authors:
+          - "Subhayu Kumar Bala"
+          - "Turbasu Chatterjee"
+          - "Arnav Das"
+        date: "2023-03-28"
+        journal: "IET Quantum Communication"
+        doi: "10.1049/qtc2.12058"
+
