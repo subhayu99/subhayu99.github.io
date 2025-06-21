@@ -24,9 +24,13 @@ export default defineConfig({
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
+  // Add base path for GitHub Pages
+  base: process.env.NODE_ENV === "production" ? "/" : "/",
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Ensure assets are properly referenced
+    assetsDir: "assets",
   },
   server: {
     fs: {
