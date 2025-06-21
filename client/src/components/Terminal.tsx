@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useTerminal } from '@/hooks/useTerminal';
-import { loadPortfolioData } from '@/lib/yamlParser';
-import { enhanceContent, getLinkUrl } from '@/lib/linkRenderer';
+import { useTerminal } from '../hooks/useTerminal';
+import { loadPortfolioData } from '../lib/yamlParser';
+import { enhanceContent, getLinkUrl } from '../lib/linkRenderer';
+import { usePWA, useURLCommand } from '../hooks/usePWA';
 
 export default function Terminal() {
   const [input, setInput] = useState('');
@@ -12,9 +13,13 @@ export default function Terminal() {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
+  // PWA functionality
+  const { isInstallable, isInstalled, installApp } = usePWA();
+  const { urlCommand, clearCommand } = useURLCommand();
+
   // Load portfolio data
   const { data: portfolioData, isLoading, error } = useQuery({
-    queryKey: ['/api/portfolio'],
+    queryKey: ['portfolio-data'],
     queryFn: loadPortfolioData,
     retry: 3,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -53,6 +58,15 @@ export default function Terminal() {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [lines]);
+
+  // Handle URL command execution (for PWA shortcuts)
+  useEffect(() => {
+    if (urlCommand && !isLoading && portfolioData) {
+      executeCommand(urlCommand);
+      clearCommand();
+      setShowWelcome(false);
+    }
+  }, [urlCommand, isLoading, portfolioData, executeCommand, clearCommand]);
 
   // Handle keydown events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -215,9 +229,21 @@ export default function Terminal() {
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-yellow"></div>
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-green"></div>
             </div>
-            <span className="text-xs sm:text-sm truncate">subhayu@portfolio:~$</span>
+            <span className="text-xs sm:text-sm truncate">subhayu99@portfolio:~$</span>
           </div>
-          <div className="text-xs opacity-60 hidden sm:block">Terminal Portfolio v2.0</div>
+          <div className="flex items-center space-x-2 text-xs opacity-60">
+            {isInstalled && <span className="hidden sm:block">PWA</span>}
+            {isInstallable && (
+              <button 
+                onClick={installApp}
+                className="text-terminal-green hover:text-terminal-bright-green transition-colors"
+                title="Install app"
+              >
+                📱
+              </button>
+            )}
+            <span className="hidden sm:block">Terminal Portfolio v2.0</span>
+          </div>
         </div>
 
         {/* Terminal Content */}
@@ -231,14 +257,11 @@ export default function Terminal() {
             <div className="mb-4 sm:mb-6">
               <div className="mb-3 sm:mb-4">
                 <pre className="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
-{` ____        _     _                         _   __                           
-/  ___|      | |   | |                       | | / /                           
-\\ \`--. _   _| |__ | |__   __ _ _   _ _   _   | |/ / _   _ _ __ ___   __ _ _ __  
- \`--. \\| | | | '_ \\| '_ \\ / _\` | | | | | | |  |    \\| | | | '_ \` _ \\ / _\` | '__| 
-/\\__/ /| |_| | |_) | | | | (_| | |_| | |_| |  | |\\  \\ |_| | | | | | | (_| | |    
-\\____/  \\__,_|_.__/|_| |_|\\__,_|\\__, |\\__,_|  \\_| \\_/\\__,_|_| |_| |_|\\__,_|_|    
-                                 __/ |                                           
-                                |___/`}
+{` ___      _    _                     _  __                     ___       _      
+/ __|_  _| |__| |_  __ _ _  _ _  _  | |/ /  _ _ __  __ _ _ _  | _ ) __ _| |__ _ 
+\\__ \\ || | '_ \\ ' \\/ _\` | || | || | | ' < || | '  \\/ _\` | '_| | _ \\/ _\` | / _\` |
+|___/\\_,_|_.__/_||_\\__,_|\\_, |\\_,_| |_|\\_\\_,_|_|_|_\\__,_|_|   |___/\\__,_|_\\__,_|
+                         |__/                                                   `}
                 </pre>
                 {/* Mobile version - simplified ASCII */}
                 <div className="sm:hidden text-terminal-bright-green text-center mb-3">
@@ -254,9 +277,16 @@ export default function Terminal() {
                     "Loading professional information..."
                   }
                 </p>
-                <p className="text-terminal-bright-green mb-4 text-xs sm:text-sm">
-                  Type '<span className="font-bold">help</span>' to see available commands or explore with tab completion.
-                </p>
+                <div className="mb-4 text-xs sm:text-sm space-y-2">
+                  <p className="text-terminal-bright-green">
+                    Type '<span className="font-bold">help</span>' to see available commands or explore with tab completion.
+                  </p>
+                  {isInstallable && (
+                    <p className="text-terminal-yellow">
+                      💡 Install this portfolio as an app for offline access and better performance!
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -276,7 +306,7 @@ export default function Terminal() {
         {/* Command Input */}
         <div className="border-t border-terminal-green/30 p-2 sm:p-4">
           <div className="flex items-center">
-            <span className="text-terminal-bright-green mr-1 sm:mr-2 text-xs sm:text-sm flex-shrink-0">subhayu@portfolio:~$</span>
+            <span className="text-terminal-bright-green mr-1 sm:mr-2 text-xs sm:text-sm flex-shrink-0">subhayu99@portfolio:~$</span>
             <div className="flex-1 relative min-w-0">
               <input
                 ref={inputRef}

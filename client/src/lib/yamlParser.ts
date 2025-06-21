@@ -1,23 +1,25 @@
 import * as yaml from 'js-yaml';
-import { portfolioSchema, type PortfolioData } from '@shared/schema';
+import { portfolioSchema, type PortfolioData } from '../../../shared/schema';
 
 export async function loadPortfolioData(): Promise<PortfolioData> {
   try {
-    // Load YAML file directly from public directory
-    const response = await fetch('/resume.yaml');
+    const response = await fetch('/data/portfolio.json');
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch portfolio data: ${response.statusText}`);
+      throw new Error(`Failed to fetch portfolio data: ${response.status} ${response.statusText}`);
     }
     
-    const yamlContent = await response.text();
-    const parsedData = yaml.load(yamlContent);
+    const data = await response.json();
     
-    // Validate the data structure
-    const validatedData = portfolioSchema.parse(parsedData);
-    
+    // Validate the data against our schema
+    const validatedData = portfolioSchema.parse(data);
     return validatedData;
   } catch (error) {
     console.error('Error loading portfolio data:', error);
-    throw error;
+    throw new Error(
+      error instanceof Error 
+        ? `Portfolio data loading failed: ${error.message}`
+        : 'Unknown error occurred while loading portfolio data'
+    );
   }
 }

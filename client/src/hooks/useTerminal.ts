@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { type PortfolioData } from '@shared/schema';
-import { formatExperiencePeriod, getSocialNetworkUrl } from '@/lib/portfolioData';
+import { type PortfolioData } from '../../../shared/schema';
+import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 
 export interface TerminalLine {
   id: string;
@@ -60,7 +60,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       '  <span class="text-terminal-yellow font-semibold">skills</span>        List technical skills and technologies',
       '  <span class="text-terminal-yellow font-semibold">experience</span>    Show work experience and roles',
       '  <span class="text-terminal-yellow font-semibold">education</span>     Display educational background',
-      '  <span class="text-terminal-yellow font-semibold">projects</span>      Show selected professional projects',
+      '  <span class="text-terminal-yellow font-semibold">projects</span>      Show professional projects',
       '  <span class="text-terminal-yellow font-semibold">personal</span>      Show personal projects and open source work',
       '  <span class="text-terminal-yellow font-semibold">publications</span>  Show research publications and papers',
       '  <span class="text-terminal-yellow font-semibold">timeline</span>      Display career timeline and milestones',
@@ -115,7 +115,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     setTimeout(() => {
       addLine('<span class="text-terminal-yellow font-semibold">🔗 Quick Links:</span>');
       addLine('');
-      addLine('<span class="text-white">• Portfolio Website: https://subhayu99.github.io (example link)</span>');
+      addLine('<span class="text-white">• Portfolio Website: https://subhayu99.github.io (you are already here)</span>');
       addLine('<span class="text-white">• Email me directly: balasubhayu99@gmail.com</span>');
       addLine('<span class="text-white">• Check out my [GitHub Profile](https://github.com/subhayu99) for more projects</span>');
       addLine('');
@@ -129,8 +129,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Technical Skills & Technologies:</span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green">Technical Skills & Technologies:</span>');
+    // addLine('');
     
     portfolioData.cv.sections.technologies.forEach((tech, index) => {
       setTimeout(() => {
@@ -147,8 +147,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Professional Experience:</span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green">Professional Experience:</span>');
+    // addLine('');
     
     portfolioData.cv.sections.experience.forEach((job, index) => {
       setTimeout(() => {
@@ -171,8 +171,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Education:</span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green">Education:</span>');
+    // addLine('');
     
     portfolioData.cv.sections.education.forEach((edu, index) => {
       setTimeout(() => {
@@ -195,7 +195,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Selected Professional Projects:</span>');
+    addLine('<span class="text-terminal-bright-green"><b>Professional Projects:</b></span>');
     addLine('');
     
     portfolioData.cv.sections.selected_projects.forEach((project, index) => {
@@ -218,7 +218,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Personal Projects & Open Source:</span>');
+    addLine('<span class="text-terminal-bright-green"><b>Personal Projects & Open Source:</b></span>');
     addLine('');
     
     portfolioData.cv.sections.personal_projects.forEach((project, index) => {
@@ -241,8 +241,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Research Publications:</span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green">Research Publications:</span>');
+    // addLine('');
     
     portfolioData.cv.sections.publication.forEach((pub, index) => {
       setTimeout(() => {
@@ -251,7 +251,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         addLine(`<span class="text-white opacity-80">Journal: ${pub.journal}</span>`);
         addLine(`<span class="text-white opacity-80">Date: ${pub.date}</span>`);
         if (pub.doi) {
-          addLine(`<span class="text-terminal-bright-green cursor-pointer hover:underline" onclick="window.open('https://doi.org/${pub.doi}', '_blank')">DOI: ${pub.doi} (click to view)</span>`);
+          addLine(`<span class="text-white opacity-80 cursor-pointer">DOI: https://doi.org/${pub.doi}</span>`);
         }
         addLine('');
       }, index * 200);
@@ -432,7 +432,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     addLine(`<span class="text-terminal-green font-semibold">Name:</span> <span class="text-white">${cv.name}</span>`);
     addLine(`<span class="text-terminal-green font-semibold">Location:</span> <span class="text-white">${cv.location}</span>`);
     addLine(`<span class="text-terminal-green font-semibold">Email:</span> <span class="text-white">${cv.email}</span>`);
-    addLine(`<span class="text-terminal-green font-semibold">Phone:</span> <span class="text-white">${cv.phone}</span>`);
+    addLine(`<span class="text-terminal-green font-semibold">Phone:</span> <span class="text-white">${cv.phone.replace(/[^\d\+]/g, '')}</span>`);
     addLine('');
     addLine('<span class="text-terminal-bright-green font-bold">🌐 Social Networks & Links:</span>');
     addLine('');
@@ -443,7 +443,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
     
     addLine('');
-    addLine('<span class="text-terminal-yellow">💡 All links above are clickable! You can also copy-paste them.</span>');
+    addLine('<span class="text-terminal-yellow">💡 All links above are clickable!</span>');
     addLine('');
     addLine('<span class="text-terminal-green">Feel free to reach out for collaborations, opportunities, or just to connect!</span>');
   }, [addLine, portfolioData]);
@@ -473,44 +473,160 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         return;
       }
 
+      const { cv } = portfolioData;
+      
+      // Header
       addLine('<span class="text-terminal-bright-green">=== RESUME.TXT ===</span>');
       addLine('');
-      addLine(`<span class="text-white">${portfolioData.cv.name}</span>`);
-      addLine(`<span class="text-white">${portfolioData.cv.location}</span>`);
-      addLine(`<span class="text-white">${portfolioData.cv.email}</span>`);
+      
+      // Personal Info
+      addLine(`<span class="text-terminal-bright-white font-bold">${cv.name}</span>`);
+      addLine(`<span class="text-terminal-blue">${cv.location}</span>`);
+      addLine(`<span class="text-terminal-blue">${cv.email} | ${cv.phone.replace(/[^\d\+]/g, '')}</span>`);
+      
+      // Social Networks
+      if (cv.social_networks?.length > 0) {
+        const socials = cv.social_networks.map(social => 
+          `${social.network}: ${social.username}`
+        ).join(' | ');
+        addLine(`<span class="text-terminal-blue">${socials}</span>`);
+      }
       addLine('');
-      addLine('<span class="text-terminal-green">RECENT EXPERIENCE:</span>');
-      if (portfolioData.cv.sections.experience.length > 0) {
-        const recent = portfolioData.cv.sections.experience[0];
-        addLine(`<span class="text-white">${recent.position} @ ${recent.company}</span>`);
+
+      // Intro
+      if (cv.sections.intro?.length > 0) {
+        addLine('<span class="text-terminal-green">ABOUT:</span>');
+        cv.sections.intro.forEach(line => {
+          addLine(`<span class="text-terminal-white">${line}</span>`);
+        });
+        addLine('');
+      }
+
+      // Technologies
+      if (cv.sections.technologies?.length > 0) {
+        addLine('<span class="text-terminal-green">TECHNOLOGIES:</span>');
+        cv.sections.technologies.forEach(tech => {
+          addLine(`<span class="text-terminal-yellow">• ${tech.label}</span> - <span class="text-terminal-white">${tech.details}</span>`);
+        });
+        addLine('');
+      }
+
+      // Experience
+      if (cv.sections.experience?.length > 0) {
+        addLine('<span class="text-terminal-green">EXPERIENCE:</span>');
+        cv.sections.experience.forEach(exp => {
+          const endDate = exp.end_date || 'Present';
+          addLine(`<span class="text-terminal-yellow">${exp.position}</span> @ <span class="text-terminal-cyan">${exp.company}</span>`);
+          addLine(`<span class="text-terminal-blue">${exp.location} | ${exp.start_date} - ${endDate}</span>`);
+          
+          if (exp.highlights?.length > 0) {
+            exp.highlights.forEach(highlight => {
+              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
+            });
+          }
+          addLine('');
+        });
+      }
+
+      // Education
+      if (cv.sections.education?.length > 0) {
+        addLine('<span class="text-terminal-green">EDUCATION:</span>');
+        cv.sections.education.forEach(edu => {
+          addLine(`<span class="text-terminal-yellow">${edu.degree} in ${edu.area}</span>`);
+          addLine(`<span class="text-terminal-cyan">${edu.institution}</span> - <span class="text-terminal-blue">${edu.location}</span>`);
+          addLine(`<span class="text-terminal-blue">${edu.start_date} - ${edu.end_date}</span>`);
+          
+          if (edu.highlights?.length > 0) {
+            edu.highlights.forEach(highlight => {
+              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
+            });
+          }
+          addLine('');
+        });
+      }
+
+      // Professional Projects
+      if (cv.sections.selected_projects?.length > 0) {
+        addLine('<span class="text-terminal-green">PROFESSIONAL PROJECTS:</span>');
+        cv.sections.selected_projects.forEach(project => {
+          addLine(`<span class="text-terminal-yellow">${project.name}</span> <span class="text-terminal-blue">(${project.date})</span>`);
+          
+          if (project.highlights?.length > 0) {
+            project.highlights.forEach(highlight => {
+              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
+            });
+          }
+          addLine('');
+        });
+      }
+
+      // Personal Projects
+      if (cv.sections.personal_projects?.length > 0) {
+        addLine('<span class="text-terminal-green">PERSONAL PROJECTS:</span>');
+        cv.sections.personal_projects.forEach(project => {
+          addLine(`<span class="text-terminal-yellow">${project.name}</span> <span class="text-terminal-blue">(${project.date})</span>`);
+          
+          if (project.highlights?.length > 0) {
+            project.highlights.forEach(highlight => {
+              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
+            });
+          }
+          addLine('');
+        });
+      }
+
+      // Publications (if any)
+      if ((cv.sections.publication?.length ?? 0) > 0) {
+        addLine('<span class="text-terminal-green">PUBLICATIONS:</span>');
+        if (cv.sections.publication) {
+          cv.sections.publication.forEach(pub => {
+            addLine(`<span class="text-terminal-yellow">${pub.title}</span>`);
+            addLine(`<span class="text-terminal-cyan">${pub.authors.join(', ')}</span>`);
+            addLine(`<span class="text-terminal-blue">${pub.journal} (${pub.date})</span>`);
+            if (pub.doi) {
+              addLine(`<span class="text-terminal-blue">DOI: ${pub.doi}</span>`);
+            }
+            addLine('');
+          });
+        }
       }
     } else {
       addLine(`<span class="text-terminal-red">cat: ${filename}: No such file or directory</span>`);
     }
-  }, [addLine, portfolioData]);
+    }, [addLine, portfolioData]);
 
-  const showNeofetch = useCallback(() => {
+  const showNeofetch = useCallback(async () => {
     if (!portfolioData) {
       addLine('Portfolio data not loaded', 'text-terminal-red');
       return;
     }
 
-    const { cv } = portfolioData;
-    
-    addLine('<span class="text-terminal-bright-green">                    .---.</span>');
-    addLine('<span class="text-terminal-bright-green">                   /     \\</span>');
-    addLine('<span class="text-terminal-bright-green">                  | () () |</span>');
-    addLine('<span class="text-terminal-bright-green">                   \\  ^  /</span>');
-    addLine('<span class="text-terminal-bright-green">                    |||||</span>');
-    addLine('<span class="text-terminal-bright-green">                    |||||</span>');
-    addLine('');
-    addLine(`<span class="text-terminal-green">User:</span> <span class="text-white">${cv.name}</span>`);
-    addLine(`<span class="text-terminal-green">Location:</span> <span class="text-white">${cv.location}</span>`);
-    addLine(`<span class="text-terminal-green">Experience:</span> <span class="text-white">${cv.sections.experience.length} positions</span>`);
-    addLine(`<span class="text-terminal-green">Education:</span> <span class="text-white">${cv.sections.education.length} degrees</span>`);
-    addLine(`<span class="text-terminal-green">Projects:</span> <span class="text-white">${cv.sections.selected_projects.length + cv.sections.personal_projects.length} total</span>`);
-    addLine(`<span class="text-terminal-green">Skills:</span> <span class="text-white">${cv.sections.technologies.length} technology areas</span>`);
-    addLine(`<span class="text-terminal-green">Publications:</span> <span class="text-white">${cv.sections.publication?.length || 0} papers</span>`);
+    try {
+      // Fetch the neofetch content from the text file
+      const response = await fetch('/data/neofetch.txt');
+      if (!response.ok) {
+        throw new Error(`Failed to load neofetch.txt: ${response.status}`);
+      }
+      
+      const neofetchContent = await response.text();
+      
+      // Split the content by lines and add each line
+      const lines = neofetchContent.split('\n');
+      lines.forEach(line => {
+        // Wrap each line in monospace span if it's not empty
+        if (line.trim() === '') {
+          addLine('');
+        } else {
+          // Convert spaces to &nbsp; for proper HTML display
+          const htmlLine = line.replace(/ /g, '&nbsp;');
+          addLine(`<span style="font-family: monospace !important;">${htmlLine}</span>`);
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error loading neofetch content:', error);
+      addLine('Error loading neofetch content!', 'text-terminal-red');
+    }
   }, [addLine, portfolioData]);
 
   const listCommands = useCallback(() => {

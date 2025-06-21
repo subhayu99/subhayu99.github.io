@@ -1,8 +1,8 @@
-# Terminal Portfolio Application
+# Terminal Portfolio PWA Application
 
 ## Overview
 
-This is a full-stack web application that creates an interactive terminal-style portfolio display. The application loads portfolio data from a YAML file and presents it through a command-line interface simulation, allowing users to explore professional information through terminal commands.
+This is a frontend-only Progressive Web App that creates an interactive terminal-style portfolio display. The application loads portfolio data from a static JSON file and presents it through a command-line interface simulation, allowing users to explore professional information through terminal commands. Features offline support, app installation capability, and responsive design.
 
 ## System Architecture
 
@@ -11,20 +11,14 @@ This is a full-stack web application that creates an interactive terminal-style 
 - **Build Tool**: Vite for fast development and optimized production builds
 - **Styling**: Tailwind CSS with custom terminal-themed color scheme (green terminal aesthetic)
 - **UI Components**: Shadcn/ui component library with Radix UI primitives
-- **State Management**: React Query (TanStack Query) for server state management
+- **State Management**: React Query (TanStack Query) for data fetching and caching
 - **Fonts**: JetBrains Mono for authentic terminal appearance
-
-### Backend Architecture
-- **Runtime**: Node.js 20 with TypeScript
-- **Framework**: Express.js for REST API
-- **Module System**: ES Modules throughout the application
-- **Development**: TSX for TypeScript execution in development
+- **PWA**: Progressive Web App with service worker, offline support, and installability
 
 ### Data Layer
-- **Database**: PostgreSQL 16 (configured but not yet implemented)
-- **ORM**: Drizzle ORM with PostgreSQL dialect
 - **Schema**: Zod for runtime type validation and schema definition
-- **Data Source**: YAML file containing portfolio information served via REST API
+- **Data Source**: Static JSON file containing portfolio information
+- **Caching**: Service worker caches static assets and data for offline functionality
 
 ## Key Components
 
@@ -47,12 +41,12 @@ This is a full-stack web application that creates an interactive terminal-style 
 
 ## Data Flow
 
-1. **Data Source**: Portfolio information stored in YAML format in `attached_assets/`
-2. **API Layer**: Express server loads and validates YAML data on request
-3. **Client Fetching**: React Query manages data fetching with caching and error handling
-4. **Terminal Processing**: Custom hooks process portfolio data for terminal display
-5. **Command Execution**: Users interact through terminal commands to explore data
-6. **Response Rendering**: Terminal displays formatted responses with typewriter effects
+1. **Data Source**: Portfolio information stored in JSON format in `client/public/data/`
+2. **Client Fetching**: React Query manages data fetching from static JSON with caching and error handling
+3. **Terminal Processing**: Custom hooks process portfolio data for terminal display
+4. **Command Execution**: Users interact through terminal commands to explore data
+5. **Response Rendering**: Terminal displays formatted responses with typewriter effects
+6. **Offline Support**: Service worker caches data for offline functionality
 
 ## External Dependencies
 
@@ -66,11 +60,9 @@ This is a full-stack web application that creates an interactive terminal-style 
 - **Form Handling**: React Hook Form with resolvers
 - **Icons**: Lucide React icon library
 
-### Backend and Data
-- **Server**: Express.js with TypeScript support
-- **Database**: Drizzle ORM, @neondatabase/serverless for database connectivity
-- **Validation**: Zod for schema validation, Drizzle-Zod integration
-- **Data Processing**: js-yaml for YAML parsing
+### Data and Validation
+- **Validation**: Zod for schema validation and runtime type checking
+- **Data Processing**: Static JSON loading with schema validation
 
 ### Development and DevOps
 - **Development**: TSX for TypeScript execution, Vite plugins for Replit integration
@@ -80,27 +72,24 @@ This is a full-stack web application that creates an interactive terminal-style 
 ## Deployment Strategy
 
 ### Development Environment
-- **Platform**: Replit with Node.js 20, Web, and PostgreSQL 16 modules
-- **Port Configuration**: Local port 5000 mapped to external port 80
+- **Platform**: Replit with Node.js 20 and Web modules
+- **Port Configuration**: Local port 5173 mapped to external port 80
 - **Hot Reload**: Vite development server with HMR support
-- **Database**: PostgreSQL instance provisioned through Replit
 
 ### Production Build
-- **Frontend**: Vite builds optimized React application to `dist/public`
-- **Backend**: ESBuild bundles server code to `dist/index.js`
-- **Assets**: Static assets served from build directory
-- **Database Migration**: Drizzle Kit handles schema migrations
+- **Frontend**: Vite builds optimized React application to `dist-frontend/`
+- **Assets**: Static assets and data served from build directory
+- **PWA**: Service worker enables offline functionality and app installation
 
 ### Deployment Process
-1. **Build Phase**: `npm run build` compiles both frontend and backend
-2. **Production Start**: `npm run start` runs the bundled server
-3. **Database Setup**: Drizzle migrations applied via `npm run db:push`
-4. **Static Serving**: Express serves built React application in production
+1. **Build Phase**: `npm run build` compiles frontend-only application
+2. **Production Start**: `npm run preview` serves the built application
+3. **Static Serving**: Vite preview server serves the complete PWA
 
 ### Environment Configuration
-- **Development**: Uses Vite dev server with Express API proxy
-- **Production**: Single Express server serves both API and static files
-- **Database**: Connection via `DATABASE_URL` environment variable
+- **Development**: Vite dev server with frontend-only configuration
+- **Production**: Static file serving with PWA capabilities
+- **Data**: Portfolio data loaded from static JSON file
 
 ## Changelog
 - June 16, 2025. Initial setup with terminal portfolio interface
@@ -117,6 +106,9 @@ This is a full-stack web application that creates an interactive terminal-style 
 - Fixed UX issues: click anywhere to focus input, clickable links throughout, improved help formatting
 - Implemented markdown-style link rendering with data attributes for better compatibility
 - Enhanced visual hierarchy with icons, dividers, and improved color scheme in help and contact commands
+- Converted to frontend-only PWA application with service worker for offline support
+- Added app installation capability and removed server dependencies
+- Migrated from Express API to static JSON data loading
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

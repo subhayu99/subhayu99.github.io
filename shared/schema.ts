@@ -56,7 +56,6 @@ export const portfolioSchema = z.object({
       experience: z.array(experienceSchema),
       education: z.array(educationSchema),
       selected_projects: z.array(projectSchema),
-      // other_notable_projects: z.array(z.string()).optional(),
       personal_projects: z.array(projectSchema),
       publication: z.array(publicationSchema).optional(),
     }),

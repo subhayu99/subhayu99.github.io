@@ -7,6 +7,7 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/data/portfolio.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-apple-touch.png'
@@ -49,12 +50,12 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle API requests - network first, cache fallback
-  if (url.pathname.startsWith('/api/')) {
+  // Handle data requests - network first, cache fallback
+  if (url.pathname.startsWith('/data/')) {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          // Cache successful API responses
+          // Cache successful data responses
           if (response.ok) {
             const responseClone = response.clone();
             caches.open(DYNAMIC_CACHE).then((cache) => {
@@ -122,7 +123,7 @@ self.addEventListener('sync', (event) => {
   
   if (event.tag === 'portfolio-data-sync') {
     event.waitUntil(
-      fetch('/api/portfolio')
+      fetch('/data/portfolio.json')
         .then((response) => {
           if (response.ok) {
             return response.json();
@@ -131,7 +132,7 @@ self.addEventListener('sync', (event) => {
         .then((data) => {
           // Update cache with fresh data
           caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put('/api/portfolio', new Response(JSON.stringify(data)));
+            cache.put('/data/portfolio.json', new Response(JSON.stringify(data)));
           });
         })
         .catch((error) => {
