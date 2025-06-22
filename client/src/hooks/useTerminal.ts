@@ -601,17 +601,23 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
+    // Check screen size
+    const isMobile = window.innerWidth < 1106; // 1106px is the breakpoint for the big neofetch
+
     try {
-      // Fetch the neofetch content from the text file
-      const response = await fetch('/data/neofetch.txt');
+      // Select file based on screen size
+      const filePath = isMobile ? '/data/neofetch-small.txt' : '/data/neofetch.txt';
+
+      const response = await fetch(filePath);
       if (!response.ok) {
-        throw new Error(`Failed to load neofetch.txt: ${response.status}`);
+        throw new Error(`Failed to load ${filePath}: ${response.status}`);
       }
       
       const neofetchContent = await response.text();
       
       // Split the content by lines and add each line
       const lines = neofetchContent.split('\n');
+
       lines.forEach(line => {
         // Wrap each line in monospace span if it's not empty
         if (line.trim() === '') {
