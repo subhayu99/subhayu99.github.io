@@ -7,7 +7,7 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/data/portfolio.json',
+  '/data/resume.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-apple-touch.png'
@@ -123,7 +123,7 @@ self.addEventListener('sync', (event) => {
   
   if (event.tag === 'portfolio-data-sync') {
     event.waitUntil(
-      fetch('/data/portfolio.json')
+      fetch('/data/resume.json')
         .then((response) => {
           if (response.ok) {
             return response.json();
@@ -132,7 +132,7 @@ self.addEventListener('sync', (event) => {
         .then((data) => {
           // Update cache with fresh data
           caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put('/data/portfolio.json', new Response(JSON.stringify(data)));
+            cache.put('/data/resume.json', new Response(JSON.stringify(data)));
           });
         })
         .catch((error) => {

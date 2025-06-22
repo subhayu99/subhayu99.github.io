@@ -648,7 +648,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
     
-    addLine(`$ ${command}`, 'text-terminal-green', true);
+    addLine(`guest@portfolio:~$ ${command}`, 'text-terminal-green font-bold', true);
     setCommandHistory(prev => [command, ...prev.slice(0, 49)]);
     setHistoryIndex(-1);
     

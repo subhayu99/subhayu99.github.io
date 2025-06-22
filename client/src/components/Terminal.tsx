@@ -229,7 +229,7 @@ export default function Terminal() {
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-yellow"></div>
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-green"></div>
             </div>
-            <span className="text-xs sm:text-sm truncate">guest@portfolio:~$</span>
+            <span className="text-xs sm:text-sm truncate">~/portfolio</span>
           </div>
           <div className="flex items-center space-x-2 text-xs opacity-60">
             {isInstalled && <span className="hidden sm:block">PWA</span>}
