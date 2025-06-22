@@ -49,6 +49,7 @@ export const portfolioSchema = z.object({
     location: z.string(),
     email: z.string(),
     phone: z.string(),
+    website: z.string(),
     social_networks: z.array(socialNetworkSchema),
     sections: z.object({
       intro: z.array(z.string()),

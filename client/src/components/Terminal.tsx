@@ -229,7 +229,7 @@ export default function Terminal() {
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-yellow"></div>
               <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-green"></div>
             </div>
-            <span className="text-xs sm:text-sm truncate">subhayu99@portfolio:~$</span>
+            <span className="text-xs sm:text-sm truncate">guest@portfolio:~$</span>
           </div>
           <div className="flex items-center space-x-2 text-xs opacity-60">
             {isInstalled && <span className="hidden sm:block">PWA</span>}
@@ -306,7 +306,7 @@ export default function Terminal() {
         {/* Command Input */}
         <div className="border-t border-terminal-green/30 p-2 sm:p-4">
           <div className="flex items-center">
-            <span className="text-terminal-bright-green mr-1 sm:mr-2 text-xs sm:text-sm flex-shrink-0">subhayu99@portfolio:~$</span>
+            <span className="text-terminal-bright-green mr-1 sm:mr-2 text-xs sm:text-sm flex-shrink-0">guest@portfolio:~$</span>
             <div className="flex-1 relative min-w-0">
               <input
                 ref={inputRef}

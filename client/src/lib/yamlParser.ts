@@ -1,9 +1,8 @@
-import * as yaml from 'js-yaml';
 import { portfolioSchema, type PortfolioData } from '../../../shared/schema';
 
 export async function loadPortfolioData(): Promise<PortfolioData> {
   try {
-    const response = await fetch('/data/portfolio.json');
+    const response = await fetch('/data/resume.json');
     
     if (!response.ok) {
       throw new Error(`Failed to fetch portfolio data: ${response.status} ${response.statusText}`);

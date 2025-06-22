@@ -111,13 +111,14 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       }, index * 150);
     });
 
+    const githubUsername = portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === 'github')?.username
     // Add some additional contextual information with links
     setTimeout(() => {
       addLine('<span class="text-terminal-yellow font-semibold">🔗 Quick Links:</span>');
       addLine('');
-      addLine('<span class="text-white">• Portfolio Website: https://subhayu99.github.io (you are already here)</span>');
-      addLine('<span class="text-white">• Email me directly: balasubhayu99@gmail.com</span>');
-      addLine('<span class="text-white">• Check out my [GitHub Profile](https://github.com/subhayu99) for more projects</span>');
+      addLine(`<span class="text-white">• Portfolio Website: [${portfolioData.cv.website.replace('https://', '')}](${portfolioData.cv.website}) (you are already here)</span>`);
+      addLine(`<span class="text-white">• Email me directly: [${portfolioData.cv.email}](mailto:${portfolioData.cv.email}) </span>`);
+      addLine(`<span class="text-white">• Check out my [GitHub Profile](https://github.com/${githubUsername}) for more projects</span>`);
       addLine('');
       addLine('<span class="text-terminal-green">💡 Try running `contact` for all my social links, or `skills` to see my technical expertise!</span>');
     }, portfolioData.cv.sections.intro.length * 150 + 500);
