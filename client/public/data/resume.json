@@ -4,7 +4,7 @@
     "location": "Kolkata, India",
     "email": "balasubhayu99@gmail.com",
     "phone": "tel:+91-9382877751",
-    "website": "https://subhayu99.github.io",
+    "website": "https://subhayu99.github.io/",
     "social_networks": [
       {
         "network": "LinkedIn",
@@ -23,52 +23,36 @@
       ],
       "technologies": [
         {
-          "label": "Core Programming",
-          "details": "Python, SQL, BASH, JavaScript"
+          "label": "Core Languages & Tools",
+          "details": "Python, SQL, BASH, JavaScript, Git"
         },
         {
-          "label": "Data Engineering & Processing",
-          "details": "Pandas, NumPy, DuckDB, PySpark, ETL/ELT Pipelines, DBT, Data Modeling"
-        },
-        {
-          "label": "Data Orchestration & Workflow",
-          "details": "Airflow, GCP Workflows, Kafka, Treasure Data, Microsoft Fabric, ADF"
+          "label": "Data Engineering & Orchestration",
+          "details": "ETL/ELT Pipelines, Data Modeling, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Microsoft Fabric, ADF, Treasure Data, GeoPandas, PostGIS"
         },
         {
           "label": "AI & LLM Engineering",
-          "details": "OpenAI APIs, Gemini, Agentic Architecture, MCP, A2A, LangChain, Axolotl, LLM Integration, Prompt Engineering, RAG, SerpAPI, LLM Fine-tuning, TensorFlow, Keras, SKLearn"
+          "details": "OpenAI APIs, Gemini, LangChain, Agentic Architecture (MCP, A2A), RAG, Axolotl, LLM Fine-tuning (SFT, DPO), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
         },
         {
-          "label": "Cloud Infrastructure",
-          "details": "AWS, Azure, GCP, S3, Terraform, Pulumi, ARM Templates"
+          "label": "Cloud & DevOps",
+          "details": "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
         },
         {
-          "label": "DevOps & CI/CD",
-          "details": "Docker, Kubernetes, Azure DevOps, CI/CD, Linux, NGINX, Jenkins, Git, Message Queues"
+          "label": "Application & API Development",
+          "details": "FastAPI, Django, DRF, Flask, REST APIs, Typer CLI"
         },
         {
           "label": "Databases & Vector Stores",
-          "details": "MongoDB, PostgreSQL, MySQL, MS SQL Server, BigQuery, Chroma, FAISS, Neo4j"
+          "details": "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
         },
         {
-          "label": "API & Application Development",
-          "details": "FastAPI, Django, DRF, Flask, Typer CLI, REST APIs"
+          "label": "Security & Quality Assurance",
+          "details": "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
         },
         {
-          "label": "Data Visualization",
-          "details": "Looker Studio, PowerBI, Matplotlib, Streamlit, Plotly"
-        },
-        {
-          "label": "Monitoring & Reliability",
-          "details": "Custom Healthchecks, Azure APIs, Logs, CI Observability"
-        },
-        {
-          "label": "Security & Access Control",
-          "details": "OAuth, JWT, IAM, RBAC, Key Management"
-        },
-        {
-          "label": "Testing & Validation",
-          "details": "Pytest, Great Expectations, dbt Tests, Pydantic Validation"
+          "label": "Specialized & Visualization",
+          "details": "CDPs, SFMC, Web Scraping, Looker Studio, PowerBI, Streamlit, Plotly, Matplotlib, Quantum Computing Simulation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
         },
         {
           "label": "Specialized Technologies",
@@ -108,7 +92,7 @@
           "start_date": "2018-07",
           "end_date": "2022-06",
           "highlights": [
-            "CGPA: <b>8.57</b>/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+            "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
           ]
         }
       ],
@@ -214,15 +198,55 @@
           "date": "May 2025",
           "highlights": [
             "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity and project history quality.",
-            "Engineered deep repository analysis of tech stacks, commit patterns, and file changes with flexible global/local .toml configurations for project-specific conventions.",
+            "Intelligently adapts to different projects by analyzing the existing tech stack, commit history, and file changes, ensuring contextually relevant and consistent messages.",
             "Published on [PyPI](https://pypi.org/project/smart-commit-ai) and [GitHub](https://github.com/subhayu99/smart-commit) with Model Context Protocol (MCP) server for direct AI assistant integration."
+          ]
+        },
+        {
+          "name": "DocumentAccessPOC",
+          "date": "Feb 2025",
+          "highlights": [
+            "Designed and built a zero-trust secure document system to solve granular access control challenges where traditional RBAC/ACLs fail, ensuring data confidentiality even from system administrators.",
+            "Implemented a robust cryptographic model featuring end-to-end encryption (AES-GCM) and secure key exchange (RSA) to enforce permissions at a data level, not just application logic.",
+            "Built a FastAPI interface for secure document sharing and revocation, with the full project documented and open-sourced on [GitHub](https://github.com/subhayu99/DocumentAccessPOC)."
+          ]
+        },
+        {
+          "name": "creatree",
+          "date": "Feb 2025",
+          "highlights": [
+            "Developed a Python CLI tool and library for automating directory structure creation from tree-like strings, solving the repetitive manual setup of project scaffolding and templates.",
+            "Designed for maximum flexibility with both a Python library for programmatic integration and a CLI supporting stdin/pipes, including a unique feature to inject setup comments into new files.",
+            "Published on [PyPI](https://pypi.org/project/creatree) and open-sourced on [GitHub](https://github.com/subhayu99/creatree) with both programmatic API and CLI interfaces supporting stdin for flexible scripting workflows."
+          ]
+        },
+        {
+          "name": "BetterPassphrase",
+          "date": "Jan 2024",
+          "highlights": [
+            "Built a Python CLI tool and library for generating secure, memorable passphrases using grammatically correct phrases with customizable word counts, separators, and capitalization options.",
+            "Implemented probabilistic security analysis with entropy calculations and parts-of-speech parsing to balance memorability with cryptographic strength for authentication systems.",
+            "Published on [PyPI](https://pypi.org/project/BetterPassphrase) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) with comprehensive CLI interface supporting batch generation and file output for enterprise workflows."
+          ]
+        },
+        {
+          "name": "FINADICT - Financial Prediction App",
+          "date": "Sep 2021",
+          "highlights": [
+            "Built an interactive financial forecasting tool with Streamlit, enabling users to analyze and predict market data for stocks, forex, and cryptocurrencies.",
+            "Implemented a suite of analytical features, including price forecasting via FB Prophet, interactive Plotly visualizations, and downloadable data reports.",
+            "Managed the project's full lifecycle from development to deployment, containerizing the app with Docker and maintaining it as a live, public-facing service. Now open-sourced on [GitHub](https://github.com/subhayu99/finadict)."
           ]
         }
       ],
       "publication": [
         {
           "title": "QuDiet: A Classical Simulation Platform for Qubit-Qudit Hybrid Quantum Systems",
-          "authors": ["Subhayu Kumar Bala", "Turbasu Chatterjee", "Arnav Das"],
+          "authors": [
+            "Subhayu Kumar Bala",
+            "Turbasu Chatterjee",
+            "Arnav Das"
+          ],
           "date": "2023-03-28",
           "journal": "IET Quantum Communication",
           "doi": "10.1049/qtc2.12058"
