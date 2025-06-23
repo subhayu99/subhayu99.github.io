@@ -17,9 +17,9 @@
     ],
     "sections": {
       "intro": [
-        "Data and infrastructure engineer with 3+ years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP).",
-        "Track record of exceptional performance optimization, including reducing a 27-hour SQL procedure to 5 seconds by implementing innovative Python-based solutions for processing 80M+ rows of data.",
-        "Expert in building scalable architectures through event-driven design, containerization, and agentic LLM systems, consistently delivering solutions that transform complex business requirements into technical reality."
+        "A Data & Infrastructure Engineer with 3+ years of experience building high-performance, intelligent systems that drive measurable business outcomes. I specialize in turning complex data problems into efficient, scalable software.",
+        "I leverage deep expertise in Python, SQL, and multi-cloud architecture (AWS/Azure/GCP) to deliver transformative results, from slashing a 27-hour data process to just 5 seconds to engineering production-grade agentic LLMs.",
+        "My work has directly contributed to critical business milestones for clients, including enabling a startup to secure a $6M Series A funding round and ensuring enterprise-grade data compliance for regulated industries."
       ],
       "technologies": [
         {
@@ -53,10 +53,6 @@
         {
           "label": "Specialized & Visualization",
           "details": "CDPs, SFMC, Web Scraping, Looker Studio, PowerBI, Streamlit, Plotly, Matplotlib, Quantum Computing Simulation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
-        },
-        {
-          "label": "Specialized Technologies",
-          "details": "Web Scraping, CDP, SFMC, Quantum Computing Simulation"
         }
       ],
       "experience": [
@@ -66,9 +62,10 @@
           "location": "Gurugram, India (Remote)",
           "start_date": "2022-06",
           "highlights": [
-            "<b>Data Engineering & Analytics:</b> Built ETL/ELT pipelines processing millions of healthcare and marketing records using Python, SQL, PySpark, and cloud platforms (AWS/Azure/GCP), with expertise in performance optimization achieving 99.8% runtime improvements.",
-            "<b>AI/LLM Integration:</b> Developed production AI systems using OpenAI APIs, LangChain, and fine-tuned models (Mistral, Llama) for document processing, outreach automation, and agent-based architectures with 95%+ accuracy.",
-            "<b>Backend, Cloud Infra & DevOps:</b> Managed containerized deployments with Docker/Kubernetes, implemented CI/CD workflows, and built FastAPI applications serving 100k+ users with real-time dashboards and REST APIs."
+            "<b>Delivered >99.99% Performance Gains:</b> Re-architected a 27.5-hour legacy SQL procedure into a 5-second Python/DuckDB process, successfully handling 80M+ financial records and unlocking significant operational efficiency for the client.",
+            "<b>Engineered and Shipped Production AI:</b> Built and deployed a production-grade agentic LLM system from the ground up, using fine-tuned Mistral/Llama models to achieve >95% accuracy in real-time data processing and tool orchestration.",
+            "<b>Enabled a $6M Series A Funding Round:</b> Architected the foundational data platform from scratch on GCP for a high-growth startup, providing the critical infrastructure and real-time analytics that were instrumental in their successful funding.",
+            "<b>Ensured Enterprise Data Compliance:</b> Implemented robust data pipelines for a major healthcare client (Johnson & Johnson), engineering complex consent logic to meet strict data governance and privacy standards in regulated markets."
           ]
         },
         {
@@ -78,8 +75,7 @@
           "start_date": "2022-01",
           "end_date": "2022-05",
           "highlights": [
-            "<b>Backend Development:</b> Built Django/DRF applications with PostgreSQL/MongoDB databases, developed REST APIs, and created automation tools for cable network management using geospatial data processing.",
-            "<b>DevOps Implementation:</b> Established Azure DevOps CI/CD pipelines for platforms serving 50k+ daily users, managed database migrations, and integrated third-party APIs for operational automation."
+            "Contributed across the full development lifecycle, from building a geospatial backend platform that earned direct client commendation to establishing CI/CD pipelines on Azure DevOps for services supporting 50k+ daily users."
           ]
         }
       ],
@@ -92,7 +88,7 @@
           "start_date": "2018-07",
           "end_date": "2022-06",
           "highlights": [
-            "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+            "CGPA: <b>8.57</b>/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
           ]
         }
       ],
