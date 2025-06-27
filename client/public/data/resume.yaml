@@ -99,13 +99,13 @@ cv:
           - "Developed a Python/Pandas/DuckDB proof-of-concept for financial data processing pipeline, reducing runtime of a 1900+ line SQL procedure from 27.5 hours to under 5 seconds."
           - "Demonstrated Python's capability for high-performance data processing on 80M+ rows across 150 clients, enabling batch execution and significant operational efficiency improvements."
       
-      - name: "Logical Contract"
+      - name: "Logical Contract - AI-Powered Contract Generator"
         date: "Oct 2023 — Dec 2023"
         highlights:
           - "Implemented an AI-powered system to generate tailored employment agreements for startups."
           - "Developed a legal chatbot that catered to legal inquiries, offering tailored responses based on user data."
       
-      - name: "SlideNinja"
+      - name: "SlideNinja - AI-Powered Presentation Generator"
         date: "Jul 2023 — Oct 2023"
         highlights:
           - "Created a RAG-based AI platform (using GPT-3.5, Langchain, ChromaDB, Python, SerpApi) to generate presentations by providing just the title, description, slide count and optionally custom documents."
@@ -119,13 +119,13 @@ cv:
           - "Created custom Streamlit monitoring dashboard providing real-time visibility into complex orchestration workflows with granular tracking (brand→region→chain→store→order level), essential for debugging long-running processes across multiple third-party platforms."
           - "Contributed as core team member (10-person startup) working directly with technical leadership, helping build the foundation for a platform that secured $6M Series A funding and now serves major restaurant chains like Dave's Hot Chicken and Freddy's."
       
-      - name: "Eningo"
+      - name: "Eningo - Automated Cable & Utility Mapping Platform"
         date: "Apr 2022 — Aug 2022"
         highlights:
           - "Developed a cloud-based platform for automating cable network issue requests and processing geospatial data."
           - "Migrated legacy data from Postgres to MongoDB, enhancing scalability and efficiency."
       
-      - name: "NIBE"
+      - name: "NIBE - DevOps Automation for Sustainable Energy Tech"
         date: "Feb 2022 — Mar 2022"
         highlights:
           - "Created and managed CI/CD pipelines on Azure DevOps, impacting over 50k daily users."

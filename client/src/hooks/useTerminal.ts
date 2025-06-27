@@ -196,8 +196,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green"><b>Professional Projects:</b></span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green"><b>Professional Projects:</b></span>');
+    // addLine('');
     
     portfolioData.cv.sections.selected_projects.forEach((project, index) => {
       setTimeout(() => {
@@ -219,8 +219,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green"><b>Personal Projects & Open Source:</b></span>');
-    addLine('');
+    // addLine('<span class="text-terminal-bright-green"><b>Personal Projects & Open Source:</b></span>');
+    // addLine('');
     
     portfolioData.cv.sections.personal_projects.forEach((project, index) => {
       setTimeout(() => {
