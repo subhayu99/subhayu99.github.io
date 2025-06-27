@@ -6,6 +6,7 @@ import { enhanceContent, getLinkUrl } from '../lib/linkRenderer';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 
 export default function Terminal() {
+  const [hasTyped, setHasTyped] = useState(false);
   const [input, setInput] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -50,8 +51,28 @@ export default function Terminal() {
 
   // Auto-focus input and scroll to bottom
   useEffect(() => {
+    // Focus immediately without setTimeout
     inputRef.current?.focus();
+    
+    // Also focus when the component mounts and data loads
+    const focusInput = () => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+    
+    // Set focus after a brief moment to ensure DOM is ready
+    const timer = requestAnimationFrame(focusInput);
+    
+    return () => cancelAnimationFrame(timer);
   }, []);
+
+  // Additional effect to focus when portfolio data loads
+  useEffect(() => {
+    if (portfolioData && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [portfolioData]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -270,22 +291,23 @@ export default function Terminal() {
                 </div>
               </div>
               <div className="mb-4 sm:mb-6">
-                <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my terminal portfolio!</p>
+                <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
                 <p className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
                   {portfolioData ? 
-                    "Data & Infrastructure Engineer | AI/LLM Specialist | 3+ Years Experience" :
+                    `Hello! I'm ${portfolioData.cv.name}, a ${portfolioData.cv.sections.intro[0]}.` :
                     "Loading professional information..."
                   }
                 </p>
                 <div className="mb-4 text-xs sm:text-sm space-y-2">
                   <p className="text-terminal-bright-green">
+                    Essential commands: <span className="font-bold">about</span>, <span className="font-bold">skills</span>, <span className="font-bold">experience</span>, <span className="font-bold">projects</span>, <span className="font-bold">contact</span>, <span className="font-bold">help</span>.
                     Type '<span className="font-bold">help</span>' to see available commands or explore with tab completion.
                   </p>
-                  {isInstallable && (
+                  {/* {isInstallable && (
                     <p className="text-terminal-yellow">
                       💡 Install this portfolio as an app for offline access and better performance!
                     </p>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -312,14 +334,19 @@ export default function Terminal() {
                 ref={inputRef}
                 type="text"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  if (!hasTyped && e.target.value.length > 0) {
+                    setHasTyped(true);
+                  }
+                }}
                 onKeyDown={handleKeyDown}
                 className="w-full bg-transparent text-terminal-green outline-none font-mono text-xs sm:text-sm"
                 autoComplete="off"
                 spellCheck="false"
-                placeholder=""
+                placeholder={!hasTyped ? "type any command here and press enter" : ""}
               />
-              <span className="absolute text-terminal-green blink ml-1 text-xs sm:text-sm" style={{ left: `${input.length * 0.5}em` }}>
+              <span className="absolute text-terminal-green blink text-xs sm:text-sm" style={{ left: `${input.length * 0.6}em`, top: '50%', transform: 'translateY(-45%)' }}>
                 █
               </span>
               
