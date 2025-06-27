@@ -25,6 +25,7 @@ export default function Terminal() {
     retry: 3,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+  const sanitizedPhone = portfolioData?.cv.phone.replace(/[^\d+]/g, '');
 
   const {
     lines,
@@ -274,8 +275,9 @@ export default function Terminal() {
           onClick={handleTerminalClick}
         >
           {/* Welcome Screen */}
-          {showWelcome && (
+          {showWelcome && portfolioData && (
             <div className="mb-4 sm:mb-6">
+              {/* ASCII Art Header */}
               <div className="mb-3 sm:mb-4">
                 <pre className="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
 {` ___      _    _                     _  __                     ___       _      
@@ -284,31 +286,109 @@ export default function Terminal() {
 |___/\\_,_|_.__/_||_\\__,_|\\_, |\\_,_| |_|\\_\\_,_|_|_|_\\__,_|_|   |___/\\__,_|_\\__,_|
                          |__/                                                   `}
                 </pre>
-                {/* Mobile version - simplified ASCII */}
                 <div className="sm:hidden text-terminal-bright-green text-center mb-3">
-                  <div className="text-lg font-bold">SUBHAYU KUMAR BALA</div>
+                  <div className="text-lg font-bold">{portfolioData.cv.name.toUpperCase()}</div>
                   <div className="text-sm">TERMINAL PORTFOLIO</div>
                 </div>
               </div>
-              <div className="mb-4 sm:mb-6">
+
+              {/* Main Introduction */}
+              <div className="mb-4">
                 <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
                 <p className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
                   {portfolioData ? 
-                    `Hello! I'm ${portfolioData.cv.name}, a ${portfolioData.cv.sections.intro[0]}.` :
-                    "Loading professional information..."
+                    `${portfolioData.cv.sections.intro[0]}` : "Loading professional information..."
                   }
                 </p>
-                <div className="mb-4 text-xs sm:text-sm space-y-2">
-                  <p className="text-terminal-bright-green">
-                    Essential commands: <span className="font-bold">about</span>, <span className="font-bold">skills</span>, <span className="font-bold">experience</span>, <span className="font-bold">projects</span>, <span className="font-bold">contact</span>, <span className="font-bold">help</span>.
-                    Type '<span className="font-bold">help</span>' to see available commands or explore with tab completion.
-                  </p>
+              </div>
+
+              {/* Quick Overview Box */}
+              <div className="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+                <div className="border-b border-terminal-green/30 px-3 py-1">
+                  <span className="text-terminal-bright-green text-sm font-bold">QUICK OVERVIEW</span>
+                </div>
+                <div className="p-3 space-y-1 text-xs sm:text-sm">
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">USER</span>
+                    <span className="text-white">{portfolioData?.cv.name}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">ROLE</span>
+                    <span className="text-white">{portfolioData?.cv.sections.experience[0].position}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">LOC</span>
+                    <span className="text-white">{portfolioData?.cv.location}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">WEB</span>
+                    <span className="text-terminal-green"><a href={portfolioData?.cv.website} className="hover:text-terminal-bright-green hover:underline transition-colors duration-200">{portfolioData?.cv.website}</a></span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">EMAIL</span>
+                    <span className="text-terminal-green"><a href={`mailto:${portfolioData?.cv.email}`} className="hover:text-terminal-bright-green hover:underline transition-colors duration-200">{portfolioData?.cv.email}</a></span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">RESUME</span>
+                    <span className="text-terminal-green"><a href={portfolioData?.cv.resume_url} className="hover:text-terminal-bright-green hover:underline transition-colors duration-200">resume.pdf</a></span>
+                  </div>
+                  <div className="flex">
+                    <span className="text-terminal-yellow w-16 font-bold">PHONE</span>
+                    <span className="text-terminal-green"><a href={`tel:${sanitizedPhone}`} className="hover:text-terminal-bright-green hover:underline transition-colors duration-200">{sanitizedPhone}</a></span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Core Commands Section */}
+              <div className="mb-4">
+                <p className="text-terminal-green mb-2 text-sm sm:text-base">
+                  🚀 Start exploring with these core commands (or click them):
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=about" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">about</a></span>
+                    <span className="text-white/80">learn more about me</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=skills" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">skills</a></span>
+                    <span className="text-white/80">view technical expertise</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=experience" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">experience</a></span>
+                    <span className="text-white/80">see professional work</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=projects" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">projects</a></span>
+                    <span className="text-white/80">see professional projects</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=personal" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">personal</a></span>
+                    <span className="text-white/80">see personal projects</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-terminal-bright-green">→</span>
+                    <span className="text-terminal-yellow font-bold"><a href="?cmd=contact" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">contact</a></span>
+                    <span className="text-white/80">display contact details</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tips Section */}
+              <div className="text-xs sm:text-sm space-y-2">
+                <div className="flex items-center space-x-2 text-terminal-green/80">
+                  <span>💡</span>
+                  <span>Type <span className="font-bold text-terminal-bright-green">help</span> for all commands</span>
+                </div>
                   {/* {isInstallable && (
                     <p className="text-terminal-yellow">
                       💡 Install this portfolio as an app for offline access and better performance!
                     </p>
                   )} */}
-                </div>
               </div>
             </div>
           )}
