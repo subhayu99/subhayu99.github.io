@@ -55,44 +55,44 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
             <div class="space-y-1 ml-2">
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">help</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show this help message</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">about</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display introduction and background</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">whoami</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show current user information</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">neofetch</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display system information (portfolio stats)</span></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">help</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">about</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">whoami</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">neofetch</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">💼 PROFESSIONAL</div>
             <div class="space-y-1 ml-2">
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">skills</span><span class="text-terminal-green mx-2">│</span><span class="text-white">List technical skills and technologies</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">experience</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show work experience and roles</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">education</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display educational background</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">projects</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show professional projects</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">personal</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show personal projects and open source work</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">publications</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show research publications and papers</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">timeline</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display career timeline and milestones</span></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">skills</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">experience</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">education</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">projects</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">personal</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">publications</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">timeline</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📧 CONTACT</div>
             <div class="space-y-1 ml-2">
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">contact</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display contact information and social links</span></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">contact</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">🔧 TOOLS</div>
             <div class="space-y-1 ml-2">
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">search</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[term]</strong> Search across all content</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">theme</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[name]</strong> Change terminal color theme</span></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">search</span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">theme</span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">⌨️ TERMINAL</div>
             <div class="space-y-1 ml-2">
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">clear</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Clear the terminal screen</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">ls</span><span class="text-terminal-green mx-2">│</span><span class="text-white">List available commands</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">pwd</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show current directory</span></div>
-              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">cat</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[file]</strong> Display file contents (try: \`cat resume.txt\`)</span></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">clear</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">ls</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">pwd</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">cat</span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`cat resume.txt\`)</span></div></div>
             </div>
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
@@ -105,7 +105,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               <div><span class="text-white">•</span> Click anywhere on the terminal to focus input</div>
             </div>
           </div>
-          <div class="text-terminal-green text-center pt-2 border-t border-terminal-green/20">
+          <div class="text-terminal-white text-center pt-2 border-t border-terminal-green/20">
             Start with \`about\` to learn more about me, or try \`neofetch\` for a quick overview!
           </div>
         </div>
