@@ -45,53 +45,76 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   }, []);
 
   const showHelp = useCallback(() => {
-    const helpLines = [
-      '<span class="text-terminal-bright-green text-lg font-bold">◈ AVAILABLE COMMANDS ◈</span>',
-      '',
-      '<span class="text-terminal-bright-green">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>',
-      '',
-      '<span class="text-terminal-bright-green font-bold">📋 INFORMATION</span>',
-      '  <span class="text-terminal-yellow font-semibold">help</span>          Show this help message',
-      '  <span class="text-terminal-yellow font-semibold">about</span>         Display introduction and background',
-      '  <span class="text-terminal-yellow font-semibold">whoami</span>        Show current user information',
-      '  <span class="text-terminal-yellow font-semibold">neofetch</span>      Display system information (portfolio stats)',
-      '',
-      '<span class="text-terminal-bright-green font-bold">💼 PROFESSIONAL</span>',
-      '  <span class="text-terminal-yellow font-semibold">skills</span>        List technical skills and technologies',
-      '  <span class="text-terminal-yellow font-semibold">experience</span>    Show work experience and roles',
-      '  <span class="text-terminal-yellow font-semibold">education</span>     Display educational background',
-      '  <span class="text-terminal-yellow font-semibold">projects</span>      Show professional projects',
-      '  <span class="text-terminal-yellow font-semibold">personal</span>      Show personal projects and open source work',
-      '  <span class="text-terminal-yellow font-semibold">publications</span>  Show research publications and papers',
-      '  <span class="text-terminal-yellow font-semibold">timeline</span>      Display career timeline and milestones',
-      '',
-      '<span class="text-terminal-bright-green font-bold">📧 CONTACT</span>',
-      '  <span class="text-terminal-yellow font-semibold">contact</span>       Display contact information and social links',
-      '',
-      '<span class="text-terminal-bright-green font-bold">🔧 TOOLS</span>',
-      '  <span class="text-terminal-yellow font-semibold">search</span> [term] Search across all content',
-      '  <span class="text-terminal-yellow font-semibold">theme</span> [name]  Change terminal color theme',
-      '',
-      '<span class="text-terminal-bright-green font-bold">⌨️  TERMINAL</span>',
-      '  <span class="text-terminal-yellow font-semibold">clear</span>         Clear the terminal screen',
-      '  <span class="text-terminal-yellow font-semibold">ls</span>            List available commands',
-      '  <span class="text-terminal-yellow font-semibold">pwd</span>           Show current directory',
-      '  <span class="text-terminal-yellow font-semibold">cat</span> [file]    Display file contents (try: `cat resume.txt`)',
-      '',
-      '<span class="text-terminal-bright-green">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>',
-      '',
-      '<span class="text-terminal-yellow font-bold">💡 QUICK TIPS</span>',
-      '<span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Tab</span> for auto-completion',
-      '<span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to navigate command history',
-      '<span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+C</span> to interrupt current operation',
-      '<span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear screen quickly',
-      '<span class="text-white">•</span> Click anywhere on the terminal to focus input',
-      '',
-      '<span class="text-terminal-green">Start with `about` to learn more about me, or try `neofetch` for a quick overview!</span>'
-    ];
+    // Create the help content as a single HTML string
+    const helpBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1">
+          <span class="text-terminal-bright-green text-sm font-bold">◈ AVAILABLE COMMANDS ◈</span>
+        </div>
+        <div class="p-3 space-y-3 text-xs sm:text-sm">
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
+            <div class="space-y-1 ml-2">
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">help</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show this help message</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">about</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display introduction and background</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">whoami</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show current user information</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">neofetch</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display system information (portfolio stats)</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">💼 PROFESSIONAL</div>
+            <div class="space-y-1 ml-2">
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">skills</span><span class="text-terminal-green mx-2">│</span><span class="text-white">List technical skills and technologies</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">experience</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show work experience and roles</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">education</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display educational background</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">projects</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show professional projects</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">personal</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show personal projects and open source work</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">publications</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show research publications and papers</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">timeline</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display career timeline and milestones</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">📧 CONTACT</div>
+            <div class="space-y-1 ml-2">
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">contact</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Display contact information and social links</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">🔧 TOOLS</div>
+            <div class="space-y-1 ml-2">
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">search</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[term]</strong> Search across all content</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">theme</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[name]</strong> Change terminal color theme</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">⌨️ TERMINAL</div>
+            <div class="space-y-1 ml-2">
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">clear</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Clear the terminal screen</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">ls</span><span class="text-terminal-green mx-2">│</span><span class="text-white">List available commands</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">pwd</span><span class="text-terminal-green mx-2">│</span><span class="text-white">Show current directory</span></div>
+              <div class="flex"><span class="text-terminal-yellow w-28 font-semibold">cat</span><span class="text-terminal-green mx-2">│</span><span class="text-white"><strong>[file]</strong> Display file contents (try: \`cat resume.txt\`)</span></div>
+            </div>
+          </div>
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 QUICK TIPS</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Tab</span> for auto-completion</div>
+              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to navigate command history</div>
+              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+C</span> to interrupt current operation</div>
+              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear screen quickly</div>
+              <div><span class="text-white">•</span> Click anywhere on the terminal to focus input</div>
+            </div>
+          </div>
+          <div class="text-terminal-green text-center pt-2 border-t border-terminal-green/20">
+            Start with \`about\` to learn more about me, or try \`neofetch\` for a quick overview!
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    addMultipleLines(helpLines, '', 40);
-  }, [addMultipleLines]);
+    // Add the entire help box as a single line
+    addLine(helpBox, 'w-full');
+  }, [addLine]);
 
   const showAbout = useCallback(() => {
     if (!portfolioData) {
