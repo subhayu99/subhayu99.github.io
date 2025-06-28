@@ -24,31 +24,6 @@
      │ Secrets Mgmt • IAM • KMS   │    │ CI/CD • Health • Validation │    │   Matplotlib • Streamlit    │
      └────────────────────────────┘    └─────────────────────────────┘    └─────────────────────────────┘
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                                 SYSTEM INFO                                                 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
- Hostname       : portfolio
- Identity       : subhayu99
- Mode           : agentic-pipeline + infra-first + observability
- Uptime         : ~3.5 years
- Packages       : Python 3.11, FastAPI 0.109, dbt, LangChain 0.1.20,
-                  Terraform, DuckDB, Bash, Streamlit, Neo4j
- Plugins        : MCP, A2A, Axolotl, SerpAPI
- Cloud Tags     : GCP, Azure, AWS 
- CLI Toolkit    : Typer | uv | bash | 🐳 Docker | Git | Linux
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                             TECHNICAL PERSONALITY                                           ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
- [🧠 LLM + RAG + Tools]       ░▓▓▓░ ░▓▓▓░ ░▓▓▓░       (Token Pipeline Core)
- Flow Nodes                   ●──●──●──●──●──●──●     (LangChain / DAG Flow)
- CLI Interface                Typer • uv • bash       (Scriptable Everything)
- Life vs Work                 ⚖️⚙️🏃💻                (Balance + Obsession)
- Quantum Mindset              ⚛️                      (Cutting-Edge Ready)
- Experimentation Driven       🧪                      (Always Prototyping)
- Observability Embedded       📈 • 📡                 (Dashboards, Healthchecks)
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                            BUILT BY A REAL HUMAN                                            ┃

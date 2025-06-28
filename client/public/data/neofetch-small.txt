@@ -13,27 +13,6 @@
     [🛡 Auth]   [🧪 Tests]   [📊 Viz]
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃             SYSTEM INFO               ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-
- Hostname       : portfolio
- Identity       : subhayu99
- Mode           : agentic-pipeline
-                  + infra-first
-                  + observability
- Uptime         : ~3.5 years
- Packages       : Python 3.11, DuckDB,
-                  FastAPI 0.1.9, Bash, 
-                  LangChain 0.1.20,
-                  Terraform, dbt, 
-                  Streamlit, Neo4j
- Plugins        : MCP, A2A, 
-                  Axolotl, SerpAPI
- Cloud Tags     : GCP, Azure, AWS 
- CLI Toolkit    : Typer, uv, bash, 
-                  Docker, Git, Linux
-
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃        BUILT BY A REAL HUMAN          ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
