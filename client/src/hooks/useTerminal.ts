@@ -17,6 +17,25 @@ function getUsername(portfolioData: PortfolioData, network: string): string | un
   return portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === network.toLowerCase())?.username;
 }
 
+// Helper function to parse dates and create timeline events
+const parseDate = (dateStr: string): Date => {
+  // Handle various date formats: "2022-06", "Jun 2022", "2022", etc.
+  const cleanDate = dateStr.replace(/[^\d-]/g, '').trim();
+  if (cleanDate.includes('-')) {
+    const [year, month] = cleanDate.split('-');
+    return new Date(parseInt(year), month ? parseInt(month) - 1 : 0);
+  }
+  return new Date(parseInt(cleanDate), 0);
+};
+
+const formatDateForDisplay = (dateStr: string): string => {
+  const date = parseDate(dateStr);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short' 
+  });
+};
+
 function getProjectsHtml(projectData: { name: string; date: string; highlights: string[] }[], type: string): string {
   return `
     <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
@@ -184,7 +203,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
     // Create the about content as a single HTML string, matching showHelp structure
     const aboutBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
         <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
           <span class="text-terminal-bright-green text-sm font-bold">ABOUT ME</span>
         </div>
@@ -271,25 +290,22 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
     // Create the skills content as a single HTML string, matching showAbout structure
     const skillsBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
         <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">TECHNICAL SKILLS & TECHNOLOGIES</span>
+          <span class="text-terminal-bright-green text-sm font-bold">SKILLS & TECHNOLOGIES</span>
         </div>
         <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">🛠️ TECHNOLOGY STACK</div>
-            <div class="space-y-2 ml-2">
-              ${portfolioData.cv.sections.technologies.map(tech => `
-                <div class="grid grid-cols-12 gap-4">
-                  <div class="col-span-3 bg-terminal-green/10 p-2 rounded">
-                    <span class="text-terminal-yellow font-semibold">${tech.label}</span>
-                  </div>
-                  <div class="col-span-9 bg-terminal-green/5 p-2 rounded">
-                    <span class="text-white">${tech.details}</span>
-                  </div>
+          <div class="space-y-1 ml-2">
+            ${portfolioData.cv.sections.technologies.map(tech => `
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
+                <div class="md:col-span-3 bg-terminal-green/10 p-2 rounded">
+                  <span class="text-terminal-yellow font-semibold mb-1">${tech.label}</span>
                 </div>
-              `).join('')}
-            </div>
+                <div class="md:col-span-9 bg-terminal-green/5 p-2 rounded ml-3">
+                  <span class="text-white">${tech.details}</span>
+                </div>
+              </div>
+            `).join('')}
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
@@ -528,55 +544,247 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green">Career Timeline:</span>');
-    addLine('');
+    const timelineEvents: Array<{
+      date: Date;
+      dateStr: string;
+      type: 'education' | 'experience' | 'project' | 'publication';
+      title: string;
+      subtitle?: string;
+      endDate?: Date;
+      endDateStr?: string;
+      description?: string;
+      status: 'completed' | 'ongoing';
+    }> = [];
 
-    const timelineEvents: Array<{date: string, type: string, title: string, endDate?: string}> = [];
-    
+    // Add education events
     portfolioData.cv.sections.education.forEach(edu => {
       timelineEvents.push({
-        date: edu.start_date,
+        date: parseDate(edu.start_date),
+        dateStr: edu.start_date,
         type: 'education',
-        title: `Started ${edu.degree} in ${edu.area} at ${edu.institution}`,
-        endDate: edu.end_date
+        title: `${edu.degree} in ${edu.area}`,
+        subtitle: edu.institution,
+        endDate: parseDate(edu.end_date),
+        endDateStr: edu.end_date,
+        description: edu.location,
+        status: 'completed'
       });
     });
 
+    // Add experience events
     portfolioData.cv.sections.experience.forEach(exp => {
       timelineEvents.push({
-        date: exp.start_date,
+        date: parseDate(exp.start_date),
+        dateStr: exp.start_date,
         type: 'experience',
-        title: `${exp.position} at ${exp.company}`,
-        endDate: exp.end_date
+        title: exp.position,
+        subtitle: exp.company,
+        endDate: exp.end_date ? parseDate(exp.end_date) : undefined,
+        endDateStr: exp.end_date,
+        description: exp.location,
+        status: exp.end_date ? 'completed' : 'ongoing'
       });
     });
 
-    portfolioData.cv.sections.selected_projects.forEach(proj => {
-      timelineEvents.push({
-        date: proj.date.split(' – ')[0].replace(/[A-Za-z ]/g, ''),
-        type: 'project',
-        title: proj.name
-      });
-    });
-
-    timelineEvents.sort((a, b) => {
-      const dateA = a.date.replace(/[^0-9]/g, '');
-      const dateB = b.date.replace(/[^0-9]/g, '');
-      return dateA.localeCompare(dateB);
-    });
-
-    timelineEvents.forEach((event, index) => {
-      setTimeout(() => {
-        const icon = event.type === 'education' ? '🎓' : event.type === 'experience' ? '💼' : '🚀';
-        const color = event.type === 'education' ? 'text-terminal-bright-green' : event.type === 'experience' ? 'text-terminal-green' : 'text-white';
+    // Add major projects (limit to recent ones to avoid clutter)
+    portfolioData.cv.sections.selected_projects
+      .slice(0, 3) // Take only top 3 projects
+      .forEach(proj => {
+        const dateRange = proj.date.split(' – ');
+        const startDate = dateRange[0].trim();
+        const endDate = dateRange[1]?.trim();
         
-        addLine(`<span class="${color}">${event.date} ${icon} ${event.title}</span>`);
-        if (event.endDate && event.endDate !== event.date) {
-          addLine(`<span class="text-white opacity-60">  └─ Ended: ${event.endDate}</span>`);
-        }
-        addLine('');
-      }, index * 150);
-    });
+        timelineEvents.push({
+          date: parseDate(startDate),
+          dateStr: startDate,
+          type: 'project',
+          title: proj.name,
+          subtitle: 'Professional Project',
+          endDate: endDate ? parseDate(endDate) : undefined,
+          endDateStr: endDate,
+          status: endDate ? 'completed' : 'ongoing'
+        });
+      });
+
+    // Add publications
+    if (portfolioData.cv.sections.publication) {
+      portfolioData.cv.sections.publication.forEach(pub => {
+        timelineEvents.push({
+          date: parseDate(pub.date),
+          dateStr: pub.date,
+          type: 'publication',
+          title: pub.title,
+          subtitle: pub.journal,
+          status: 'completed'
+        });
+      });
+    }
+
+    // Sort events by date (newest last for better visual flow)
+    timelineEvents.sort((a, b) => {
+      // First priority: ongoing items come first
+      if (a.status === 'ongoing' && b.status !== 'ongoing') return -1;
+      if (b.status === 'ongoing' && a.status !== 'ongoing') return 1;
+      
+      // Second priority: if both are ongoing, sort by start date (most recent first)
+      if (a.status === 'ongoing' && b.status === 'ongoing') {
+        return b.date.getTime() - a.date.getTime();
+      }
+      
+      // Third priority: for completed items, sort by end date if available, otherwise start date
+      const aEndDate = a.endDate || a.date;
+      const bEndDate = b.endDate || b.date;
+      
+      return bEndDate.getTime() - aEndDate.getTime();
+    }).reverse();
+
+    // Create the timeline HTML
+    const timelineBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-5xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">CAREER TIMELINE</span>
+        </div>
+        <div class="p-4">
+          <div class="relative">
+            <!-- Timeline line -->
+            <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terminal-bright-green via-terminal-green to-terminal-green/30"></div>
+            
+            <!-- Timeline events -->
+            <div class="space-y-6">
+              ${timelineEvents.map((event, index) => {
+                const isOngoing = event.status === 'ongoing';
+                const duration = event.endDateStr ? 
+                  `${formatDateForDisplay(event.dateStr)} - ${isOngoing ? 'Present' : formatDateForDisplay(event.endDateStr)}` :
+                  formatDateForDisplay(event.dateStr);
+                
+                const getIcon = (type: string) => {
+                  switch (type) {
+                    case 'education': return '🎓';
+                    case 'experience': return '💼';
+                    case 'project': return '🚀';
+                    case 'publication': return '📝';
+                    default: return '•';
+                  }
+                };
+
+                const getTypeColor = (type: string) => {
+                  switch (type) {
+                    case 'education': return 'text-blue-400';
+                    case 'experience': return 'text-terminal-bright-green';
+                    case 'project': return 'text-purple-400';
+                    case 'publication': return 'text-yellow-400';
+                    default: return 'text-white';
+                  }
+                };
+
+                const getTypeLabel = (type: string) => {
+                  switch (type) {
+                    case 'education': return 'EDUCATION';
+                    case 'experience': return 'WORK';
+                    case 'project': return 'PROJECT';
+                    case 'publication': return 'RESEARCH';
+                    default: return type.toUpperCase();
+                  }
+                };
+
+                return `
+                  <div class="relative flex items-start space-x-4 group">
+                    <!-- Timeline dot -->
+                    <div class="relative z-10">
+                      <div class="w-4 h-4 rounded-full bg-terminal-green border-2 border-terminal-bright-green 
+                                  ${isOngoing ? 'animate-pulse shadow-lg shadow-terminal-green/50' : ''} 
+                                  group-hover:scale-125 transition-transform duration-200"></div>
+                    </div>
+                    
+                    <!-- Event content -->
+                    <div class="flex-1 min-w-0 pb-4">
+                      <div class="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 
+                                  group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 
+                                  transition-all duration-200 ml-1">
+                        
+                        <!-- Event header -->
+                        <div class="flex flex-wrap items-center justify-between mb-2">
+                          <div class="flex items-center space-x-2">
+                            <span class="text-lg">${getIcon(event.type)}</span>
+                            <span class="text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold">
+                              ${getTypeLabel(event.type)}
+                            </span>
+                            ${isOngoing ? '<span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400 font-semibold animate-pulse">CURRENT</span>' : ''}
+                          </div>
+                          <div class="text-xs text-white/70 font-mono">
+                            ${duration}
+                          </div>
+                        </div>
+                        
+                        <!-- Event details -->
+                        <div class="mb-2">
+                          <h3 class="text-terminal-bright-green font-semibold text-sm mb-1">
+                            ${event.title}
+                          </h3>
+                          ${event.subtitle ? `
+                            <p class="text-terminal-yellow text-xs mb-1">
+                              ${event.subtitle}
+                            </p>
+                          ` : ''}
+                          ${event.description ? `
+                            <p class="text-white/70 text-xs">
+                              ${event.description}
+                            </p>
+                          ` : ''}
+                        </div>
+                        
+                        <!-- Progress indicator for ongoing items -->
+                        ${isOngoing ? `
+                          <div class="mt-2">
+                            <div class="h-1 bg-terminal-green/20 rounded-full overflow-hidden">
+                              <div class="h-full bg-gradient-to-r from-terminal-green to-terminal-bright-green 
+                                          animate-pulse rounded-full"></div>
+                            </div>
+                          </div>
+                        ` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            
+            <!-- Timeline stats -->
+            <div class="mt-8 border-t border-terminal-green/30 pt-4">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-terminal-green/5 rounded-lg p-3">
+                  <div class="text-terminal-bright-green font-bold text-lg">
+                    ${portfolioData.cv.sections.experience.length}
+                  </div>
+                  <div class="text-white/70 text-xs">Positions</div>
+                </div>
+                <div class="bg-terminal-green/5 rounded-lg p-3">
+                  <div class="text-blue-400 font-bold text-lg">
+                    ${portfolioData.cv.sections.education.length}
+                  </div>
+                  <div class="text-white/70 text-xs">Degrees</div>
+                </div>
+                <div class="bg-terminal-green/5 rounded-lg p-3">
+                  <div class="text-purple-400 font-bold text-lg">
+                    ${portfolioData.cv.sections.selected_projects.length + portfolioData.cv.sections.personal_projects.length}
+                  </div>
+                  <div class="text-white/70 text-xs">Projects</div>
+                </div>
+                <div class="bg-terminal-green/5 rounded-lg p-3">
+                  <div class="text-yellow-400 font-bold text-lg">
+                    ${portfolioData.cv.sections.publication?.length || 0}
+                  </div>
+                  <div class="text-white/70 text-xs">Publications</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
+
+    // Add the entire timeline box as a single line
+    addLine(timelineBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showSearch = useCallback((args: string[]) => {
@@ -689,27 +897,85 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
     const { cv } = portfolioData;
     
-    addLine('<span class="text-terminal-bright-green font-bold text-lg">📞 Contact Information</span>');
-    addLine('');
-    addLine('<span class="text-terminal-bright-green">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>');
-    addLine('');
-    addLine(`<span class="text-terminal-green font-semibold">Name:</span> <span class="text-white">${cv.name}</span>`);
-    addLine(`<span class="text-terminal-green font-semibold">Location:</span> <span class="text-white">${cv.location}</span>`);
-    addLine(`<span class="text-terminal-green font-semibold">Email:</span> <span class="text-white">${cv.email}</span>`);
-    addLine(`<span class="text-terminal-green font-semibold">Phone:</span> <span class="text-white">${cv.phone.replace(/[^\d\+]/g, '')}</span>`);
-    addLine('');
-    addLine('<span class="text-terminal-bright-green font-bold">🌐 Social Networks & Links:</span>');
-    addLine('');
+    // Create the contact content as a single HTML string, matching showAbout and showExperience structure
+    const contactBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">CONTACT INFORMATION</span>
+        </div>
+        <div class="p-3 space-y-3 text-xs sm:text-sm">
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">📞 PERSONAL DETAILS</div>
+            <div class="space-y-1 ml-2">
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Name</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">${cv.name}</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Location</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">${cv.location}</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Email</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">${cv.email}</span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Phone</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white"><a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">${cv.phone.replace(/[^\d\+]/g, '')}</a></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
+            <div class="space-y-1 ml-2">
+              ${cv.social_networks.map(social => {
+                const url = getSocialNetworkUrl(social.network, social.username);
+                return `
+                  <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-3 bg-terminal-green/10">
+                      <span class="text-terminal-yellow font-semibold">${social.network}</span>
+                    </div>
+                    <div class="col-span-9 bg-terminal-green/5">
+                      <span class="text-white">${url}</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 LET'S CONNECT</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
+                Feel free to reach out for collaborations, opportunities, or just to connect!
+              </div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about">about</a></span> to learn more about me</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see my work</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> for my professional background</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    cv.social_networks.forEach(social => {
-      const url = getSocialNetworkUrl(social.network, social.username);
-      addLine(`  <span class="text-terminal-green">•</span> <span class="text-terminal-yellow font-semibold">${social.network}:</span> [${social.username}](${url})`);
-    });
-    
-    addLine('');
-    addLine('<span class="text-terminal-yellow">💡 All links above are clickable!</span>');
-    addLine('');
-    addLine('<span class="text-terminal-green">Feel free to reach out for collaborations, opportunities, or just to connect!</span>');
+    // Add the entire contact box as a single line
+    addLine(contactBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showWhoAmI = useCallback(() => {
@@ -900,7 +1166,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   }, [addLine, portfolioData]);
 
   const listCommands = useCallback(() => {
-    addLine('<span class="text-terminal-bright-green">Available commands:</span>');
+    addLine('<span class="text-terminal-yellow font-bold">Available commands:</span>');
     addLine('');
     const commands = ['help', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
     commands.forEach(cmd => {
