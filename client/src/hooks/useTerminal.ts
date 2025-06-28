@@ -453,21 +453,73 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green">Research Publications:</span>');
-    // addLine('');
+    const publications = portfolioData.cv.sections.publication;
+
+    // Create the publications content as a single HTML string, matching showAbout/showExperience structure
+    const publicationsBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">RESEARCH PUBLICATIONS</span>
+        </div>
+        <div class="p-3 space-y-4 text-xs sm:text-sm">
+          ${publications.map((pub, index) => `
+            <div class="border-b border-terminal-green/20 pb-4 ${index === publications.length - 1 ? 'border-b-0 pb-0' : ''}">
+              <div class="mb-3">
+              <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                <span class="text-terminal-bright-green font-semibold">${pub.title}</span>
+              </div>
+              <div class="ml-2 space-y-1">
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-2 bg-terminal-green/10">
+                    <span class="text-terminal-yellow font-semibold">Authors</span>
+                  </div>
+                  <div class="col-span-10 bg-terminal-green/5">
+                    <span class="text-white opacity-80">${pub.authors.join(', ')}</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-2 bg-terminal-green/10">
+                    <span class="text-terminal-yellow font-semibold">Journal</span>
+                  </div>
+                  <div class="col-span-10 bg-terminal-green/5">
+                    <span class="text-white opacity-80">${pub.journal}</span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-12 gap-1">
+                  <div class="col-span-2 bg-terminal-green/10">
+                    <span class="text-terminal-yellow font-semibold">Date</span>
+                  </div>
+                  <div class="col-span-10 bg-terminal-green/5">
+                    <span class="text-white opacity-80">${pub.date}</span>
+                  </div>
+                </div>
+                ${pub.doi ? `
+                  <div class="grid grid-cols-12 gap-1">
+                    <div class="col-span-2 bg-terminal-green/10">
+                      <span class="text-terminal-yellow font-semibold">DOI</span>
+                    </div>
+                    <div class="col-span-10 bg-terminal-green/5">
+                      https://doi.org/${pub.doi}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `).join('')}
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to view practical applications</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact">contact</a></span> to discuss research collaboration</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    portfolioData.cv.sections.publication.forEach((pub, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-terminal-green">${pub.title}</span>`);
-        addLine(`<span class="text-white opacity-80">Authors: ${pub.authors.join(', ')}</span>`);
-        addLine(`<span class="text-white opacity-80">Journal: ${pub.journal}</span>`);
-        addLine(`<span class="text-white opacity-80">Date: ${pub.date}</span>`);
-        if (pub.doi) {
-          addLine(`<span class="text-white opacity-80 cursor-pointer">DOI: https://doi.org/${pub.doi}</span>`);
-        }
-        addLine('');
-      }, index * 200);
-    });
+    // Add the entire publications box as a single line
+    addLine(publicationsBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showTimeline = useCallback(() => {
