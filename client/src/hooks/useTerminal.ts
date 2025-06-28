@@ -13,6 +13,10 @@ export interface UseTerminalProps {
   portfolioData: PortfolioData | null;
 }
 
+function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
+  return portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === network.toLowerCase())?.username;
+}
+
 export function useTerminal({ portfolioData }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -48,51 +52,51 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     // Create the help content as a single HTML string
     const helpBox = `
       <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1">
-          <span class="text-terminal-bright-green text-sm font-bold">◈ AVAILABLE COMMANDS ◈</span>
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">AVAILABLE COMMANDS</span>
         </div>
         <div class="p-3 space-y-3 text-xs sm:text-sm">
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">help</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">about</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and background</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">whoami</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">neofetch</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=help">help</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=whoami">whoami</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=neofetch">neofetch</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">💼 PROFESSIONAL</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">skills</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">experience</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">education</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">projects</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">personal</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">publications</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">timeline</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=skills">skills</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=experience">experience</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=education">education</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=projects">projects</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=personal">personal</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=publications">publications</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=timeline">timeline</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📧 CONTACT</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">contact</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=contact">contact</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">🔧 TOOLS</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">search</span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">theme</span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=search">search</a></span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=theme">theme</a></span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">⌨️ TERMINAL</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">clear</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">ls</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">pwd</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold">cat</span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`cat resume.txt\`)</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=clear">clear</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=ls">ls</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=pwd">pwd</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=cat">cat</a></span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`<a href="?cmd=cat%20resume.txt">cat resume.txt</a>\`)</span></div></div>
             </div>
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
@@ -122,29 +126,85 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    addLine('<span class="text-terminal-bright-green font-bold text-lg">👋 About Me</span>');
-    addLine('');
-    addLine('<span class="text-terminal-bright-green">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>');
-    addLine('');
+    // Create the about content as a single HTML string, matching showHelp structure
+    const aboutBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">ABOUT ME</span>
+        </div>
+        <div class="p-3 space-y-3 text-xs sm:text-sm">
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
+            <div class="space-y-2 ml-2">
+              ${portfolioData.cv.sections.intro.map(paragraph => 
+                `<div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">${paragraph}</div>`
+              ).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
+            <div class="space-y-1 ml-2">
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Portfolio</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">
+                    <a href="${portfolioData.cv.website}" class="hover:text-terminal-bright-green">${portfolioData.cv.website.replace('https://', '').trim()}</a> (you are here)
+                  </span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">Email</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">
+                    <a href="mailto:${portfolioData.cv.email}" class="hover:text-terminal-bright-green">${portfolioData.cv.email}</a>
+                  </span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">GitHub</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">
+                    <a href="https://github.com/${getUsername(portfolioData, 'GitHub')}" class="hover:text-terminal-bright-green">
+                      ${getUsername(portfolioData, 'GitHub')}
+                    </a>
+                  </span>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-3 bg-terminal-green/10">
+                  <span class="text-terminal-yellow font-semibold">LinkedIn</span>
+                </div>
+                <div class="col-span-9 bg-terminal-green/5">
+                  <span class="text-white">
+                    <a href="https://linkedin.com/in/${getUsername(portfolioData, 'LinkedIn')}" class="hover:text-terminal-bright-green">
+                      ${getUsername(portfolioData, 'LinkedIn')}
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 NEXT STEPS</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact">contact</a></span> for all my social links</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see my technical expertise</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to view my work history</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to explore my work</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    portfolioData.cv.sections.intro.forEach((paragraph, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-white leading-relaxed">${paragraph}</span>`);
-        addLine('');
-      }, index * 150);
-    });
-
-    const githubUsername = portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === 'github')?.username
-    // Add some additional contextual information with links
-    setTimeout(() => {
-      addLine('<span class="text-terminal-yellow font-semibold">🔗 Quick Links:</span>');
-      addLine('');
-      addLine(`<span class="text-white">• Portfolio Website: [${portfolioData.cv.website.replace('https://', '')}](${portfolioData.cv.website}) (you are already here)</span>`);
-      addLine(`<span class="text-white">• Email me directly: [${portfolioData.cv.email}](mailto:${portfolioData.cv.email}) </span>`);
-      addLine(`<span class="text-white">• Check out my [GitHub Profile](https://github.com/${githubUsername}) for more projects</span>`);
-      addLine('');
-      addLine('<span class="text-terminal-green">💡 Try running `contact` for all my social links, or `skills` to see my technical expertise!</span>');
-    }, portfolioData.cv.sections.intro.length * 150 + 500);
+    // Add the entire about box as a single line
+    addLine(aboutBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showSkills = useCallback(() => {
@@ -153,16 +213,42 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green">Technical Skills & Technologies:</span>');
-    // addLine('');
+    // Create the skills content as a single HTML string, matching showAbout structure
+    const skillsBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">TECHNICAL SKILLS & TECHNOLOGIES</span>
+        </div>
+        <div class="p-3 space-y-3 text-xs sm:text-sm">
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">🛠️ TECHNOLOGY STACK</div>
+            <div class="space-y-2 ml-2">
+              ${portfolioData.cv.sections.technologies.map(tech => `
+                <div class="grid grid-cols-12 gap-4">
+                  <div class="col-span-3 bg-terminal-green/10 p-2 rounded">
+                    <span class="text-terminal-yellow font-semibold">${tech.label}</span>
+                  </div>
+                  <div class="col-span-9 bg-terminal-green/5 p-2 rounded">
+                    <span class="text-white">${tech.details}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see these skills in action</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see how I've applied them professionally</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=personal">personal</a></span> to explore my open source contributions</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    portfolioData.cv.sections.technologies.forEach((tech, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-terminal-green">${tech.label}:</span>`);
-        addLine(`  <span class="text-white">${tech.details}</span>`);
-        addLine('');
-      }, index * 200);
-    });
+    // Add the entire skills box as a single line
+    addLine(skillsBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showExperience = useCallback(() => {
@@ -171,23 +257,55 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green">Professional Experience:</span>');
-    // addLine('');
+    // Create the experience content as a single HTML string, matching showSkills structure
+    const experienceBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">PROFESSIONAL EXPERIENCE</span>
+        </div>
+        <div class="p-3 space-y-4 text-xs sm:text-sm">
+          ${portfolioData.cv.sections.experience.map((job, index) => {
+            const period = formatExperiencePeriod(job.start_date, job.end_date);
+            return `
+              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections.experience.length - 1 ? 'border-b-0 pb-0' : ''}">
+                <div class="mb-3">
+                  <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                    <span class="text-terminal-yellow font-semibold">${job.position}</span>
+                    <span class="text-white"> @ </span>
+                    <span class="text-terminal-bright-green font-bold">${job.company}</span>
+                  </div>
+                  <div class="ml-2">
+                    <span class="text-white opacity-80 text-xs">${job.location} | ${period}</span>
+                  </div>
+                </div>
+                <div class="ml-2">
+                  <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Key Achievements:</div>
+                  <div class="space-y-1">
+                    ${job.highlights.map(highlight => `
+                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
+                        • ${highlight}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see specific work examples</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline">timeline</a></span> for a chronological career overview</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    portfolioData.cv.sections.experience.forEach((job, index) => {
-      setTimeout(() => {
-        const period = formatExperiencePeriod(job.start_date, job.end_date);
-        addLine(`<span class="text-terminal-green">${job.position}</span> @ <span class="text-terminal-bright-green">${job.company}</span>`);
-        addLine(`<span class="text-white opacity-80">${job.location} | ${period}</span>`);
-        addLine('');
-        
-        job.highlights.forEach(highlight => {
-          addLine(`  • <span class="text-white">${highlight}</span>`);
-        });
-        addLine('');
-      }, index * 300);
-    });
-  }, [addLine, portfolioData]);
+    // Add the entire experience box as a single line
+    addLine(experienceBox, 'w-full');
+  }, [addLine, portfolioData, formatExperiencePeriod]);
 
   const showEducation = useCallback(() => {
     if (!portfolioData) {
@@ -195,22 +313,56 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green">Education:</span>');
-    // addLine('');
+    // Create the education content as a single HTML string, matching showExperience structure
+    const educationBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">EDUCATION</span>
+        </div>
+        <div class="p-3 space-y-4 text-xs sm:text-sm">
+          ${portfolioData.cv.sections.education.map((edu, index) => {
+            const period = `${edu.start_date} - ${edu.end_date}`;
+            return `
+              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections.education.length - 1 ? 'border-b-0 pb-0' : ''}">
+                <div class="mb-3">
+                  <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                    <span class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area}</span>
+                    <span class="text-white"> from </span>
+                    <span class="text-terminal-bright-green font-bold">${edu.institution}</span>
+                  </div>
+                  <div class="ml-2">
+                    <span class="text-white opacity-80 text-xs">${edu.location} | ${period}</span>
+                  </div>
+                </div>
+                ${edu.highlights && edu.highlights.length > 0 ? `
+                  <div class="ml-2">
+                    <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Highlights:</div>
+                    <div class="space-y-1">
+                      ${edu.highlights.map(highlight => `
+                        <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
+                          • ${highlight}
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see specific work examples</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
     
-    portfolioData.cv.sections.education.forEach((edu, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-terminal-green">${edu.degree} in ${edu.area}</span>`);
-        addLine(`<span class="text-terminal-bright-green">${edu.institution}</span>, ${edu.location}`);
-        addLine(`<span class="text-white opacity-80">${edu.start_date} - ${edu.end_date}</span>`);
-        addLine('');
-        
-        edu.highlights.forEach(highlight => {
-          addLine(`  • <span class="text-white">${highlight}</span>`);
-        });
-        addLine('');
-      }, index * 150);
-    });
+    // Add the entire education box as a single line
+    addLine(educationBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showProjects = useCallback(() => {

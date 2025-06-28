@@ -382,7 +382,7 @@ export default function Terminal() {
               <div className="text-xs sm:text-sm space-y-2">
                 <div className="flex items-center space-x-2 text-terminal-green/80">
                   <span>💡</span>
-                  <span>Type <span className="font-bold text-terminal-bright-green">help</span> for all commands</span>
+                  <span>Type <span className="font-bold text-terminal-bright-green"><a href="?cmd=help" className="hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">help</a></span> for all commands</span>
                 </div>
                   {/* {isInstallable && (
                     <p className="text-terminal-yellow">
