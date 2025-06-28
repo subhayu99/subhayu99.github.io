@@ -17,6 +17,62 @@ function getUsername(portfolioData: PortfolioData, network: string): string | un
   return portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === network.toLowerCase())?.username;
 }
 
+function getProjectsHtml(projectData: { name: string; date: string; highlights: string[] }[], type: string): string {
+  return `
+    <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+      <div class="border-b border-terminal-green/30 px-3 py-1">
+        <div class="flex items-center justify-between">
+          <span class="text-terminal-bright-green text-sm font-bold">${type.toUpperCase()} PROJECTS</span>
+          <button 
+            onclick="toggleAllProjects('${type}')" 
+            class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
+            id="expand-all-btn"
+          >
+            Expand All
+          </button>
+        </div>
+      </div>
+      <div class="p-3 space-y-2 text-xs sm:text-sm">
+        ${projectData.map((project, index) => {
+          const projectId = `${type}-project-${index}`;
+          return `
+            <div class="border border-terminal-green/20 rounded">
+              <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('${projectId}')">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <span class="text-terminal-yellow font-semibold">${project.name}</span>
+                    <span class="text-white opacity-60 text-xs ml-2">${project.date}</span>
+                  </div>
+                  <div class="text-terminal-bright-green ml-2">
+                    <span id="${projectId}-icon">▶</span>
+                  </div>
+                </div>
+              </div>
+              <div id="${projectId}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div class="space-y-1">
+                  ${project.highlights.map(highlight => `
+                    <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
+                      • ${highlight}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+        <div class="border-t border-terminal-green/30 pt-3 mt-4">
+          <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+          <div class="space-y-1 ml-2 text-xs">
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline">timeline</a></span> for a chronological career overview</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `.trim();
+}
+
 export function useTerminal({ portfolioData }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -371,21 +427,11 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green"><b>Professional Projects:</b></span>');
-    // addLine('');
+    // Create the projects content as a single HTML string with collapsible functionality
+    const projectsBox = getProjectsHtml(portfolioData.cv.sections.selected_projects, 'professional');
     
-    portfolioData.cv.sections.selected_projects.forEach((project, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-terminal-green">${project.name}</span>`);
-        addLine(`<span class="text-white opacity-80">${project.date}</span>`);
-        addLine('');
-        
-        project.highlights.forEach(highlight => {
-          addLine(`  • <span class="text-white">${highlight}</span>`);
-        });
-        addLine('');
-      }, index * 400);
-    });
+    // Add the entire projects box as a single line
+    addLine(projectsBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showPersonalProjects = useCallback(() => {
@@ -394,21 +440,11 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    // addLine('<span class="text-terminal-bright-green"><b>Personal Projects & Open Source:</b></span>');
-    // addLine('');
+    // Create the projects content as a single HTML string with collapsible functionality
+    const projectsBox = getProjectsHtml(portfolioData.cv.sections.personal_projects, 'personal');
     
-    portfolioData.cv.sections.personal_projects.forEach((project, index) => {
-      setTimeout(() => {
-        addLine(`<span class="text-terminal-green">${project.name}</span>`);
-        addLine(`<span class="text-white opacity-80">${project.date}</span>`);
-        addLine('');
-        
-        project.highlights.forEach(highlight => {
-          addLine(`  • <span class="text-white">${highlight}</span>`);
-        });
-        addLine('');
-      }, index * 300);
-    });
+    // Add the entire projects box as a single line
+    addLine(projectsBox, 'w-full');
   }, [addLine, portfolioData]);
 
   const showPublications = useCallback(() => {

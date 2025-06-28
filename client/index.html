@@ -42,6 +42,72 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      let allExpanded = false;
+      
+      window.toggleProject = function(projectId) {
+        const content = document.getElementById(projectId);
+        const icon = document.getElementById(projectId + '-icon');
+        
+        if (content.classList.contains('hidden')) {
+          content.classList.remove('hidden');
+          icon.textContent = '▼';
+        } else {
+          content.classList.add('hidden');
+          icon.textContent = '▶';
+        }
+        
+        // Update the expand all button state
+        updateExpandAllButton();
+      };
+      
+      window.toggleAllProjects = function(type) {
+        const expandAllBtn = document.getElementById('expand-all-btn');
+        const projectElements = document.querySelectorAll(`[id^="${type}-project-"]:not([id$="-icon"])`);
+        
+        if (allExpanded) {
+          // Collapse all
+          projectElements.forEach(element => {
+            const projectId = element.id;
+            const icon = document.getElementById(projectId + '-icon');
+            element.classList.add('hidden');
+            icon.textContent = '▶';
+          });
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        } else {
+          // Expand all
+          projectElements.forEach(element => {
+            const projectId = element.id;
+            const icon = document.getElementById(projectId + '-icon');
+            element.classList.remove('hidden');
+            icon.textContent = '▼';
+          });
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        }
+      };
+      
+      function updateExpandAllButton(type) {
+        const expandAllBtn = document.getElementById('expand-all-btn');
+        const projectElements = document.querySelectorAll(`[id^="${type}-project-"]:not([id$="-icon"])`);
+        let expandedCount = 0;
+        
+        projectElements.forEach(element => {
+          if (!element.classList.contains('hidden')) {
+            expandedCount++;
+          }
+        });
+        
+        if (expandedCount === projectElements.length) {
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        } else {
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        }
+      }
+    </script>
     
     <!-- PWA Service Worker Registration -->
     <script>
