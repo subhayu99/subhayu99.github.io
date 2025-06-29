@@ -47,7 +47,7 @@ cv:
           - "**Enabled a $6M Series A Funding Round:** Architected the foundational data platform from scratch on GCP for a high-growth startup, providing the critical infrastructure and real-time analytics that were instrumental in their successful funding."
           - "**Ensured Enterprise Data Compliance:** Implemented robust data pipelines for a major healthcare client (Johnson & Johnson), engineering complex consent logic to meet strict data governance and privacy standards in regulated markets."
       - company: "FiftyFive Technologies"
-        position: "Software Engineer Intern"
+        position: "SWE Intern"
         location: "Gurugram, India (Remote)"
         start_date: "2022-01"
         end_date: "2022-05"
