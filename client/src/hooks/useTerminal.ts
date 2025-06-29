@@ -135,7 +135,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
             <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
             <div class="space-y-1 ml-2">
               <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=help">help</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=resume">resume</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Open resume.pdf in a new tab</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and quick links</span></div></div>
               <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=whoami">whoami</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
               <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=neofetch">neofetch</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
             </div>
@@ -194,6 +195,20 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     // Add the entire help box as a single line
     addLine(helpBox, 'w-full');
   }, [addLine]);
+
+  const openResumePdf = useCallback(() => {
+    if (portfolioData) {
+      const resumeUrl = portfolioData.cv.resume_url;
+      if (resumeUrl) {
+        window.open(resumeUrl, '_blank');
+        addLine(`Opened ${resumeUrl} in a new tab`, 'text-terminal-green');
+      } else {
+        addLine('Resume URL not found', 'text-terminal-red');
+      }
+    } else {
+      addLine('Portfolio data not loaded', 'text-terminal-red');
+    }
+  }, [portfolioData]);
 
   const showAbout = useCallback(() => {
     if (!portfolioData) {
@@ -1525,7 +1540,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const listCommands = useCallback(() => {
     addLine('<span class="text-terminal-yellow font-bold">Available commands:</span>');
     addLine('');
-    const commands = ['help', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const commands = ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
     commands.forEach(cmd => {
       addLine(`<span class="text-terminal-green">${cmd}</span>`);
     });
@@ -1544,6 +1559,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     switch (cmd) {
       case 'help':
         showHelp();
+        break;
+      case 'resume':
+        openResumePdf();
         break;
       case 'about':
         showAbout();
@@ -1600,7 +1618,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         addLine(`bash: ${cmd}: command not found`, 'text-terminal-red');
         addLine("Type 'help' to see available commands", 'text-terminal-yellow');
     }
-  }, [addLine, showHelp, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, clearTerminal]);
+  }, [addLine, showHelp, openResumePdf, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, clearTerminal]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
@@ -1624,12 +1642,12 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
-    const commands = ['help', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const commands = ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
     return commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
   }, []);
 
   const getAllCommands = useCallback(() => {
-    return ['help', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    return ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
   }, []);
 
   return {
