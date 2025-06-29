@@ -30,6 +30,7 @@
   --terminal-white: hsl(0, 0%, 100%);
   --terminal-red: hsl(0, 100%, 50%);
   --terminal-yellow: hsl(60, 100%, 50%);
+  --glow-color-rgb: 0, 255, 0;
 }
 
 .dark {
@@ -102,12 +103,12 @@
   }
   
   .terminal-glow {
-    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2), inset 0 0 20px rgba(0, 255, 0, 0.1);
+    box-shadow: 0 0 20px rgba(var(--glow-color-rgb), 0.2), inset 0 0 20px rgba(var(--glow-color-rgb), 0.1);
   }
 
   @media (max-width: 768px) {
     .terminal-glow {
-      box-shadow: 0 0 10px rgba(0, 255, 0, 0.15), inset 0 0 10px rgba(0, 255, 0, 0.05);
+      box-shadow: 0 0 10px rgba(var(--glow-color-rgb), 0.15), inset 0 0 10px rgba(var(--glow-color-rgb), 0.05);
     }
   }
 

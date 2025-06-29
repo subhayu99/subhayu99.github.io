@@ -1063,22 +1063,81 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    const themes: Record<string, { primary: string; secondary: string; name: string }> = {
-      matrix: { primary: '#00FF00', secondary: '#33FF33', name: 'Matrix Green' },
-      blue: { primary: '#00BFFF', secondary: '#87CEEB', name: 'Cyberpunk Blue' },
-      purple: { primary: '#9370DB', secondary: '#DDA0DD', name: 'Hacker Purple' },
-      amber: { primary: '#FFA500', secondary: '#FFD700', name: 'Vintage Amber' },
-      red: { primary: '#FF0000', secondary: '#FF6347', name: 'Red Alert' }
+    const themes: Record<string, any> = {
+      matrix: { 
+        name: 'Matrix Green',
+        '--terminal-green': 'hsl(120, 100%, 50%)',
+        '--terminal-bright-green': 'hsl(120, 100%, 60%)',
+        '--border': 'hsl(120, 100%, 20%)',
+        '--ring': 'hsl(120, 100%, 50%)',
+        '--foreground': 'hsl(120, 100%, 50%)',
+        '--primary': 'hsl(120, 100%, 50%)',
+        '--accent': 'hsl(120, 100%, 20%)',
+        '--input': 'hsl(120, 100%, 20%)',
+        '--glow-color-rgb': '0, 255, 0',
+      },
+      blue: {
+        name: 'Cyberpunk Blue',
+        '--terminal-green': 'hsl(195, 100%, 50%)',
+        '--terminal-bright-green': 'hsl(195, 100%, 60%)',
+        '--border': 'hsl(195, 100%, 20%)',
+        '--ring': 'hsl(195, 100%, 50%)',
+        '--foreground': 'hsl(195, 100%, 50%)',
+        '--primary': 'hsl(195, 100%, 50%)',
+        '--accent': 'hsl(195, 100%, 20%)',
+        '--input': 'hsl(195, 100%, 20%)',
+        '--glow-color-rgb': '0, 191, 255',
+      },
+      purple: {
+        name: 'Hacker Purple',
+        '--terminal-green': 'hsl(260, 60%, 65%)',
+        '--terminal-bright-green': 'hsl(260, 60%, 75%)',
+        '--border': 'hsl(260, 60%, 25%)',
+        '--ring': 'hsl(260, 60%, 65%)',
+        '--foreground': 'hsl(260, 60%, 65%)',
+        '--primary': 'hsl(260, 60%, 65%)',
+        '--accent': 'hsl(260, 60%, 25%)',
+        '--input': 'hsl(260, 60%, 25%)',
+        '--glow-color-rgb': '147, 112, 219',
+      },
+      amber: {
+        name: 'Vintage Amber',
+        '--terminal-green': 'hsl(39, 100%, 50%)',
+        '--terminal-bright-green': 'hsl(39, 100%, 60%)',
+        '--border': 'hsl(39, 100%, 20%)',
+        '--ring': 'hsl(39, 100%, 50%)',
+        '--foreground': 'hsl(39, 100%, 50%)',
+        '--primary': 'hsl(39, 100%, 50%)',
+        '--accent': 'hsl(39, 100%, 20%)',
+        '--input': 'hsl(39, 100%, 20%)',
+        '--glow-color-rgb': '255, 165, 0',
+      },
+      red: { 
+        name: 'Red Alert',
+        '--terminal-green': 'hsl(0, 100%, 50%)',
+        '--terminal-bright-green': 'hsl(0, 100%, 60%)',
+        '--border': 'hsl(0, 100%, 20%)',
+        '--ring': 'hsl(0, 100%, 50%)',
+        '--foreground': 'hsl(0, 100%, 50%)',
+        '--primary': 'hsl(0, 100%, 50%)',
+        '--accent': 'hsl(0, 100%, 20%)',
+        '--input': 'hsl(0, 100%, 20%)',
+        '--glow-color-rgb': '255, 0, 0',
+      }
     };
 
     if (themes[theme]) {
-      addLine(`<span style="color: ${themes[theme].primary}">Switching to ${themes[theme].name} theme...</span>`);
+      const selectedTheme = themes[theme];
+      addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switching to ${selectedTheme.name} theme...</span>`);
       
-      document.documentElement.style.setProperty('--terminal-green', themes[theme].primary);
-      document.documentElement.style.setProperty('--terminal-bright-green', themes[theme].secondary);
+      Object.keys(selectedTheme).forEach(key => {
+        if (key !== 'name') {
+          document.documentElement.style.setProperty(key, selectedTheme[key]);
+        }
+      });
       
       setTimeout(() => {
-        addLine(`<span style="color: ${themes[theme].primary}">Theme changed successfully!</span>`);
+        addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Theme changed successfully!</span>`);
       }, 500);
     } else {
       addLine('<span class="text-terminal-red">Theme not found. Use "theme" to see available themes.</span>');
@@ -1525,8 +1584,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         if (line.trim() === '') {
           addLine('');
         } else {
-          // Convert spaces to &nbsp; for proper HTML display
-          const htmlLine = line.replace(/ /g, '&nbsp;');
+          // Convert spaces to   for proper HTML display
+          const htmlLine = line.replace(/ /g, ' ');
           addLine(`<span style="font-family: monospace !important;">${htmlLine}</span>`);
         }
       });
