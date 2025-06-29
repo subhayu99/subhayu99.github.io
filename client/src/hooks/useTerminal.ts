@@ -1292,12 +1292,23 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="p-3 space-y-2 text-xs sm:text-sm font-mono">
             <!-- Personal Info - Always visible -->
             <div class="bg-terminal-green/5 p-3 rounded">
-              <div class="text-terminal-bright-white font-bold text-lg mb-1">${cv.name}</div>
-              <div class="text-terminal-green">${cv.location}</div>
-              <div class="text-terminal-green">${cv.email} | ${cv.phone.replace(/[^\d\+]/g, '')}</div>
+              <div class="text-terminal-yellow font-bold text-lg mb-1">${cv.name}</div>
+              <div class="text-terminal-green">
+                <span class="text-terminal-yellow">Location:</span> <span class="text-terminal-green">${cv.location}</span>
+              </div>
+              <div class="text-terminal-green">
+                <span class="text-terminal-yellow">Email:</span> <span class="text-terminal-green">${cv.email}</span>
+              </div>
+              <div class="text-terminal-green">
+                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">
+                  ${cv.phone.replace(/[^\d\+]/g, '')}
+                </a>
+              </div>
               ${cv.social_networks?.length > 0 ? `
                 <div class="text-terminal-green">
-                  ${cv.social_networks.map(social => `${social.network}: ${social.username}`).join(' | ')}
+                  ${cv.social_networks.map(social => `
+                    <div><span class="text-terminal-yellow">${social.network}:</span> <span class="text-terminal-green">${getSocialNetworkUrl(social.network, social.username)}</span></div>
+                  `).join('')}
                 </div>
               ` : ''}
             </div>
