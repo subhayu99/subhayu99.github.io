@@ -795,62 +795,243 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
     const searchTerm = args.join(' ').toLowerCase();
     if (!searchTerm) {
-      addLine('<span class="text-terminal-yellow">Usage: search [term]</span>');
-      addLine('<span class="text-white">Example: search python</span>');
+      const usageBox = `
+        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+          <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+            <span class="text-terminal-bright-green text-sm font-bold">SEARCH USAGE</span>
+          </div>
+          <div class="p-3 space-y-3 text-xs sm:text-sm">
+            <div>
+              <div class="text-terminal-yellow font-bold mb-2">📋 USAGE</div>
+              <div class="ml-2 space-y-1">
+                <div class="text-white bg-terminal-green/5 p-2 rounded">
+                  <span class="text-terminal-bright-green font-semibold">search</span> <span class="text-terminal-yellow">[term]</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="text-terminal-yellow font-bold mb-2">💡 EXAMPLES</div>
+              <div class="ml-2 space-y-1">
+                <div class="text-white bg-terminal-green/5 p-2 rounded">
+                  <span class="text-terminal-bright-green">search</span> python
+                </div>
+                <div class="text-white bg-terminal-green/5 p-2 rounded">
+                  <span class="text-terminal-bright-green">search</span> react
+                </div>
+                <div class="text-white bg-terminal-green/5 p-2 rounded">
+                  <span class="text-terminal-bright-green">search</span> machine learning
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `.trim();
+      
+      addLine(usageBox, 'w-full');
       return;
     }
 
-    addLine(`<span class="text-terminal-bright-green">Searching for: "${searchTerm}"</span>`);
-    addLine('');
-
-    const results: string[] = [];
+    const results: Array<{category: string, title: string, content: string}> = [];
     const { cv } = portfolioData;
 
+    // Helper function to highlight search terms
+    const highlightMatch = (text: string, term: string): string => {
+      const regex = new RegExp(`(${term})`, 'gi');
+      return text.replace(regex, '<span class="bg-terminal-yellow/30 text-terminal-bright-green font-semibold">$1</span>');
+    };
+
+    // Search in intro/about section
     cv.sections.intro.forEach((intro, i) => {
       if (intro.toLowerCase().includes(searchTerm)) {
-        results.push(`About (intro ${i + 1}): ${intro.substring(0, 100)}...`);
+        results.push({
+          category: 'About',
+          title: `Introduction ${i + 1}`,
+          content: highlightMatch(intro, searchTerm)
+        });
       }
     });
 
+    // Search in technologies/skills
     cv.sections.technologies.forEach(tech => {
       if (tech.label.toLowerCase().includes(searchTerm) || tech.details.toLowerCase().includes(searchTerm)) {
-        results.push(`Skills: ${tech.label} - ${tech.details}`);
+        const matchedContent = [];
+        if (tech.label.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Technology: ${highlightMatch(tech.label, searchTerm)}`);
+        }
+        if (tech.details.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Details: ${highlightMatch(tech.details, searchTerm)}`);
+        }
+        results.push({
+          category: 'Skills',
+          title: tech.label,
+          content: matchedContent.join('<br>')
+        });
       }
     });
 
+    // Search in experience
     cv.sections.experience.forEach(exp => {
-      const searchableText = `${exp.company} ${exp.position} ${exp.location} ${exp.highlights.join(' ')}`.toLowerCase();
-      if (searchableText.includes(searchTerm)) {
-        results.push(`Experience: ${exp.position} at ${exp.company}`);
+      const matchedContent = [];
+      
+      if (exp.company.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Company: ${highlightMatch(exp.company, searchTerm)}`);
       }
-    });
-
-    cv.sections.selected_projects.forEach(proj => {
-      const searchableText = `${proj.name} ${proj.highlights.join(' ')}`.toLowerCase();
-      if (searchableText.includes(searchTerm)) {
-        results.push(`Project: ${proj.name}`);
+      if (exp.position.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Position: ${highlightMatch(exp.position, searchTerm)}`);
       }
-    });
-
-    cv.sections.personal_projects.forEach(proj => {
-      const searchableText = `${proj.name} ${proj.highlights.join(' ')}`.toLowerCase();
-      if (searchableText.includes(searchTerm)) {
-        results.push(`Personal Project: ${proj.name}`);
+      if (exp.location.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Location: ${highlightMatch(exp.location, searchTerm)}`);
       }
-    });
-
-    if (results.length === 0) {
-      addLine('<span class="text-terminal-yellow">No results found</span>');
-    } else {
-      addLine(`<span class="text-terminal-green">Found ${results.length} result(s):</span>`);
-      addLine('');
-      results.forEach((result, index) => {
-        setTimeout(() => {
-          addLine(`<span class="text-white">• ${result}</span>`);
-        }, index * 100);
+      
+      // Check highlights for matches
+      exp.highlights.forEach((highlight, index) => {
+        if (highlight.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Highlight ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
+        }
       });
-    }
-  }, [addLine, portfolioData]);
+      
+      if (matchedContent.length > 0) {
+        results.push({
+          category: 'Experience',
+          title: `${exp.position} at ${exp.company}`,
+          content: matchedContent.join('<br>')
+        });
+      }
+    });
+
+    // Search in education
+    cv.sections.education.forEach(edu => {
+      const matchedContent = [];
+      
+      if (edu.institution.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Institution: ${highlightMatch(edu.institution, searchTerm)}`);
+      }
+      if (edu.degree.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Degree: ${highlightMatch(edu.degree, searchTerm)}`);
+      }
+      if (edu.area.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Major: ${highlightMatch(edu.area, searchTerm)}`);
+      }
+      if (edu.location.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Location: ${highlightMatch(edu.location, searchTerm)}`);
+      }
+      
+      // Check highlights for matches
+      edu.highlights.forEach((highlight, index) => {
+        if (highlight.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Highlight ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
+        }
+      });
+      
+      if (matchedContent.length > 0) {
+        results.push({
+          category: 'Education',
+          title: `${edu.degree} in ${edu.area} from ${edu.institution}`,
+          content: matchedContent.join('<br>')
+        });
+      }
+    });
+
+    // Search in professional projects
+    cv.sections.selected_projects.forEach(proj => {
+      const matchedContent = [];
+      
+      if (proj.name.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Project: ${highlightMatch(proj.name, searchTerm)}`);
+      }
+      
+      // Check highlights for matches
+      proj.highlights.forEach((highlight, index) => {
+        if (highlight.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Detail ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
+        }
+      });
+      
+      if (matchedContent.length > 0) {
+        results.push({
+          category: 'Professional Projects',
+          title: proj.name,
+          content: matchedContent.join('<br>')
+        });
+      }
+    });
+
+    // Search in personal projects
+    cv.sections.personal_projects.forEach(proj => {
+      const matchedContent = [];
+      
+      if (proj.name.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Project: ${highlightMatch(proj.name, searchTerm)}`);
+      }
+      
+      // Check highlights for matches
+      proj.highlights.forEach((highlight, index) => {
+        if (highlight.toLowerCase().includes(searchTerm)) {
+          matchedContent.push(`Detail ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
+        }
+      });
+      
+      if (matchedContent.length > 0) {
+        results.push({
+          category: 'Personal Projects',
+          title: proj.name,
+          content: matchedContent.join('<br>')
+        });
+      }
+    });
+
+    // Create the search results box
+    const searchBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">SEARCH RESULTS</span>
+        </div>
+        <div class="p-3 space-y-3 text-xs sm:text-sm">
+          <div class="bg-terminal-green/5 p-2 rounded">
+            <span class="text-terminal-yellow font-semibold">Search term:</span>
+            <span class="text-white"> "${searchTerm}"</span>
+          </div>
+          <div class="bg-terminal-green/5 p-2 rounded">
+            <span class="text-terminal-bright-green font-semibold">Found ${results.length} result(s)</span>
+          </div>
+          ${results.length === 0 ? `
+            <div class="border border-terminal-yellow/30 rounded p-3 text-center">
+              <div class="text-terminal-yellow font-semibold mb-2">No results found</div>
+              <div class="text-white opacity-80 text-xs">
+                Try searching for technologies, company names, or project keywords
+              </div>
+            </div>
+          ` : `
+            <div class="space-y-3">
+              ${results.map((result, index) => `
+                <div class="border border-terminal-green/20 rounded p-3 ${index < results.length - 1 ? 'border-b border-terminal-green/30' : ''}">
+                  <div class="mb-2">
+                    <span class="text-terminal-bright-green font-semibold text-xs">[${result.category.toUpperCase()}]</span>
+                    <span class="text-terminal-yellow font-semibold ml-2">${result.title}</span>
+                  </div>
+                  <div class="text-white text-xs opacity-80 bg-terminal-green/5 p-2 rounded leading-relaxed">
+                    ${result.content}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `}
+          <div class="border-t border-terminal-green/30 pt-3">
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
+            <div class="space-y-1 ml-2 text-xs">
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see all technologies</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to view work history</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to explore all projects</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=help">help</a></span> for all available commands</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim();
+    
+    // Add the entire search box as a single line
+    addLine(searchBox, 'w-full');
+  }, [addLine, portfolioData, formatExperiencePeriod]);
 
   const showTheme = useCallback((args: string[]) => {
     const theme = args[0];
@@ -936,7 +1117,11 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                   <span class="text-terminal-yellow font-semibold">Phone</span>
                 </div>
                 <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white"><a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">${cv.phone.replace(/[^\d\+]/g, '')}</a></span>
+                  <span class="text-white">
+                    <a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">
+                      ${cv.phone.replace(/[^\d\+]/g, '')}
+                    </a>
+                    </span>
                 </div>
               </div>
             </div>
