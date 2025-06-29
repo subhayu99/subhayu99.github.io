@@ -1177,8 +1177,19 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const showCat = useCallback((args: string[]) => {
     const filename = args[0];
     if (!filename) {
-      addLine('<span class="text-terminal-yellow">Usage: cat [filename]</span>');
-      addLine('<span class="text-white">Available files: resume.txt</span>');
+      const usageBox = `
+        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+          <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+            <span class="text-terminal-bright-green text-sm font-bold">CAT COMMAND</span>
+          </div>
+          <div class="p-3 space-y-2 text-xs sm:text-sm">
+            <div class="text-terminal-yellow font-semibold">Usage: cat [filename]</div>
+            <div class="text-white">Available files: resume.txt</div>
+          </div>
+        </div>
+      `.trim();
+      
+      addLine(usageBox, 'w-full');
       return;
     }
 
@@ -1190,125 +1201,286 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
       const { cv } = portfolioData;
       
-      // Header
-      addLine('<span class="text-terminal-bright-green">=== RESUME.TXT ===</span>');
-      addLine('');
+      const resumeBox = `
+        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+          <div class="border-b border-terminal-green/30 px-3 py-1">
+            <div class="flex items-center justify-between">
+              <span class="text-terminal-bright-green text-sm font-bold">RESUME.TXT</span>
+              <button 
+                onclick="toggleAllProjects('resume')" 
+                class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
+                id="expand-all-btn"
+              >
+                Expand All
+              </button>
+            </div>
+          </div>
+          <div class="p-3 space-y-2 text-xs sm:text-sm font-mono">
+            <!-- Personal Info - Always visible -->
+            <div class="bg-terminal-green/5 p-3 rounded">
+              <div class="text-terminal-bright-white font-bold text-lg mb-1">${cv.name}</div>
+              <div class="text-terminal-green">${cv.location}</div>
+              <div class="text-terminal-green">${cv.email} | ${cv.phone.replace(/[^\d\+]/g, '')}</div>
+              ${cv.social_networks?.length > 0 ? `
+                <div class="text-terminal-green">
+                  ${cv.social_networks.map(social => `${social.network}: ${social.username}`).join(' | ')}
+                </div>
+              ` : ''}
+            </div>
+
+            ${cv.sections.intro?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-0')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">About</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-0-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-0" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-1">
+                    ${cv.sections.intro.map(line => `
+                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
+                        ${line}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${cv.sections.technologies?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-1')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Technologies</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-1-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-1" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-1">
+                    ${cv.sections.technologies.map(tech => `
+                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
+                        <span class="text-terminal-yellow font-semibold">• ${tech.label}</span>
+                        <span class="text-white"> - ${tech.details}</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${cv.sections.experience?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-2')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Experience</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-2-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-2" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-3">
+                    ${cv.sections.experience.map(exp => {
+                      const endDate = exp.end_date || 'Present';
+                      return `
+                        <div class="bg-terminal-green/5 p-3 rounded">
+                          <div class="mb-2">
+                            <span class="text-terminal-yellow font-semibold">${exp.position}</span>
+                            <span class="text-white"> @ </span>
+                            <span class="text-terminal-green font-bold">${exp.company}</span>
+                          </div>
+                          <div class="text-terminal-green mb-2">${exp.location} | ${exp.start_date} - ${endDate}</div>
+                          ${exp.highlights?.length > 0 ? `
+                            <div class="space-y-1">
+                              ${exp.highlights.map(highlight => `
+                                <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
+                                  • ${highlight}
+                                </div>
+                              `).join('')}
+                            </div>
+                          ` : ''}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${cv.sections.education?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-3')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Education</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-3-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-3" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-3">
+                    ${cv.sections.education.map(edu => `
+                      <div class="bg-terminal-green/5 p-3 rounded">
+                        <div class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area} from ${edu.institution}</div>
+                        <div class="text-terminal-green">${edu.location}</div>
+                        <div class="text-terminal-green">${edu.start_date} - ${edu.end_date}</div>
+                        ${edu.highlights?.length > 0 ? `
+                          <div class="space-y-1 mt-2">
+                            ${edu.highlights.map(highlight => `
+                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
+                                • ${highlight}
+                              </div>
+                            `).join('')}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${cv.sections.selected_projects?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-4')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Professional Projects</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-4-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-4" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-3">
+                    ${cv.sections.selected_projects.map(project => `
+                      <div class="bg-terminal-green/5 p-3 rounded">
+                        <div class="mb-2">
+                          <span class="text-terminal-yellow font-semibold">${project.name}</span>
+                          <span class="text-terminal-green ml-2">(${project.date})</span>
+                        </div>
+                        ${project.highlights?.length > 0 ? `
+                          <div class="space-y-1">
+                            ${project.highlights.map(highlight => `
+                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
+                                • ${highlight}
+                              </div>
+                            `).join('')}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${cv.sections.personal_projects?.length > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-5')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Personal Projects</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-5-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-5" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-3">
+                    ${cv.sections.personal_projects.map(project => `
+                      <div class="bg-terminal-green/5 p-3 rounded">
+                        <div class="mb-2">
+                          <span class="text-terminal-yellow font-semibold">${project.name}</span>
+                          <span class="text-terminal-green ml-2">(${project.date})</span>
+                        </div>
+                        ${project.highlights?.length > 0 ? `
+                          <div class="space-y-1">
+                            ${project.highlights.map(highlight => `
+                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
+                                • ${highlight}
+                              </div>
+                            `).join('')}
+                          </div>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${(cv.sections.publication?.length ?? 0) > 0 ? `
+              <div class="border border-terminal-green/20 rounded">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-6')">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <span class="text-terminal-yellow font-semibold">Publications</span>
+                    </div>
+                    <div class="text-terminal-bright-green ml-2">
+                      <span id="resume-project-6-icon">▶</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="resume-project-6" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                  <div class="space-y-3">
+                    ${cv.sections.publication?.map(pub => `
+                      <div class="bg-terminal-green/5 p-3 rounded">
+                        <div class="text-terminal-yellow font-semibold mb-1">${pub.title}</div>
+                        <div class="text-terminal-green">${pub.authors.join(', ')}</div>
+                        <div class="text-terminal-green">${pub.journal} (${pub.date})</div>
+                        ${pub.doi ? `<div class="text-terminal-green">DOI: ${pub.doi}</div>` : ''}
+                      </div>
+                    `).join('') || ''}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <div class="border-t border-terminal-green/30 pt-3">
+              <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+              <div class="space-y-1 ml-2 text-xs">
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about">about</a></span> for a formatted introduction</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> for detailed work history</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> for interactive project showcase</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> for technology breakdown</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `.trim();
       
-      // Personal Info
-      addLine(`<span class="text-terminal-bright-white font-bold">${cv.name}</span>`);
-      addLine(`<span class="text-terminal-blue">${cv.location}</span>`);
-      addLine(`<span class="text-terminal-blue">${cv.email} | ${cv.phone.replace(/[^\d\+]/g, '')}</span>`);
-      
-      // Social Networks
-      if (cv.social_networks?.length > 0) {
-        const socials = cv.social_networks.map(social => 
-          `${social.network}: ${social.username}`
-        ).join(' | ');
-        addLine(`<span class="text-terminal-blue">${socials}</span>`);
-      }
-      addLine('');
-
-      // Intro
-      if (cv.sections.intro?.length > 0) {
-        addLine('<span class="text-terminal-green">ABOUT:</span>');
-        cv.sections.intro.forEach(line => {
-          addLine(`<span class="text-terminal-white">${line}</span>`);
-        });
-        addLine('');
-      }
-
-      // Technologies
-      if (cv.sections.technologies?.length > 0) {
-        addLine('<span class="text-terminal-green">TECHNOLOGIES:</span>');
-        cv.sections.technologies.forEach(tech => {
-          addLine(`<span class="text-terminal-yellow">• ${tech.label}</span> - <span class="text-terminal-white">${tech.details}</span>`);
-        });
-        addLine('');
-      }
-
-      // Experience
-      if (cv.sections.experience?.length > 0) {
-        addLine('<span class="text-terminal-green">EXPERIENCE:</span>');
-        cv.sections.experience.forEach(exp => {
-          const endDate = exp.end_date || 'Present';
-          addLine(`<span class="text-terminal-yellow">${exp.position}</span> @ <span class="text-terminal-cyan">${exp.company}</span>`);
-          addLine(`<span class="text-terminal-blue">${exp.location} | ${exp.start_date} - ${endDate}</span>`);
-          
-          if (exp.highlights?.length > 0) {
-            exp.highlights.forEach(highlight => {
-              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
-            });
-          }
-          addLine('');
-        });
-      }
-
-      // Education
-      if (cv.sections.education?.length > 0) {
-        addLine('<span class="text-terminal-green">EDUCATION:</span>');
-        cv.sections.education.forEach(edu => {
-          addLine(`<span class="text-terminal-yellow">${edu.degree} in ${edu.area}</span>`);
-          addLine(`<span class="text-terminal-cyan">${edu.institution}</span> - <span class="text-terminal-blue">${edu.location}</span>`);
-          addLine(`<span class="text-terminal-blue">${edu.start_date} - ${edu.end_date}</span>`);
-          
-          if (edu.highlights?.length > 0) {
-            edu.highlights.forEach(highlight => {
-              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
-            });
-          }
-          addLine('');
-        });
-      }
-
-      // Professional Projects
-      if (cv.sections.selected_projects?.length > 0) {
-        addLine('<span class="text-terminal-green">PROFESSIONAL PROJECTS:</span>');
-        cv.sections.selected_projects.forEach(project => {
-          addLine(`<span class="text-terminal-yellow">${project.name}</span> <span class="text-terminal-blue">(${project.date})</span>`);
-          
-          if (project.highlights?.length > 0) {
-            project.highlights.forEach(highlight => {
-              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
-            });
-          }
-          addLine('');
-        });
-      }
-
-      // Personal Projects
-      if (cv.sections.personal_projects?.length > 0) {
-        addLine('<span class="text-terminal-green">PERSONAL PROJECTS:</span>');
-        cv.sections.personal_projects.forEach(project => {
-          addLine(`<span class="text-terminal-yellow">${project.name}</span> <span class="text-terminal-blue">(${project.date})</span>`);
-          
-          if (project.highlights?.length > 0) {
-            project.highlights.forEach(highlight => {
-              addLine(`  <span class="text-terminal-white">• ${highlight}</span>`);
-            });
-          }
-          addLine('');
-        });
-      }
-
-      // Publications (if any)
-      if ((cv.sections.publication?.length ?? 0) > 0) {
-        addLine('<span class="text-terminal-green">PUBLICATIONS:</span>');
-        if (cv.sections.publication) {
-          cv.sections.publication.forEach(pub => {
-            addLine(`<span class="text-terminal-yellow">${pub.title}</span>`);
-            addLine(`<span class="text-terminal-cyan">${pub.authors.join(', ')}</span>`);
-            addLine(`<span class="text-terminal-blue">${pub.journal} (${pub.date})</span>`);
-            if (pub.doi) {
-              addLine(`<span class="text-terminal-blue">DOI: ${pub.doi}</span>`);
-            }
-            addLine('');
-          });
-        }
-      }
+      addLine(resumeBox, 'w-full');
     } else {
-      addLine(`<span class="text-terminal-red">cat: ${filename}: No such file or directory</span>`);
+      const errorBox = `
+        <div class="border border-terminal-red/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+          <div class="border-b border-terminal-red/30 px-3 py-1 text-center">
+            <span class="text-terminal-red text-sm font-bold">ERROR</span>
+          </div>
+          <div class="p-3 text-xs sm:text-sm">
+            <span class="text-terminal-red">cat: ${filename}: No such file or directory</span>
+          </div>
+        </div>
+      `.trim();
+      
+      addLine(errorBox, 'w-full');
     }
-    }, [addLine, portfolioData]);
+  }, [addLine, portfolioData]);
 
   const showNeofetch = useCallback(async () => {
     if (!portfolioData) {
