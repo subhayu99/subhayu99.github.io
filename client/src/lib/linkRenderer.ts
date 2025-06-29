@@ -13,15 +13,15 @@ export function renderLinks(content: string): string {
   let rendered = content.replace(markdownLinkRegex, (match, text, url) => {
     const linkId = Math.random().toString(36).substr(2, 9);
     linkStore.set(linkId, url);
-    return `<span class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${text}</span>`;
+    return `<span class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${text}</span>`;
   });
 
   // Replace bare URLs with clickable spans
-  const urlRegex = /(https?:\/\/[^\s<>"']+)/g;
+  const urlRegex = /(?<!href=['"])(https?:\/\/[^\s<>"']+)/g;
   rendered = rendered.replace(urlRegex, (url) => {
     const linkId = Math.random().toString(36).substr(2, 9);
     linkStore.set(linkId, url);
-    return `<span class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${url}</span>`;
+    return `<span class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${url}</span>`;
   });
 
   // Replace email addresses with mailto links
@@ -29,7 +29,7 @@ export function renderLinks(content: string): string {
   rendered = rendered.replace(emailRegex, (email) => {
     const linkId = Math.random().toString(36).substr(2, 9);
     linkStore.set(linkId, `mailto:${email}`);
-    return `<span class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${email}</span>`;
+    return `<span class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer" data-link="${linkId}">${email}</span>`;
   });
 
   return rendered;

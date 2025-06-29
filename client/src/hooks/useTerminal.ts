@@ -84,10 +84,119 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
         <div class="border-t border-terminal-green/30 pt-3 mt-4">
           <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
           <div class="space-y-1 ml-2 text-xs">
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline">timeline</a></span> for a chronological career overview</div>
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
+            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span> for a chronological career overview</div>
           </div>
+        </div>
+      </div>
+    </div>
+  `.trim();
+}
+
+function getWelcomeMessageHtml(portfolioData: PortfolioData): string {
+  const sanitizedPhone = portfolioData.cv.phone.replace(/[^\d+]/g, '');
+  return `
+    <div class="mb-4 sm:mb-6">
+      <div class="mb-3 sm:mb-4">
+        <pre class="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
+ _____     _   _                  _____                      _____     _     
+|   __|_ _| |_| |_ ___ _ _ _ _   |  |  |_ _ _____ ___ ___   | __  |___| |___ 
+|__   | | | . |   | .'| | | | |  |    -| | |     | .'|  _|  | __ -| .'| | .'|
+|_____|___|___|_|_|__,|_  |___|  |__|__|___|_|_|_|__,|_|    |_____|__,|_|__,|
+                      |___|                                                  
+        </pre>
+        <div class="sm:hidden text-terminal-bright-green text-center mb-3">
+          <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
+          <div class="text-sm">TERMINAL PORTFOLIO</div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
+        <p class="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
+          ${portfolioData.cv.sections.intro[0]}
+        </p>
+      </div>
+
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
+        <div class="border-b border-terminal-green/30 px-3 py-1">
+          <span class="text-terminal-bright-green text-sm font-bold">QUICK OVERVIEW</span>
+        </div>
+        <div class="p-3 space-y-1 text-xs sm:text-sm">
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">USER</span>
+            <span class="text-white">${portfolioData.cv.name}</span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">ROLE</span>
+            <span class="text-white">${portfolioData.cv.sections.experience[0].position}</span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">LOC</span>
+            <span class="text-white">${portfolioData.cv.location}</span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">WEB</span>
+            <span class="text-terminal-green">${portfolioData.cv.website}</span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">EMAIL</span>
+            <span class="text-terminal-green">${portfolioData.cv.email}</span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">RESUME</span>
+            <span class="text-terminal-green"><a href="${portfolioData.cv.resume_url}" class="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer" target="_blank" rel="noopener noreferrer">resume.pdf</a></span>
+          </div>
+          <div class="flex">
+            <span class="text-terminal-yellow w-16 font-bold">PHONE</span>
+            <span class="text-terminal-green"><a href="tel:${sanitizedPhone}" class="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer">${sanitizedPhone}</a></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-terminal-green mb-2 text-sm sm:text-base">
+          🚀 Start exploring with these core commands (or click them):
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span>
+            <span class="text-white/80">learn more about me</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span>
+            <span class="text-white/80">view technical expertise</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span>
+            <span class="text-white/80">see professional work</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span>
+            <span class="text-white/80">see professional projects</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span>
+            <span class="text-white/80">see personal projects</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-terminal-bright-green">→</span>
+            <span class="text-terminal-yellow font-bold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span>
+            <span class="text-white/80">display contact details</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-xs sm:text-sm space-y-2">
+        <div class="flex items-center space-x-2 text-terminal-green/80">
+          <span>💡</span>
+          <span>Type <span class="font-bold text-terminal-bright-green"><a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a></span> for all commands</span>
         </div>
       </div>
     </div>
@@ -125,6 +234,13 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     setLines([]);
   }, []);
 
+  const showWelcomeMessage = useCallback(() => {
+    if (portfolioData) {
+      const welcomeHtml = getWelcomeMessageHtml(portfolioData);
+      addLine(welcomeHtml, 'welcome-message'); // Add the entire block as one "line"
+    }
+  }, [addLine, portfolioData]);
+
   const showHelp = useCallback(() => {
     // Create the help content as a single HTML string
     const helpBox = `
@@ -136,45 +252,46 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=help">help</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=resume">resume</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Open resume.pdf in a new tab</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and quick links</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=whoami">whoami</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=neofetch">neofetch</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=help" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">help</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=resume" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">resume</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Open resume.pdf in a new tab</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=welcome" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">welcome</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show the welcome message</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and quick links</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=whoami" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">whoami</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=neofetch" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">neofetch</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">💼 PROFESSIONAL</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=skills">skills</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=experience">experience</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=education">education</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=projects">projects</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=personal">personal</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=publications">publications</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=timeline">timeline</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=education" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">education</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=publications" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">publications</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">📧 CONTACT</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=contact">contact</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">🔧 TOOLS</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=search">search</a></span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=theme">theme</a></span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=search" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">search</a></span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=theme" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">theme</a></span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
             </div>
           </div>
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">⌨️ TERMINAL</div>
             <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=clear">clear</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=ls">ls</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=pwd">pwd</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=cat">cat</a></span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`<a href="?cmd=cat%20resume.txt">cat resume.txt</a>\`)</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=clear" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">clear</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=ls" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">ls</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=pwd" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">pwd</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
+              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=cat" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">cat</a></span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`<a href="?cmd=cat%20resume.txt" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">cat resume.txt</a>\`)</span></div></div>
             </div>
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
@@ -188,7 +305,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
             </div>
           </div>
           <div class="text-terminal-white text-center pt-2 border-t border-terminal-green/20">
-            Start with \`about\` to learn more about me, or try \`neofetch\` for a quick overview!
+            Start with \`<a href="?cmd=about" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">about</a>\` to learn more about me, or try \`<a href="?cmd=neofetch" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">neofetch</a>\` for a quick overview!
           </div>
         </div>
       </div>
@@ -285,10 +402,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 NEXT STEPS</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact">contact</a></span> for all my social links</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see my technical expertise</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to view my work history</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to explore my work</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span> for all my social links</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see my technical expertise</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to view my work history</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to explore my work</div>
             </div>
           </div>
         </div>
@@ -327,9 +444,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see these skills in action</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see how I've applied them professionally</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=personal">personal</a></span> to explore my open source contributions</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see these skills in action</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see how I've applied them professionally</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span> to explore my open source contributions</div>
             </div>
           </div>
         </div>
@@ -383,9 +500,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see specific work examples</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline">timeline</a></span> for a chronological career overview</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see specific work examples</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span> for a chronological career overview</div>
             </div>
           </div>
         </div>
@@ -441,9 +558,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see technologies I've mastered</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see specific work examples</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see specific work examples</div>
             </div>
           </div>
         </div>
@@ -542,9 +659,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to see my professional background</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to view practical applications</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact">contact</a></span> to discuss research collaboration</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to view practical applications</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span> to discuss research collaboration</div>
             </div>
           </div>
         </div>
@@ -1036,10 +1153,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> to see all technologies</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> to view work history</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to explore all projects</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=help">help</a></span> for all available commands</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see all technologies</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to view work history</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to explore all projects</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=help" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">help</a></span> for all available commands</div>
             </div>
           </div>
         </div>
@@ -1194,7 +1311,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div class="col-span-9 bg-terminal-green/5">
                   <span class="text-white">
-                    <a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">
+                    <a href="${cv.phone}" class="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer">
                       ${cv.phone.replace(/[^\d\+]/g, '')}
                     </a>
                     </span>
@@ -1226,9 +1343,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               <div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
                 Feel free to reach out for collaborations, opportunities, or just to connect!
               </div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about">about</a></span> to learn more about me</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> to see my work</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> for my professional background</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span> to learn more about me</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see my work</div>
+              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> for my professional background</div>
             </div>
           </div>
         </div>
@@ -1302,7 +1419,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 <span class="text-terminal-yellow">Email:</span> <span class="text-terminal-green">${cv.email}</span>
               </div>
               <div class="text-terminal-green">
-                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone}" class="text-terminal-bright-green underline hover:text-terminal-yellow cursor-pointer">
+                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone}" class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer">
                   ${cv.phone.replace(/[^\d\+]/g, '')}
                 </a>
               </div>
@@ -1542,10 +1659,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
             <div class="border-t border-terminal-green/30 pt-3">
               <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
               <div class="space-y-1 ml-2 text-xs">
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about">about</a></span> for a formatted introduction</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience">experience</a></span> for detailed work history</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects">projects</a></span> for interactive project showcase</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills">skills</a></span> for technology breakdown</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span> for a formatted introduction</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> for detailed work history</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> for interactive project showcase</div>
+                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> for technology breakdown</div>
               </div>
             </div>
           </div>
@@ -1612,7 +1729,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const listCommands = useCallback(() => {
     addLine('<span class="text-terminal-yellow font-bold">Available commands:</span>');
     addLine('');
-    const commands = ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const commands = ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
     commands.forEach(cmd => {
       addLine(`<span class="text-terminal-green">${cmd}</span>`);
     });
@@ -1634,6 +1751,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         break;
       case 'resume':
         openResumePdf();
+        break;
+      case 'welcome':
+        showWelcomeMessage();
         break;
       case 'about':
         showAbout();
@@ -1688,9 +1808,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         break;
       default:
         addLine(`bash: ${cmd}: command not found`, 'text-terminal-red');
-        addLine("Type 'help' to see available commands", 'text-terminal-yellow');
+        addLine(`Type \`<a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a>\` or click on a command above to get started.`, 'text-terminal-yellow');
     }
-  }, [addLine, showHelp, openResumePdf, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, clearTerminal]);
+  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, clearTerminal]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
@@ -1714,12 +1834,18 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
-    const commands = ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
-    return commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+    const commands = ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const themeColors = ['matrix', 'blue', 'purple', 'amber', 'red']
+    const subCommands = ['cat resume.txt', ...themeColors.map(color => `theme ${color}`)];
+    var matched = commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+    if (matched.length === 0) {
+      matched = subCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+    }
+    return matched;
   }, []);
 
   const getAllCommands = useCallback(() => {
-    return ['help', 'resume', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    return ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
   }, []);
 
   return {
@@ -1731,6 +1857,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     isTyping,
     currentInput,
     setCurrentInput,
-    clearTerminal
+    clearTerminal,
+    showWelcomeMessage,
   };
 }

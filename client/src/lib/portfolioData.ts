@@ -4,7 +4,9 @@ import { type PortfolioData } from '@shared/schema';
 export const defaultPortfolioData: PortfolioData = {
   cv: {
     name: "Terminal User",
+    resume_url: "/resume.pdf",
     location: "Unknown",
+    website: "https://example.com",
     email: "user@terminal.local",
     phone: "+00-000-000-0000",
     social_networks: [],
