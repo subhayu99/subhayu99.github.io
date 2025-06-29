@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 
@@ -36,6 +36,8 @@ const formatDateForDisplay = (dateStr: string): string => {
   });
 };
 
+const getCollapsibleId = (type: string, index: number): string => `${type}-collapsible-${index}`;
+
 function getProjectsHtml(projectData: { name: string; date: string; highlights: string[] }[], type: string): string {
   return `
     <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
@@ -43,7 +45,7 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
         <div class="flex items-center justify-between">
           <span class="text-terminal-bright-green text-sm font-bold">${type.toUpperCase()} PROJECTS</span>
           <button 
-            onclick="toggleAllProjects('${type}')" 
+            onclick="toggleAllCollapsibles('${type}')" 
             class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
             id="expand-all-btn"
           >
@@ -53,10 +55,10 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
       </div>
       <div class="p-3 space-y-2 text-xs sm:text-sm">
         ${projectData.map((project, index) => {
-          const projectId = `${type}-project-${index}`;
+          const projectId = getCollapsibleId(type, index);
           return `
             <div class="border border-terminal-green/20 rounded">
-              <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('${projectId}')">
+              <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${projectId}')">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <span class="text-terminal-yellow font-semibold">${project.name}</span>
@@ -1281,7 +1283,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
             <div class="flex items-center justify-between">
               <span class="text-terminal-bright-green text-sm font-bold">RESUME.TXT</span>
               <button 
-                onclick="toggleAllProjects('resume')" 
+                onclick="toggleAllCollapsibles('resume')" 
                 class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
                 id="expand-all-btn"
               >
@@ -1315,17 +1317,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.intro?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-0')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 0)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">About</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-0-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 0)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-0" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 0)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-1">
                     ${cv.sections.intro.map(line => `
                       <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
@@ -1339,17 +1341,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.technologies?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-1')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 1)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Technologies</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-1-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 1)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-1" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 1)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-1">
                     ${cv.sections.technologies.map(tech => `
                       <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
@@ -1364,17 +1366,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.experience?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-2')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 2)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Experience</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-2-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 2)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-2" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 2)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
                     ${cv.sections.experience.map(exp => {
                       const endDate = exp.end_date || 'Present';
@@ -1405,17 +1407,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.education?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-3')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 3)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Education</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-3-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 3)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-3" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 3)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
                     ${cv.sections.education.map(edu => `
                       <div class="bg-terminal-green/5 p-3 rounded">
@@ -1440,17 +1442,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.selected_projects?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-4')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 4)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Professional Projects</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-4-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 4)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-4" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 4)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
                     ${cv.sections.selected_projects.map(project => `
                       <div class="bg-terminal-green/5 p-3 rounded">
@@ -1476,17 +1478,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${cv.sections.personal_projects?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-5')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 5)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Personal Projects</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-5-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 5)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-5" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 5)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
                     ${cv.sections.personal_projects.map(project => `
                       <div class="bg-terminal-green/5 p-3 rounded">
@@ -1512,17 +1514,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
             ${(cv.sections.publication?.length ?? 0) > 0 ? `
               <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleProject('resume-project-6')">
+                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 6)}')">
                   <div class="flex items-center justify-between">
                     <div class="flex-1">
                       <span class="text-terminal-yellow font-semibold">Publications</span>
                     </div>
                     <div class="text-terminal-bright-green ml-2">
-                      <span id="resume-project-6-icon">▶</span>
+                      <span id="${getCollapsibleId('resume', 6)}-icon">▶</span>
                     </div>
                   </div>
                 </div>
-                <div id="resume-project-6" class="hidden border-t border-terminal-green/20 p-3 pt-2">
+                <div id="${getCollapsibleId('resume', 6)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
                     ${cv.sections.publication?.map(pub => `
                       <div class="bg-terminal-green/5 p-3 rounded">
