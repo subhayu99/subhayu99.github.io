@@ -193,28 +193,45 @@ export default function Terminal() {
   // Handle terminal click to focus input - click anywhere on terminal
   const handleTerminalClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    
-    // Handle links with data-link attribute
-    if (target.dataset.link) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const url = getLinkUrl(target.dataset.link);
-      if (url) {
-        if (url.startsWith('mailto:')) {
-          window.location.href = url;
-        } else {
-          window.open(url, '_blank');
+
+    // Don't focus if user is selecting text
+    if (window.getSelection()?.toString()) {
+      return;
+    }
+
+    // Traverse up from the clicked element to find an interactive element
+    let currentElement: HTMLElement | null = target;
+    while (currentElement && currentElement !== e.currentTarget) {
+      // Handle custom data-link links
+      if (currentElement.dataset.link) {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = getLinkUrl(currentElement.dataset.link);
+        if (url) {
+          if (url.startsWith('mailto:')) {
+            window.location.href = url;
+          } else {
+            window.open(url, '_blank');
+          }
         }
+        return; // Link handled, do not focus input
       }
-      return;
+
+      // Check for standard interactive elements or elements with inline JS handlers
+      if (
+        currentElement.tagName === 'A' ||
+        currentElement.tagName === 'BUTTON' ||
+        currentElement.hasAttribute('onclick')
+      ) {
+        // This is an interactive element (like a link or collapsible).
+        // Let the browser handle the click and do not focus the terminal input.
+        return;
+      }
+
+      currentElement = currentElement.parentElement;
     }
-    
-    // Don't focus if user is selecting text or clicking on other links
-    if (window.getSelection()?.toString() || target.tagName === 'A') {
-      return;
-    }
-    
+
+    // If no interactive element was found in the ancestry, focus the input.
     inputRef.current?.focus();
   };
 
