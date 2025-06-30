@@ -94,24 +94,50 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
   `.trim();
 }
 
-function getWelcomeMessageHtml(portfolioData: PortfolioData): string {
+async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<string> {
   const sanitizedPhone = portfolioData.cv.phone.replace(/[^\d+]/g, '');
+  const filePath = '/data/styled_name.txt';
+
+  const response = await fetch(filePath);
+
+  let styledName = '';
+  if (response.ok) {
+    styledName = await response.text();
+  }
+  // Clean up potential fetch errors (like a 404 returning an HTML page) or empty files.
+  if (!styledName || styledName.trim() === '' || (typeof styledName === 'string' && styledName.startsWith('<!DOCTYPE html>'))) {
+    styledName = '';
+  }
+  const usePre = styledName.trim() !== '';
+
+  // Conditionally generate the HTML for the name display.
+  let nameDisplayHtml = '';
+  if (usePre) {
+    // Case 1: We have a styled name. Show it on large screens (`sm` and up)
+    // and show a simple fallback on extra-small screens.
+    nameDisplayHtml = `
+      <pre class="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">${styledName}</pre>
+      <div class="sm:hidden text-terminal-bright-green text-center mb-3">
+        <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
+        <div class="text-sm">TERMINAL PORTFOLIO</div>
+      </div>
+    `;
+  } else {
+    // Case 2: No styled name. Show the simple name on ALL screen sizes.
+    // The `sm:hidden` class is removed to make it always visible.
+    nameDisplayHtml = `
+      <div class="text-terminal-bright-green text-center mb-3">
+        <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
+        <div class="text-sm">TERMINAL PORTFOLIO</div>
+      </div>
+    `;
+  }
+
   return `
     <div class="mb-4 sm:mb-6">
       <div class="mb-3 sm:mb-4">
-        <pre class="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
- _____     _   _                  _____                      _____     _     
-|   __|_ _| |_| |_ ___ _ _ _ _   |  |  |_ _ _____ ___ ___   | __  |___| |___ 
-|__   | | | . |   | .'| | | | |  |    -| | |     | .'|  _|  | __ -| .'| | .'|
-|_____|___|___|_|_|__,|_  |___|  |__|__|___|_|_|_|__,|_|    |_____|__,|_|__,|
-                      |___|                                                  
-        </pre>
-        <div class="sm:hidden text-terminal-bright-green text-center mb-3">
-          <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
-          <div class="text-sm">TERMINAL PORTFOLIO</div>
-        </div>
+        ${nameDisplayHtml}
       </div>
-
       <div class="mb-4">
         <p class="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
         <p class="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
@@ -234,9 +260,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     setLines([]);
   }, []);
 
-  const showWelcomeMessage = useCallback(() => {
+  const showWelcomeMessage = useCallback(async () => {
     if (portfolioData) {
-      const welcomeHtml = getWelcomeMessageHtml(portfolioData);
+      const welcomeHtml = await getWelcomeMessageHtml(portfolioData);
       addLine(welcomeHtml, 'welcome-message'); // Add the entire block as one "line"
     }
   }, [addLine, portfolioData]);
