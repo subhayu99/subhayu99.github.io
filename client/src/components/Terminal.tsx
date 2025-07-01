@@ -342,9 +342,9 @@ export default function Terminal() {
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={suggestion}
-                        className={`px-3 py-1 text-xs sm:text-sm cursor-pointer transition-colors ${
+                        className={`px-3 py-1 text-xs sm:text-sm cursor-pointer border border-transparent rounded-sm transition-all duration-150 ease-in-out ${
                           index === selectedSuggestion
-                            ? 'bg-terminal-green/20 text-terminal-bright-green'
+                            ? 'border-terminal-green text-terminal-bright-green shadow-[0_0_8px_rgba(55,255,135,0.5)]' // Enhanced selected state
                             : 'text-terminal-green hover:bg-terminal-green/10'
                         }`}
                         onClick={() => {
