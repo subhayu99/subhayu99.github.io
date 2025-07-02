@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
+import { themes } from '../lib/themes';
 
 export interface TerminalLine {
   id: string;
@@ -1195,6 +1196,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
   const showTheme = useCallback((args: string[]) => {
     const theme = args[0];
+
     if (!theme) {
       addLine('<span class="text-terminal-bright-green">Available Themes:</span>');
       addLine('');
@@ -1203,84 +1205,32 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       addLine('<span class="text-purple-400">purple</span>    - Purple hacker theme');
       addLine('<span class="text-orange-400">amber</span>     - Vintage amber terminal');
       addLine('<span class="text-red-400">red</span>       - Red alert theme');
+      addLine('<span class="text-terminal-yellow">reset</span>     - Reset to default theme');
       addLine('');
       addLine('<span class="text-terminal-yellow">Usage: theme [name]</span>');
       return;
     }
 
-    const themes: Record<string, any> = {
-      matrix: { 
-        name: 'Matrix Green',
-        '--terminal-green': 'hsl(120, 100%, 50%)',
-        '--terminal-bright-green': 'hsl(120, 100%, 60%)',
-        '--border': 'hsl(120, 100%, 20%)',
-        '--ring': 'hsl(120, 100%, 50%)',
-        '--foreground': 'hsl(120, 100%, 50%)',
-        '--primary': 'hsl(120, 100%, 50%)',
-        '--accent': 'hsl(120, 100%, 20%)',
-        '--input': 'hsl(120, 100%, 20%)',
-        '--glow-color-rgb': '0, 255, 0',
-      },
-      blue: {
-        name: 'Cyberpunk Blue',
-        '--terminal-green': 'hsl(195, 100%, 50%)',
-        '--terminal-bright-green': 'hsl(195, 100%, 60%)',
-        '--border': 'hsl(195, 100%, 20%)',
-        '--ring': 'hsl(195, 100%, 50%)',
-        '--foreground': 'hsl(195, 100%, 50%)',
-        '--primary': 'hsl(195, 100%, 50%)',
-        '--accent': 'hsl(195, 100%, 20%)',
-        '--input': 'hsl(195, 100%, 20%)',
-        '--glow-color-rgb': '0, 191, 255',
-      },
-      purple: {
-        name: 'Hacker Purple',
-        '--terminal-green': 'hsl(260, 60%, 65%)',
-        '--terminal-bright-green': 'hsl(260, 60%, 75%)',
-        '--border': 'hsl(260, 60%, 25%)',
-        '--ring': 'hsl(260, 60%, 65%)',
-        '--foreground': 'hsl(260, 60%, 65%)',
-        '--primary': 'hsl(260, 60%, 65%)',
-        '--accent': 'hsl(260, 60%, 25%)',
-        '--input': 'hsl(260, 60%, 25%)',
-        '--glow-color-rgb': '147, 112, 219',
-      },
-      amber: {
-        name: 'Vintage Amber',
-        '--terminal-green': 'hsl(39, 100%, 50%)',
-        '--terminal-bright-green': 'hsl(39, 100%, 60%)',
-        '--border': 'hsl(39, 100%, 20%)',
-        '--ring': 'hsl(39, 100%, 50%)',
-        '--foreground': 'hsl(39, 100%, 50%)',
-        '--primary': 'hsl(39, 100%, 50%)',
-        '--accent': 'hsl(39, 100%, 20%)',
-        '--input': 'hsl(39, 100%, 20%)',
-        '--glow-color-rgb': '255, 165, 0',
-      },
-      red: { 
-        name: 'Red Alert',
-        '--terminal-green': 'hsl(0, 100%, 50%)',
-        '--terminal-bright-green': 'hsl(0, 100%, 60%)',
-        '--border': 'hsl(0, 100%, 20%)',
-        '--ring': 'hsl(0, 100%, 50%)',
-        '--foreground': 'hsl(0, 100%, 50%)',
-        '--primary': 'hsl(0, 100%, 50%)',
-        '--accent': 'hsl(0, 100%, 20%)',
-        '--input': 'hsl(0, 100%, 20%)',
-        '--glow-color-rgb': '255, 0, 0',
-      }
-    };
+    if (theme === 'reset') {
+      localStorage.removeItem('terminal-theme');
+      addLine('<span class="text-terminal-yellow">Theme reset. Refreshing page...</span>');
+      setTimeout(() => window.location.reload(), 1000);
+      return;
+    }
 
     if (themes[theme]) {
       const selectedTheme = themes[theme];
       addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switching to ${selectedTheme.name} theme...</span>`);
-      
+
       Object.keys(selectedTheme).forEach(key => {
         if (key !== 'name') {
           document.documentElement.style.setProperty(key, selectedTheme[key]);
         }
       });
       
+      // Save the selected theme to localStorage for persistence
+      localStorage.setItem('terminal-theme', theme);
+
       setTimeout(() => {
         addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Theme changed successfully!</span>`);
       }, 500);
@@ -1861,8 +1811,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
     const commands = ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
-    const themeColors = ['matrix', 'blue', 'purple', 'amber', 'red']
-    const subCommands = ['cat resume.txt', ...themeColors.map(color => `theme ${color}`)];
+    const themeSubCommands = ['matrix', 'blue', 'purple', 'amber', 'red', 'reset']
+    const subCommands = ['cat resume.txt', ...themeSubCommands.map(color => `theme ${color}`)];
     var matched = commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
     if (matched.length === 0) {
       matched = subCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));

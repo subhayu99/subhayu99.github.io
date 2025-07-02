@@ -6,6 +6,27 @@
     <title>Subhayu Kumar Bala - Terminal Portfolio</title>
     <meta name="description" content="Data and infrastructure engineer with 3+ years of experience in Python, SQL, AI/LLM systems, and cloud platforms. Interactive terminal portfolio showcasing projects and expertise.">
     
+    <script>
+      (function() {
+        // __THEME_DATA__
+        // The line above will be replaced by Vite with: const themes = { ... };
+
+        try {
+          const savedTheme = localStorage.getItem('terminal-theme');
+          if (savedTheme && themes[savedTheme]) {
+            const themeConfig = themes[savedTheme];
+            Object.keys(themeConfig).forEach(key => {
+              if (key !== 'name') {
+                document.documentElement.style.setProperty(key, themeConfig[key]);
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to apply saved theme:', e);
+        }
+      })();
+    </script>
+
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#000000">
