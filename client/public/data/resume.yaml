@@ -14,15 +14,15 @@ cv:
     #   username: "0000-0001-8195-3118"
   sections:
     intro:
-      - "A Data & Infrastructure Engineer with 3+ years of experience building high-performance, intelligent systems that drive measurable business outcomes. I specialize in turning complex data problems into efficient, scalable software."
-      - "I leverage deep expertise in Python, SQL, and multi-cloud architecture (AWS/Azure/GCP) to deliver transformative results, from slashing a 27-hour data process to just 5 seconds to engineering production-grade agentic LLMs."
-      - "My work has directly contributed to critical business milestones for clients, including enabling a startup to secure a $6M Series A funding round and ensuring enterprise-grade data compliance for regulated industries."
+      - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP)."
+      - "Proven track record of exceptional performance optimization—including reducing a 27-hour SQL procedure to 5 seconds and building scalable architectures through event-driven design, real-time monitoring, and agentic LLM frameworks."
+      - "My work has enabled measurable business outcomes: helping a startup secure $6M Series A funding, ensuring enterprise data compliance for Fortune 500 healthcare clients, and delivering production AI systems with 95%+ accuracy."
 
     technologies:
       - label: "Core Languages & Tools"
         details: "Python, SQL, BASH, JavaScript, Git"
       - label: "Data Engineering & Orchestration"
-        details: "ETL/ELT Pipelines, Data Modeling, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Microsoft Fabric, ADF, Treasure Data, GeoPandas, PostGIS"
+        details: "ETL/ELT Pipelines, Data Modeling, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Databricks, Microsoft Fabric, ADF, Treasure Data, GeoPandas, PostGIS"
       - label: "AI & LLM Engineering"
         details: "OpenAI APIs, Gemini, LangChain, Agentic Architecture (MCP, A2A), RAG, Axolotl, LLM Fine-tuning (SFT, DPO), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
       - label: "Cloud & DevOps"
@@ -32,9 +32,9 @@ cv:
       - label: "Databases & Vector Stores"
         details: "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
       - label: "Security & Quality Assurance"
-        details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
+        details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, PII Data Handling, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
       - label: "Specialized & Visualization"
-        details: "CDPs, SFMC, Web Scraping, Looker Studio, PowerBI, Streamlit, Plotly, Matplotlib, Quantum Computing Simulation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
+        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, Real-time Monitoring Systems, Workflow Automation, Quantum Computing Simulation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
     
     experience:
       - company: "FiftyFive Technologies"
@@ -65,6 +65,20 @@ cv:
           - "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
     
     selected_projects:
+      - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
+        date: "Jul 2025 – Present"
+        highlights:
+          - "Provided ongoing technical support and enhancements for Azure-based data platforms (PDM and Initio), implementing currency conversion pipelines with ADF and resolving critical Databricks compute provisioning issues affecting production workflows."
+          - "Built end-to-end stock reconciliation dashboard integrating SAP ByDesign API and warehouse data sources, designing medallion architecture pipelines (Bronze→Silver→Gold) with Power BI visualizations for inventory management."
+          - "Executed data privacy compliance projects including PII-protected data extraction and delivery for legal audits, while maintaining data quality through systematic investigation and resolution of discrepancies across multiple data sources."
+      
+      - name: "AGY Logistics - Reefer Temperature Monitoring System"
+        date: "Jun 2025 – Sep 2025"
+        highlights:
+          - "Built real-time monitoring system for refrigerated cargo trailers, integrating Ditat and Samsara APIs to track temperature compliance and prevent cold chain violations across multi-stop routes."
+          - "Designed scalable data pipelines on GCP using Cloud Functions and BigQuery with medallion architecture, implementing alert logic for temperature deviations, dry loads, and driver setpoint mismatches."
+          - "Reduced false positive alerts by 70% through intelligent filtering that accounts for loading/unloading states and trip transitions, while migrating workflows from Make.com to N8N for improved cost efficiency and control."
+      
       - name: "Johnson & Johnson - Healthcare Data Platform"
         date: "Feb 2025 – Jun 2025"
         highlights:
