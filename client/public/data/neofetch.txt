@@ -1,0 +1,34 @@
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                           Welcome to subOS v1.0.7                                           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+     ┌────────────────────────────┐    ┌────────────────────────────┐    ┌───────────────────────────────┐
+     │    🛠 Data Engineering     │    │        🧠 AI & LLM         │    │  🔄 Workflow & Orchestration  │
+     │ Pandas • DuckDB • PySpark  │    │ OpenAI • LangChain • RAG   │    │  Airflow • Kafka • ADF • TD   │
+     │ ETL/ELT • dbt • Modelling  │    │ Fine-tune • Prompts • MCP  │    │  GCP Workflows • Scheduling   │
+     └────────────────────────────┘    └────────────────────────────┘    └───────────────────────────────┘
+                   ▲                                 ▲                                  ▲
+                   └─────────────────────────┐       │       ┌──────────────────────────┘
+                                             ▼       ▼       ▼
+ ┌────────────────────────────┐        ┌────────────────────────────┐        ┌──────────────────────────────┐
+ │     💻 APIs & App Dev      │        │        [ ☁️ + 🐍 ]         │        │         🧰 DevOps & IaC      │
+ │   FastAPI • Django • DRF   │◀──────▶│      Python + Clouds       │◀──────▶│   Docker • K8s • Terraform   │
+ │ Typer • CLI • REST • Flask │        │       (Interop Hub)        │        │   Pulumi • CI/CD • ARM       │
+ └────────────────────────────┘        └────────────────────────────┘        └──────────────────────────────┘
+                                             ▲       ▲       ▲
+                   ┌─────────────────────────┘       │       └───────────────────────────┐
+                   ▼                                 ▼                                   ▼
+     ┌────────────────────────────┐    ┌─────────────────────────────┐    ┌─────────────────────────────┐
+     │   🛡 Security & Auth       │    │   🧪 Testing & Monitoring   │    │    📊 Data Visualization    │
+     │ OAuth • JWT • RBAC • IAM   │    │ Pytest • GE • Logs • Alerts │    │  Looker • PowerBI • Plotly  │
+     │ Secrets Mgmt • IAM • KMS   │    │ CI/CD • Health • Validation │    │   Matplotlib • Streamlit    │
+     └────────────────────────────┘    └─────────────────────────────┘    └─────────────────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                                            BUILT BY A REAL HUMAN                                            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+ Subhayu Kumar Bala — Data & Infra Engineer | AI Systems Specialist
+ Portfolio: subhayu99.github.io | GitHub: [subhayu99](https://github.com/subhayu99) | Email: balasubhayu99@gmail.com
+

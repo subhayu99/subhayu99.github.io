@@ -1,0 +1,22 @@
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Welcome to subOS v1.0.7        ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+  [🧠 AI]  [🛠 Data Eng]  [🔄 Workflow]
+       ▲           ▲          ▲
+       └─────────┐ │ ┌────────┘
+                 ▼ ▼ ▼
+   [💻 APIs]◀──▶[☁️+🐍]◀──▶[🧰 DevOps]
+                 ▲ ▲ ▲           
+       ┌─────────┘ │ └────────┐
+       ▼           ▼          ▼
+    [🛡 Auth]   [🧪 Tests]   [📊 Viz]
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        BUILT BY A REAL HUMAN          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+ Subhayu Kumar Bala
+ Portfolio: subhayu99.github.io
+ GitHub: [subhayu99](https://github.com/subhayu99)
+ Email: balasubhayu99@gmail.com
