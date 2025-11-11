@@ -93,6 +93,37 @@ Users no longer need to manually create neofetch files.
 
 ---
 
+### Fix TypeScript Strict Null-Checking Errors
+**Issue**: ~50 TypeScript errors in `client/src/hooks/useTerminal.ts` due to accessing optional schema fields without null checks.
+
+**Background**:
+- Schema fields were made optional (education.highlights, phone, location, etc.) to support flexible resumes
+- Dynamic command system checks data availability at runtime
+- Build succeeds but TypeScript reports type errors
+
+**Current State**:
+- Errors don't block compilation (Vite builds successfully)
+- Runtime behavior is correct (proper null checks in isAvailable functions)
+- Type safety could be improved
+
+**Solution**: Add optional chaining operators (`?.`) and nullish coalescing throughout useTerminal.ts
+
+**Affected areas**:
+- Social network access: `portfolioData.cv.social_networks`
+- Optional contact fields: `portfolioData.cv.phone`, `cv.website`
+- Section arrays: `cv.sections.intro`, `cv.sections.technologies`, etc.
+- Education fields: `edu.location`, `edu.highlights`
+
+**Estimated effort**: 2-3 hours
+
+**Benefits**:
+- Clean TypeScript compilation
+- Better IDE autocomplete and error detection
+- Improved type safety
+- Professional code quality
+
+---
+
 ## Low Priority
 
 ### Voice Commands
