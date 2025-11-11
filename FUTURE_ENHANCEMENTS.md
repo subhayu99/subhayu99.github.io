@@ -47,6 +47,52 @@ Users no longer need to manually create neofetch files.
 
 ---
 
+## Medium Priority
+
+### Resume to YAML Converter (AI Prompt Based)
+**Goal**: Help users convert existing resumes (PDF/text) to `resume.yaml` format without manual work.
+
+**Approach**: Provide a ready-to-use AI prompt (no API integration needed).
+
+**Implementation Plan**:
+- [ ] Create comprehensive AI prompt template for resume conversion
+  - [ ] Include clear instructions for the AI
+  - [ ] Embed TypeScript schema from `shared/schema.ts` in human-readable format
+  - [ ] Include sample YAML from `resume.yaml.example` as reference
+  - [ ] Add instructions for user to paste their resume content
+  - [ ] Specify output format requirements (valid YAML matching schema)
+
+- [ ] Add UI in replicate command page
+  - [ ] Display pre-made prompt in copyable text area
+  - [ ] Add "Copy Prompt" button
+  - [ ] Show instructions: "Paste this prompt + your resume into ChatGPT/Claude/Gemini"
+  - [ ] Optionally: Add textarea for users to paste their resume, which auto-appends to prompt
+  - [ ] Optionally: Add file upload to extract text from PDF/DOC (client-side only)
+
+**User workflow**:
+1. User visits replicate command page
+2. Copies the ready-made prompt
+3. Pastes their resume content after the prompt
+4. Runs it in any AI tool (ChatGPT, Claude, Gemini, etc.)
+5. Gets valid `resume.yaml` output
+6. Downloads and uses it
+
+**Technical considerations**:
+- No API keys or backend required - users bring their own AI
+- Prompt should be comprehensive enough to generate valid YAML consistently
+- Consider providing validation instructions in the prompt
+- Client-side PDF text extraction using libraries like pdf.js if file upload is added
+
+**Estimated effort**: 4-6 hours
+
+**Benefits**:
+- Eliminates manual YAML writing
+- Reduces barrier to entry for non-technical users
+- Works with any AI tool (user's choice)
+- No API costs or rate limits
+
+---
+
 ## Low Priority
 
 ### Voice Commands
