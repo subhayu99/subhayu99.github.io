@@ -48,6 +48,8 @@ export const uiText = {
       portfolioNotLoaded: 'Portfolio data not loaded',
       resumeNotFound: 'Resume URL not found',
       noPublications: 'No publications found',
+      noProfessionalProjects: 'No professional projects found',
+      noPersonalProjects: 'No personal projects found',
       loadFailed: 'Error loading neofetch content!',
     },
     info: {
