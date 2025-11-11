@@ -1,0 +1,99 @@
+name: Help / Question
+description: Get help with setup, configuration, or usage of the template
+title: "[Help]: "
+labels: ["question", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help? We're here to assist! Please provide details so we can help you quickly.
+
+        **Before asking:**
+        - Check the [README](../README.md)
+        - Read the [Deployment Guide](../docs/DEPLOYMENT.md)
+        - Review the [Troubleshooting Guide](../docs/TROUBLESHOOTING.md)
+        - Search [existing issues](https://github.com/subhayu99/subhayu99.github.io/issues)
+
+  - type: dropdown
+    id: question-type
+    attributes:
+      label: What do you need help with?
+      options:
+        - Setup / Installation
+        - Resume YAML format
+        - GitHub Pages deployment
+        - Customization (themes, commands, etc.)
+        - Error / Something not working
+        - Understanding how something works
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: Describe what you're trying to do or what you need help with
+      placeholder: "Example: How do I add my LinkedIn profile to the contact section?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: What Have You Tried?
+      description: What steps have you already taken to solve this?
+      placeholder: |
+        Example:
+        - Checked the example resume files
+        - Searched the documentation
+        - Tried modifying resume.yaml but not sure of the correct format
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Usage Mode
+      description: Are you using Easy Mode or Advanced Mode?
+      options:
+        - Easy Mode (resume.yaml only)
+        - Advanced Mode (customizing code)
+        - Not sure / Haven't started yet
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration Details (if applicable)
+      description: |
+        Share relevant configuration details:
+        - resume.yaml snippet
+        - .env settings
+        - GitHub Actions logs
+        - Error messages
+      render: yaml
+
+  - type: input
+    id: repository
+    attributes:
+      label: Your Repository (optional)
+      description: Link to your forked repository (if you want us to look at your code)
+      placeholder: "https://github.com/yourusername/yourusername.github.io"
+
+  - type: checkboxes
+    id: documentation-check
+    attributes:
+      label: Documentation Check
+      options:
+        - label: I have read the README
+          required: false
+        - label: I have checked the Troubleshooting Guide
+          required: false
+        - label: I have searched existing issues
+          required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might help us assist you

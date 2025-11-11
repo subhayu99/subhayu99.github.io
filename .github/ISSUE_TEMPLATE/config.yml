@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/subhayu99/subhayu99.github.io#readme
+    about: Check out the comprehensive documentation and guides
+
+  - name: 💬 GitHub Discussions
+    url: https://github.com/subhayu99/subhayu99.github.io/discussions
+    about: Ask questions and discuss with the community
+
+  - name: 🎨 RenderCV Documentation
+    url: https://docs.rendercv.com
+    about: Learn about resume YAML format and RenderCV features
+
+  - name: 🌐 Live Demo
+    url: https://subhayu99.github.io
+    about: See the terminal portfolio in action

@@ -1,0 +1,47 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Conversation exports and temp files
+*-understand-the-codebase.txt
+conversation-*.txt
+export-*.txt
+templating.txt
+
+# RenderCV outputs
+rendercv_output/
+resume_temp.yaml
+
+# User-specific resume data (keep .example files in git)
+resume.yaml
+client/public/data/resume.json
+client/public/data/styled_name.txt
+client/public/data/neofetch.txt
+client/public/data/neofetch-small.txt
+
+# Generated resume files (Actions will regenerate)
+client/public/resume.pdf
+client/public/resume.md
+
+# Environment variables
+.env
+.env.local
+
+# Template config (user-specific)
+template.config.yaml
+client/public/manifest.json
+
+# User's personal notes/docs
+profile.md
+profile1.md
+TODOS.yml

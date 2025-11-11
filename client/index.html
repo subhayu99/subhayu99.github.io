@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <title>Subhayu Kumar Bala - Terminal Portfolio</title>
+    <meta name="description" content="Data and infrastructure engineer with 3+ years of experience in Python, SQL, AI/LLM systems, and cloud platforms. Interactive terminal portfolio showcasing projects and expertise.">
+    
+    <script>
+      (function() {
+        // __THEME_DATA__
+        // The line above will be replaced by Vite with: const themes = { ... };
+
+        try {
+          const savedTheme = localStorage.getItem('terminal-theme');
+          if (savedTheme && themes[savedTheme]) {
+            const themeConfig = themes[savedTheme];
+            Object.keys(themeConfig).forEach(key => {
+              if (key !== 'name') {
+                document.documentElement.style.setProperty(key, themeConfig[key]);
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to apply saved theme:', e);
+        }
+      })();
+    </script>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="background-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Terminal Portfolio">
+    <meta name="application-name" content="Terminal Portfolio">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/terminal-icon.svg">
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      let allExpanded = false;
+      const collapsibleIdJoiner = '-collapsible-';
+      const expandAllBtnId = 'expand-all-btn';
+      
+      window.toggleCollapsible = function(id) {
+        const content = document.getElementById(id);
+        const icon = document.getElementById(id + '-icon');
+        
+        if (content.classList.contains('hidden')) {
+          content.classList.remove('hidden');
+          icon.textContent = '▼';
+        } else {
+          content.classList.add('hidden');
+          icon.textContent = '▶';
+        }
+        
+        // Update the expand all button state
+        updateExpandAllButton();
+      };
+      
+      window.toggleAllCollapsibles = function(type) {
+        const expandAllBtn = document.getElementById(expandAllBtnId);
+        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
+        
+        if (allExpanded) {
+          // Collapse all
+          elements.forEach(element => {
+            const elementId = element.id;
+            const icon = document.getElementById(elementId + '-icon');
+            element.classList.add('hidden');
+            icon.textContent = '▶';
+          });
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        } else {
+          // Expand all
+          elements.forEach(element => {
+            const elementId = element.id;
+            const icon = document.getElementById(elementId + '-icon');
+            element.classList.remove('hidden');
+            icon.textContent = '▼';
+          });
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        }
+      };
+
+      function updateExpandAllButton(type) {
+        const expandAllBtn = document.getElementById(expandAllBtnId);
+        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
+        let expandedCount = 0;
+        
+        elements.forEach(element => {
+          if (!element.classList.contains('hidden')) {
+            expandedCount++;
+          }
+        });
+        
+        if (expandedCount === elements.length) {
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        } else {
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        }
+      }
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('PWA: Service worker registered successfully', registration.scope);
+            })
+            .catch((error) => {
+              console.log('PWA: Service worker registration failed', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

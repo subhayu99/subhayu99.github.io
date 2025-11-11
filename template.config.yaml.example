@@ -1,0 +1,180 @@
+# Terminal Portfolio Template Configuration
+# ==========================================
+# This file contains all site-wide settings for your portfolio
+# Copy this file to 'template.config.yaml' and customize it
+
+# Site Information
+# ----------------
+site:
+  # Basic metadata
+  title: "My Terminal Portfolio"
+  description: "Interactive terminal-style portfolio showcasing my work and skills"
+  author: "Your Name"
+  language: "en-US"
+
+  # URLs (set after deployment)
+  baseUrl: "https://yourusername.github.io"  # Your GitHub Pages URL
+  repositoryUrl: "https://github.com/yourusername/yourusername.github.io"
+
+  # Template repository (for 'replicate' command)
+  templateRepo: "https://github.com/subhayu99/subhayu99.github.io"
+  templateDocs: "https://github.com/subhayu99/subhayu99.github.io/tree/main/docs"
+
+# Progressive Web App (PWA) Settings
+# -----------------------------------
+pwa:
+  enabled: true
+  name: "Your Name - Terminal Portfolio"
+  shortName: "Your Portfolio"
+  description: "My interactive terminal portfolio"
+  themeColor: "#000000"          # Browser theme color
+  backgroundColor: "#000000"     # Splash screen background
+
+  # App shortcuts (accessible from installed app icon)
+  shortcuts:
+    - name: "About Me"
+      command: "about"
+    - name: "My Projects"
+      command: "projects"
+    - name: "Contact"
+      command: "contact"
+    - name: "Resume"
+      command: "resume"
+
+# Terminal Configuration
+# -----------------------
+terminal:
+  # Prompt settings (already in client/src/config/terminal.config.ts)
+  # Override here if you want different defaults
+  prompt:
+    username: "guest"
+    hostname: "portfolio"
+    directory: "~"
+    symbol: "$"
+
+  # Default theme (matrix, blue, purple, amber, red, minimal, dracula)
+  defaultTheme: "matrix"
+
+  # Allow theme persistence (save user's theme choice)
+  saveThemePreference: true
+
+  # Features toggles
+  features:
+    commandHistory: true
+    autoComplete: true
+    typewriterEffect: true
+    pwaInstall: true
+
+    # WOW features (will be implemented in Phase 3)
+    networkGraph: false
+    snakeGame: false
+    matrixRain: false
+    storyMode: false
+
+# Resume Generation
+# -----------------
+resume:
+  # Resume file source
+  sourceFile: "resume.yaml"
+
+  # What to generate
+  generatePdf: true
+  generateMarkdown: true
+  generateJson: true
+
+  # Privacy settings (hide from PDF but keep on website)
+  excludeFromPdf:
+    - "phone"      # Uncomment to hide phone from PDF
+    - "location"   # Uncomment to hide location from PDF
+    # - "email"    # Uncomment to hide email from PDF
+
+# Analytics (Optional)
+# --------------------
+analytics:
+  enabled: false
+  # Uncomment and configure if you want analytics
+  # googleAnalytics:
+  #   measurementId: "G-XXXXXXXXXX"
+  # plausible:
+  #   domain: "yourdomain.com"
+
+# Social Networks
+# ---------------
+social:
+  # Display social links
+  showInFooter: true
+  showInContact: true
+
+  # Social network base URLs (configured in client/src/config/social.config.ts)
+  # Add custom networks here if needed
+  customNetworks:
+    # Example:
+    # - name: "Dev.to"
+    #   baseUrl: "https://dev.to/"
+
+# Commands Configuration
+# ----------------------
+commands:
+  # Enable/disable specific commands
+  enabled:
+    - "help"
+    - "about"
+    - "skills"
+    - "experience"
+    - "education"
+    - "projects"
+    - "contact"
+    - "resume"
+    - "clear"
+    - "theme"
+    - "whoami"
+    - "ls"
+    - "cat"
+    - "neofetch"
+    - "timeline"
+    - "search"
+    - "replicate"  # Command to show how to clone this template
+
+  # Aliases (alternative command names)
+  aliases:
+    work: "experience"
+    portfolio: "projects"
+    hello: "about"
+    clone: "replicate"
+    fork: "replicate"
+
+# Advanced Settings
+# -----------------
+advanced:
+  # Performance
+  performance:
+    enableServiceWorker: true
+    cacheStrategy: "network-first"  # or "cache-first"
+    lazyLoadImages: true
+
+  # Experimental features
+  experimental:
+    customCommands: false      # Allow custom command definitions
+    apiIntegrations: false     # Enable external API calls
+    voiceCommands: false       # Voice input (future)
+
+# Documentation Links
+# -------------------
+# These are shown in the 'replicate' command
+documentation:
+  easyMode: "https://github.com/subhayu99/subhayu99.github.io#-easy-mode---get-started-in-10-minutes"
+  advancedGuide: "https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/ADVANCED.md"
+  renderCvGuide: "https://app.rendercv.com"
+  troubleshooting: "https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/TROUBLESHOOTING.md"
+
+# Branding (Optional)
+# -------------------
+branding:
+  # Favicon (place in client/public/)
+  favicon: "/favicon.ico"
+
+  # Open Graph / Social Media Preview
+  ogImage: "/og-image.png"  # 1200x630px recommended
+
+  # Custom CSS (for advanced styling)
+  customStylesheet: ""  # Path to custom CSS file

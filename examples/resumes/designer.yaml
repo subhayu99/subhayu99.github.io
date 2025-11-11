@@ -1,0 +1,129 @@
+cv:
+  name: "Alex Rivera"
+  location: "New York, NY"
+  email: "alex@alexrivera.design"
+  phone: "tel:+1-555-0234"
+  website: "https://alexrivera.design"
+  resume_url: "https://alexrivera.design/resume.pdf"
+  social_networks:
+    - network: "LinkedIn"
+      username: "alex-rivera-design"
+    - network: "GitHub"
+      username: "alexrivera"
+    - network: "Dribbble"
+      username: "alexrivera"
+
+  sections:
+    intro:
+      - "Product designer with 6+ years of experience creating intuitive, user-centered digital experiences across web and mobile platforms."
+      - "Skilled in user research, prototyping, design systems, and cross-functional collaboration with engineering and product teams."
+      - "Passionate about accessibility, inclusive design, and bridging the gap between user needs and business goals."
+
+    technologies:
+      - label: "Design Tools"
+        details: "Figma, Sketch, Adobe XD, Adobe Creative Suite (Photoshop, Illustrator)"
+      - label: "Prototyping & Animation"
+        details: "Figma Prototyping, ProtoPie, Principle, After Effects, Lottie"
+      - label: "Frontend Basics"
+        details: "HTML, CSS, JavaScript, React (component libraries), Tailwind CSS"
+      - label: "Design Systems"
+        details: "Component Libraries, Design Tokens, Style Guides, Accessibility Standards (WCAG)"
+      - label: "User Research & Testing"
+        details: "User Interviews, Usability Testing, A/B Testing, Analytics (Google Analytics, Mixpanel)"
+      - label: "Collaboration Tools"
+        details: "Miro, FigJam, Notion, Jira, Slack, GitHub"
+
+    experience:
+      - company: "Design Studio Co"
+        position: "Senior Product Designer"
+        location: "New York, NY (Hybrid)"
+        start_date: "2021-03"
+        highlights:
+          - "**Led design system initiative** creating 150+ reusable components used across 8 products, reducing design-to-dev time by 40%"
+          - "**Redesigned core product** increasing user engagement by 35% and reducing support tickets by 25% through improved UX"
+          - "**Conducted user research** with 50+ participants, resulting in data-driven design decisions that improved task completion rates by 45%"
+          - "**Mentored 3 junior designers** through design critiques, portfolio reviews, and hands-on collaboration"
+
+      - company: "Tech Startup Inc"
+        position: "Product Designer"
+        location: "New York, NY"
+        start_date: "2019-06"
+        end_date: "2021-02"
+        highlights:
+          - "Designed mobile app used by 500K+ users, achieving 4.8-star rating on App Store"
+          - "Collaborated with engineering team to implement responsive design system in React"
+          - "Led weekly design critiques fostering culture of feedback and continuous improvement"
+
+      - company: "Digital Agency LLC"
+        position: "UI/UX Designer"
+        location: "Remote"
+        start_date: "2018-01"
+        end_date: "2019-05"
+        highlights:
+          - "Designed websites and apps for 15+ clients across healthcare, fintech, and e-commerce sectors"
+          - "Created high-fidelity mockups and interactive prototypes for client presentations"
+
+    education:
+      - institution: "Rhode Island School of Design"
+        location: "Providence, RI"
+        area: "Graphic Design"
+        degree: "B.F.A."
+        start_date: "2014-09"
+        end_date: "2018-05"
+        highlights:
+          - "Concentration in Digital Media and Interaction Design"
+          - "Senior Thesis: Accessible Design for Aging Populations"
+
+    professional_projects:
+      - name: "E-Commerce Mobile App Redesign"
+        date: "2023-08 – 2024-02"
+        show_on_resume: true
+        highlights:
+          - "Led complete redesign of shopping app serving 2M+ users, focusing on checkout flow optimization"
+          - "Conducted 25+ user interviews and usability tests to identify pain points"
+          - "Increased conversion rate by 28% and reduced cart abandonment by 35%"
+          - "Designed adaptive UI supporting 12 languages and right-to-left layouts"
+
+      - name: "Design System Overhaul"
+        date: "2022-11 – 2023-07"
+        show_on_resume: true
+        highlights:
+          - "Built comprehensive design system with 200+ components, 50+ patterns, and accessibility guidelines"
+          - "Established design tokens for colors, typography, spacing ensuring cross-platform consistency"
+          - "Created Figma library with variants and auto-layout reducing design time by 50%"
+          - "Documented design principles and usage guidelines in Storybook"
+
+      - name: "Healthcare Patient Portal"
+        date: "2021-09 – 2022-10"
+        show_on_resume: true
+        highlights:
+          - "Designed HIPAA-compliant patient portal for healthcare provider serving 100K+ patients"
+          - "Prioritized accessibility achieving WCAG 2.1 AA compliance"
+          - "Simplified appointment booking flow reducing completion time from 8 to 3 steps"
+          - "Improved patient satisfaction scores by 40% post-launch"
+
+    personal_projects:
+      - name: "Accessibility Design Guide"
+        date: "2024-01"
+        show_on_resume: true
+        highlights:
+          - "Created comprehensive accessibility design resource for designers and developers"
+          - "Covers WCAG guidelines, inclusive design patterns, and testing methodologies"
+          - "Published on personal website, featured in design community newsletters"
+          - "Open source: [github.com/alexrivera/a11y-design-guide](https://github.com/alexrivera/a11y-design-guide)"
+
+      - name: "Icon Library"
+        date: "2023-09"
+        show_on_resume: true
+        highlights:
+          - "Designed 500+ customizable icons in multiple styles (outline, filled, duotone)"
+          - "Available in Figma, SVG, and React component formats"
+          - "Downloaded 10K+ times from design community platforms"
+
+      - name: "Portfolio Website"
+        date: "2023-05"
+        show_on_resume: false
+        highlights:
+          - "Built interactive portfolio showcasing design process and case studies"
+          - "Implemented dark mode, micro-interactions, and smooth animations"
+          - "Live at: [alexrivera.design](https://alexrivera.design)"

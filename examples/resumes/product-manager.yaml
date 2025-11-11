@@ -1,0 +1,145 @@
+cv:
+  name: "Marcus Chen"
+  location: "Seattle, WA"
+  email: "marcus@marcuschen.io"
+  phone: "tel:+1-555-0345"
+  website: "https://marcuschen.io"
+  resume_url: "https://marcuschen.io/resume.pdf"
+  social_networks:
+    - network: "LinkedIn"
+      username: "marcus-chen-pm"
+    - network: "Twitter"
+      username: "marcuschen"
+
+  sections:
+    intro:
+      - "Strategic product manager with 7+ years of experience driving product vision, strategy, and execution for B2B and B2C tech products."
+      - "Proven track record of launching products that achieve 10M+ users and deliver measurable business impact through data-driven decision making."
+      - "Skilled in stakeholder management, agile methodologies, and balancing user needs with business objectives to ship products customers love."
+
+    technologies:
+      - label: "Product Management"
+        details: "Product Strategy, Roadmapping, User Stories, Prioritization Frameworks (RICE, MoSCoW), OKRs, Go-to-Market Strategy"
+      - label: "Analytics & Data"
+        details: "Google Analytics, Mixpanel, Amplitude, SQL, A/B Testing, Looker, Tableau"
+      - label: "Collaboration Tools"
+        details: "Jira, Confluence, Figma, Miro, Slack, Notion, Asana"
+      - label: "Technical Skills"
+        details: "API Design, Technical Documentation, Agile/Scrum, Basic HTML/CSS/JavaScript"
+      - label: "Business Skills"
+        details: "Market Research, Competitive Analysis, P&L Management, Stakeholder Communication"
+
+    experience:
+      - company: "Cloud Platform Corp"
+        position: "Senior Product Manager"
+        location: "Seattle, WA (Hybrid)"
+        start_date: "2021-04"
+        highlights:
+          - "**Led platform team** building developer tools used by 50K+ developers, growing API usage by 200%"
+          - "**Defined and executed product roadmap** resulting in $15M ARR from new enterprise features"
+          - "**Launched self-service onboarding** reducing time-to-first-API-call from 2 days to 15 minutes"
+          - "**Managed cross-functional team** of 12 (engineers, designers, data analysts) delivering 4 major releases per year"
+
+      - company: "SaaS Startup Inc"
+        position: "Product Manager"
+        location: "San Francisco, CA"
+        start_date: "2019-01"
+        end_date: "2021-03"
+        highlights:
+          - "Grew product from 100K to 2M users through strategic feature prioritization and growth experiments"
+          - "Increased user retention by 45% by implementing personalization and notification strategies"
+          - "Led discovery and delivery of mobile app achieving 4.7-star rating and 500K downloads"
+          - "Established product analytics framework enabling data-driven decision making across organization"
+
+      - company: "E-Commerce Platform LLC"
+        position: "Associate Product Manager"
+        location: "Remote"
+        start_date: "2017-06"
+        end_date: "2018-12"
+        highlights:
+          - "Managed checkout experience optimization increasing conversion rate by 18%"
+          - "Coordinated with engineering and design to ship 25+ A/B tests validating product hypotheses"
+          - "Created PRDs and user stories for 3 major feature releases"
+
+    education:
+      - institution: "University of Washington"
+        location: "Seattle, WA"
+        area: "Business Administration with focus on Technology Management"
+        degree: "M.B.A."
+        start_date: "2015-09"
+        end_date: "2017-05"
+        highlights:
+          - "GPA: **3.9**/4.0"
+          - "Focus: Product Management, Data Analytics, Technology Strategy"
+
+      - institution: "UC Berkeley"
+        location: "Berkeley, CA"
+        area: "Computer Science & Business"
+        degree: "B.S."
+        start_date: "2011-09"
+        end_date: "2015-05"
+        highlights:
+          - "Dual degree program combining technical and business skills"
+
+    professional_projects:
+      - name: "Developer Platform Launch"
+        date: "2023-03 – 2024-01"
+        show_on_resume: true
+        highlights:
+          - "Led 0-to-1 launch of API platform enabling third-party integrations, onboarding 500+ partners in first 6 months"
+          - "Defined product vision, pricing strategy, and go-to-market plan in collaboration with sales and marketing"
+          - "Achieved $5M ARR in year one, exceeding revenue targets by 25%"
+          - "Built comprehensive developer documentation and SDK libraries for 5 programming languages"
+
+      - name: "AI-Powered Recommendations Engine"
+        date: "2022-06 – 2023-02"
+        show_on_resume: true
+        highlights:
+          - "Spearheaded ML-powered personalization feature increasing engagement by 35% and revenue by $8M annually"
+          - "Collaborated with data science team to define success metrics and evaluation criteria"
+          - "Managed staged rollout to 10M users with continuous monitoring and iteration"
+          - "Presented results to C-suite and board, securing $2M budget for ML team expansion"
+
+      - name: "Mobile App Redesign"
+        date: "2021-09 – 2022-05"
+        show_on_resume: true
+        highlights:
+          - "Drove complete mobile app redesign based on user research with 100+ customers"
+          - "Increased daily active users by 50% and app rating from 3.8 to 4.6 stars"
+          - "Reduced support tickets by 30% through improved UX and self-service features"
+          - "Coordinated cross-functional team across 3 time zones delivering on-time launch"
+
+      - name: "Subscription Model Launch"
+        date: "2020-11 – 2021-08"
+        show_on_resume: false
+        highlights:
+          - "Led transition from one-time purchase to subscription model, achieving 60% conversion of existing users"
+          - "Designed tiered pricing strategy and feature gating based on customer segmentation analysis"
+          - "Generated $3M additional ARR in first year post-launch"
+
+    personal_projects:
+      - name: "Product Management Blog"
+        date: "2022-01 – Present"
+        show_on_resume: true
+        highlights:
+          - "Write weekly articles about product strategy, prioritization, and career growth"
+          - "10K+ monthly readers, featured in Product School and Mind the Product newsletters"
+          - "Published case studies from real product launches (with anonymized data)"
+          - "Available at: [marcuschen.io/blog](https://marcuschen.io/blog)"
+
+      - name: "PM Interview Prep Resource"
+        date: "2023-06"
+        show_on_resume: true
+        highlights:
+          - "Created comprehensive guide covering product sense, execution, and behavioral interviews"
+          - "Includes 50+ practice questions with sample frameworks and solutions"
+          - "Helped 500+ aspiring PMs land roles at top tech companies"
+          - "Free resource: [github.com/marcuschen/pm-interview-guide](https://github.com/marcuschen/pm-interview-guide)"
+
+    publication:
+      - title: "Building Developer-First Products: Lessons from the API Economy"
+        authors:
+          - "Marcus Chen"
+        date: "2023-11-15"
+        journal: "Product Coalition (Medium)"
+        doi: "https://productcoalition.com/building-developer-first-products"

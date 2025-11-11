@@ -1,0 +1,102 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for the terminal portfolio template
+title: "[Feature]: "
+labels: ["enhancement", "feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! We appreciate your ideas to make this template better.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - New Terminal Command
+        - Theme/Styling
+        - Resume/Data Display
+        - PWA/Mobile
+        - Documentation
+        - GitHub Actions/Deployment
+        - Developer Experience
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: "Example: I'm always frustrated when I can't showcase my certifications in a dedicated section"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: "Example: Add a 'certifications' command that displays a list of professional certifications with badges"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: "Example: Could add certifications to the 'about' command, but a dedicated section would be better"
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: How Important is This?
+      description: How much would this feature improve your experience?
+      options:
+        - Critical - Can't use template without it
+        - High - Would significantly improve usability
+        - Medium - Nice to have
+        - Low - Minor improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or Mockups
+      description: |
+        If you have examples from other sites, mockups, or code snippets, please share them here.
+        You can drag and drop images directly into this field.
+
+  - type: dropdown
+    id: willing-to-implement
+    attributes:
+      label: Would You Be Willing to Implement This?
+      description: Are you interested in contributing code for this feature?
+      options:
+        - "Yes, I can implement this myself"
+        - "Yes, with guidance from maintainers"
+        - "No, but I can help test it"
+        - "No, just requesting"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to make sure this hasn't been requested before
+          required: true
+        - label: This feature aligns with the template's goal of being easy to use for non-technical users
+          required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information about the feature request here

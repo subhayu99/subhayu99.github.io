@@ -1,0 +1,124 @@
+name: Bug Report
+description: Report a bug or issue with the terminal portfolio template
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible to help us fix the issue quickly.
+
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Usage Mode
+      description: Are you using Easy Mode (resume.yaml only) or Advanced Mode (custom code)?
+      options:
+        - Easy Mode (resume.yaml only)
+        - Advanced Mode (customizing code)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: "Example: The 'skills' command shows a blank page instead of my skills list"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Run command '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "Example: Skills should be displayed in a formatted list"
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: "Example: Page is blank with no content"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: |
+        If applicable, paste any error messages from:
+        - Browser console (F12 → Console tab)
+        - GitHub Actions workflow logs
+        - Terminal/command line output
+      render: shell
+
+  - type: input
+    id: url
+    attributes:
+      label: Portfolio URL
+      description: Link to your deployed portfolio (if applicable)
+      placeholder: "https://yourusername.github.io"
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Which browser are you using?
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js Version (Advanced Mode only)
+      description: If using Advanced Mode, run `node --version` and paste the output
+      placeholder: "v18.19.0"
+
+  - type: textarea
+    id: resume-snippet
+    attributes:
+      label: Resume YAML Snippet (if relevant)
+      description: If the issue is related to your resume.yaml, paste the relevant section
+      render: yaml
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to make sure this isn't a duplicate
+          required: true
+        - label: I have checked the [Troubleshooting Guide](../docs/TROUBLESHOOTING.md)
+          required: true
+        - label: I am using the latest version of the template
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or information about the problem here

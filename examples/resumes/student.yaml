@@ -1,0 +1,141 @@
+cv:
+  name: "Sarah Johnson"
+  location: "Boston, MA"
+  email: "sarah.johnson@university.edu"
+  phone: "tel:+1-555-0456"
+  website: "https://sarahjohnson.dev"
+  resume_url: "https://sarahjohnson.dev/resume.pdf"
+  social_networks:
+    - network: "LinkedIn"
+      username: "sarah-johnson-cs"
+    - network: "GitHub"
+      username: "sarahjdev"
+
+  sections:
+    intro:
+      - "Computer Science student graduating May 2025 with strong foundation in software development, algorithms, and web technologies."
+      - "Completed 2 software engineering internships building full-stack applications and contributing to production codebases."
+      - "Passionate about creating accessible, user-friendly applications and continuously learning new technologies through personal projects."
+
+    technologies:
+      - label: "Languages"
+        details: "Python, JavaScript, TypeScript, Java, C++, SQL, HTML/CSS"
+      - label: "Frontend"
+        details: "React, Next.js, Tailwind CSS, Bootstrap, Responsive Design"
+      - label: "Backend"
+        details: "Node.js, Express, Flask, Django, REST APIs"
+      - label: "Databases"
+        details: "PostgreSQL, MongoDB, MySQL, Firebase"
+      - label: "Tools & Platforms"
+        details: "Git, GitHub, Docker, VS Code, Postman, Figma"
+      - label: "Concepts"
+        details: "Data Structures, Algorithms, OOP, Agile, Testing, CI/CD"
+
+    experience:
+      - company: "Tech Company Inc"
+        position: "Software Engineering Intern"
+        location: "San Francisco, CA (Remote)"
+        start_date: "2024-06"
+        end_date: "2024-08"
+        highlights:
+          - "Built new dashboard feature using React and TypeScript serving 10K+ users"
+          - "Improved API response times by 30% through database query optimization"
+          - "Collaborated with senior engineers through code reviews and pair programming"
+          - "Participated in daily stand-ups and sprint planning using Agile methodology"
+
+      - company: "Startup XYZ"
+        position: "Web Development Intern"
+        location: "Boston, MA"
+        start_date: "2023-06"
+        end_date: "2023-08"
+        highlights:
+          - "Developed responsive landing pages and marketing site using Next.js and Tailwind CSS"
+          - "Implemented form validation and user authentication features"
+          - "Fixed 15+ bugs improving overall application stability"
+          - "Wrote technical documentation for internal APIs"
+
+    education:
+      - institution: "Massachusetts Institute of Technology"
+        location: "Cambridge, MA"
+        area: "Computer Science"
+        degree: "B.S."
+        start_date: "2021-09"
+        end_date: "2025-05"
+        highlights:
+          - "GPA: **3.7**/4.0"
+          - "**Relevant Coursework**: Data Structures & Algorithms, Web Development, Database Systems, Software Engineering, Machine Learning, Computer Systems"
+          - "**Activities**: Women in Computer Science (Vice President), HackMIT Organizer, ACM Member"
+          - "**Awards**: Dean's List (Fall 2023, Spring 2024), Hackathon Winner (MIT IAP 2024)"
+
+    professional_projects:
+      - name: "Course Registration System"
+        date: "2024-09 – 2024-12"
+        show_on_resume: true
+        highlights:
+          - "Led team of 4 students building web app for course registration and scheduling"
+          - "Designed database schema and implemented RESTful API using Express and PostgreSQL"
+          - "Built responsive frontend with React handling complex scheduling logic and conflict detection"
+          - "Deployed on AWS EC2 with automated CI/CD pipeline using GitHub Actions"
+
+      - name: "Machine Learning Hackathon Project"
+        date: "2024-01"
+        show_on_resume: true
+        highlights:
+          - "**Won 1st place** among 50+ teams at MIT IAP Hackathon"
+          - "Built sentiment analysis tool for customer reviews using Python and scikit-learn"
+          - "Created Flask API and React dashboard for real-time predictions"
+          - "Achieved 87% accuracy on test dataset after hyperparameter tuning"
+
+      - name: "Algorithm Visualizer"
+        date: "2023-09 – 2023-12"
+        show_on_resume: true
+        highlights:
+          - "Developed interactive web app visualizing sorting and graph algorithms"
+          - "Implemented 8 algorithms with step-by-step animation and adjustable speed controls"
+          - "Built with vanilla JavaScript, HTML5 Canvas, and CSS animations"
+          - "Used by 50+ classmates as study tool for algorithms course"
+
+    personal_projects:
+      - name: "Task Management App"
+        date: "2024-03"
+        show_on_resume: true
+        highlights:
+          - "Built full-stack todo app with user authentication and real-time updates"
+          - "Used React, Firebase Authentication, and Firestore for backend"
+          - "Implemented drag-and-drop interface for task organization"
+          - "Deployed on Vercel: [tasks.sarahjohnson.dev](https://tasks.sarahjohnson.dev)"
+
+      - name: "Weather Dashboard"
+        date: "2023-11"
+        show_on_resume: true
+        highlights:
+          - "Created weather forecast app using OpenWeatherMap API"
+          - "Displays 5-day forecast with hourly breakdowns and weather maps"
+          - "Implemented geolocation and city search functionality"
+          - "Built with React, Chart.js for data visualization, and Tailwind CSS"
+
+      - name: "Portfolio Website"
+        date: "2023-08"
+        show_on_resume: false
+        highlights:
+          - "Designed and developed personal portfolio showcasing projects and skills"
+          - "Implemented dark mode, smooth scrolling, and responsive design"
+          - "Built with Next.js and deployed on Vercel"
+          - "Live at: [sarahjohnson.dev](https://sarahjohnson.dev)"
+
+      - name: "Recipe Finder"
+        date: "2023-05"
+        show_on_resume: false
+        highlights:
+          - "Created app to search and save recipes using Spoonacular API"
+          - "Implemented filtering by dietary restrictions and ingredients"
+          - "Built with React and local storage for saving favorites"
+
+    # Optional: Add certifications, volunteer work, or other relevant sections
+    # publication:
+    #   - title: "Optimizing Sorting Algorithms: A Comparative Analysis"
+    #     authors:
+    #       - "Sarah Johnson"
+    #     date: "2024-05-15"
+    #     journal: "Undergraduate Research Journal"
+    #     doi: "example.com/paper"
