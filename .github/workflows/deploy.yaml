@@ -88,11 +88,6 @@ jobs:
 
         echo "✅ Template setup complete!"
 
-    - name: 📄 Generate Resume PDF and JSON
-      run: npm run generate-resume:ci
-      env:
-        NODE_ENV: ci
-
     - name: 🔧 Compute base path for deployment
       id: compute-base-path
       run: |
@@ -115,6 +110,7 @@ jobs:
         echo "BASE_PATH=${BASE_PATH}" >> $GITHUB_OUTPUT
 
     - name: 🏗️  Build application
+      # Note: npm run build now automatically generates resume files if resume.yaml exists
       run: npm run build
       env:
         VITE_BASE_PATH: ${{ steps.compute-base-path.outputs.BASE_PATH }}
