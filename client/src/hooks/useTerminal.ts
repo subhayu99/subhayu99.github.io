@@ -235,6 +235,93 @@ async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<stri
   `.trim();
 }
 
+// Command Registry Types and Definitions
+interface CommandMetadata {
+  name: string;
+  description: string;
+  category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal';
+  /**
+   * Function to check if command should be available based on portfolio data
+   * Returns true if command should be shown, false to hide it
+   */
+  isAvailable?: (data: PortfolioData | null) => boolean;
+  /** Command aliases */
+  aliases?: string[];
+}
+
+const COMMAND_REGISTRY: CommandMetadata[] = [
+  // INFORMATION Commands (always available)
+  { name: 'help', description: 'Show this help message', category: 'information' },
+  { name: 'resume', description: 'Open resume.pdf in a new tab', category: 'information' },
+  { name: 'welcome', description: 'Show the welcome message', category: 'information' },
+  { name: 'about', description: 'Learn about my background', category: 'information' },
+  { name: 'whoami', description: 'Display current user info', category: 'information' },
+  { name: 'neofetch', description: 'Display system information', category: 'information' },
+
+  // PROFESSIONAL Commands (conditional based on data)
+  {
+    name: 'skills',
+    description: 'View my technical skills and expertise',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.technologies && data.cv.sections.technologies.length > 0
+  },
+  {
+    name: 'experience',
+    description: 'Browse my work experience',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.experience && data.cv.sections.experience.length > 0
+  },
+  {
+    name: 'education',
+    description: 'View my educational background',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.education && data.cv.sections.education.length > 0
+  },
+  {
+    name: 'projects',
+    description: 'Explore my professional projects',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.professional_projects && data.cv.sections.professional_projects.length > 0
+  },
+  {
+    name: 'personal',
+    description: 'Check out my personal projects',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.personal_projects && data.cv.sections.personal_projects.length > 0
+  },
+  {
+    name: 'publications',
+    description: 'View my research publications',
+    category: 'professional',
+    isAvailable: (data) => !!data?.cv.sections.publication && data.cv.sections.publication.length > 0
+  },
+  {
+    name: 'timeline',
+    description: 'Show career timeline',
+    category: 'professional',
+    isAvailable: (data) => {
+      // Timeline needs at least experience or education
+      const hasExperience = !!data?.cv.sections.experience && data.cv.sections.experience.length > 0;
+      const hasEducation = !!data?.cv.sections.education && data.cv.sections.education.length > 0;
+      return hasExperience || hasEducation;
+    }
+  },
+
+  // CONTACT Commands (always available)
+  { name: 'contact', description: 'Get in touch with me', category: 'contact' },
+
+  // TOOLS Commands (always available)
+  { name: 'search', description: 'Search through my portfolio content', category: 'tools' },
+  { name: 'theme', description: 'Change terminal color theme', category: 'tools' },
+  { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
+
+  // TERMINAL Commands (always available)
+  { name: 'clear', description: 'Clear the terminal screen', category: 'terminal' },
+  { name: 'ls', description: 'List available commands', category: 'terminal' },
+  { name: 'pwd', description: 'Print working directory', category: 'terminal' },
+  { name: 'cat', description: 'Display file contents', category: 'terminal' },
+];
+
 export function useTerminal({ portfolioData }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
@@ -266,6 +353,29 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     setLines([]);
   }, []);
 
+  // Get available commands based on portfolio data
+  const getAvailableCommands = useCallback((): CommandMetadata[] => {
+    return COMMAND_REGISTRY.filter(cmd => {
+      // If command has no availability check, it's always available
+      if (!cmd.isAvailable) return true;
+      // Otherwise, check if data meets requirements
+      return cmd.isAvailable(portfolioData);
+    });
+  }, [portfolioData]);
+
+  // Get all command names including aliases
+  const getAllCommandNames = useCallback((): string[] => {
+    const available = getAvailableCommands();
+    const names: string[] = [];
+    available.forEach(cmd => {
+      names.push(cmd.name);
+      if (cmd.aliases) {
+        names.push(...cmd.aliases);
+      }
+    });
+    return names;
+  }, [getAvailableCommands]);
+
   const showWelcomeMessage = useCallback(async () => {
     if (portfolioData) {
       const welcomeHtml = await getWelcomeMessageHtml(portfolioData);
@@ -274,59 +384,60 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   }, [addLine, portfolioData]);
 
   const showHelp = useCallback(() => {
-    // Create the help content as a single HTML string
+    // Get available commands and group by category
+    const availableCommands = getAvailableCommands();
+    const commandsByCategory: Record<string, CommandMetadata[]> = {
+      information: [],
+      professional: [],
+      contact: [],
+      tools: [],
+      terminal: []
+    };
+
+    // Group commands by category
+    availableCommands.forEach(cmd => {
+      commandsByCategory[cmd.category].push(cmd);
+    });
+
+    // Category display config
+    const categoryConfig = {
+      information: { emoji: '📋', label: 'INFORMATION' },
+      professional: { emoji: '💼', label: 'PROFESSIONAL' },
+      contact: { emoji: '📧', label: 'CONTACT' },
+      tools: { emoji: '🔧', label: 'TOOLS' },
+      terminal: { emoji: '⌨️', label: 'TERMINAL' }
+    };
+
+    // Generate command HTML for each category
+    const generateCategoryHtml = (category: string, commands: CommandMetadata[]) => {
+      if (commands.length === 0) return '';
+      const config = categoryConfig[category as keyof typeof categoryConfig];
+      const commandsHtml = commands.map(cmd => {
+        const argHint = ['search', 'theme', 'cat'].includes(cmd.name) ? '<span class="text-white"> [...]</span>' : '';
+        return `<div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=${cmd.name}" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">${cmd.name}</a></span>${argHint}</div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">${cmd.description}</span></div></div>`;
+      }).join('\n              ');
+
+      return `
+          <div>
+            <div class="text-terminal-bright-green font-bold mb-2">${config.emoji} ${config.label}</div>
+            <div class="space-y-1 ml-2">
+              ${commandsHtml}
+            </div>
+          </div>`;
+    };
+
+    // Build help box HTML
     const helpBox = `
       <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
         <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
           <span class="text-terminal-bright-green text-sm font-bold">AVAILABLE COMMANDS</span>
         </div>
         <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">📋 INFORMATION</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=help" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">help</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show this help message</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=resume" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">resume</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Open resume.pdf in a new tab</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=welcome" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">welcome</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show the welcome message</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display introduction and quick links</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=whoami" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">whoami</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current user information</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=neofetch" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">neofetch</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display system information (portfolio stats)</span></div></div>
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">💼 PROFESSIONAL</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List technical skills and technologies</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show work experience and roles</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=education" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">education</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display educational background</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show professional projects</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show personal projects and open source work</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=publications" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">publications</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show research publications and papers</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display career timeline and milestones</span></div></div>
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">📧 CONTACT</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display contact information and social links</span></div></div>
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">🔧 TOOLS</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=search" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">search</a></span><span class="text-white"> [term]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Search across all content</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=theme" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">theme</a></span><span class="text-white"> [name]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Change terminal color theme</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=replicate" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">replicate</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Create your own terminal portfolio</span></div></div>
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">⌨️ TERMINAL</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=clear" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">clear</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Clear the terminal screen</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=ls" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">ls</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">List available commands</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=pwd" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">pwd</a></span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Show current directory</span></div></div>
-              <div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=cat" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">cat</a></span><span class="text-white"> [file]</span></div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">Display file contents (try: \`<a href="?cmd=cat%20resume.txt" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">cat resume.txt</a>\`)</span></div></div>
-            </div>
-          </div>
+          ${generateCategoryHtml('information', commandsByCategory.information)}
+          ${generateCategoryHtml('professional', commandsByCategory.professional)}
+          ${generateCategoryHtml('contact', commandsByCategory.contact)}
+          ${generateCategoryHtml('tools', commandsByCategory.tools)}
+          ${generateCategoryHtml('terminal', commandsByCategory.terminal)}
           <div class="border-t border-terminal-green/30 pt-3">
             <div class="text-terminal-yellow font-bold mb-2">💡 QUICK TIPS</div>
             <div class="space-y-1 ml-2 text-xs">
@@ -343,10 +454,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         </div>
       </div>
     `.trim();
-    
+
     // Add the entire help box as a single line
     addLine(helpBox, 'w-full');
-  }, [addLine]);
+  }, [addLine, getAvailableCommands]);
 
   const openResumePdf = useCallback(() => {
     if (portfolioData) {
@@ -844,9 +955,14 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
+    if (!portfolioData?.cv.sections.professional_projects || portfolioData.cv.sections.professional_projects.length === 0) {
+      addLine(uiText.messages.error.noProfessionalProjects, 'text-terminal-red');
+      return;
+    }
+
     // Create the projects content as a single HTML string with collapsible functionality
     const projectsBox = getProjectsHtml(portfolioData.cv.sections.professional_projects, 'professional');
-    
+
     // Add the entire projects box as a single line
     addLine(projectsBox, 'w-full');
   }, [addLine, portfolioData]);
@@ -857,9 +973,14 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
+    if (!portfolioData?.cv.sections.personal_projects || portfolioData.cv.sections.personal_projects.length === 0) {
+      addLine(uiText.messages.error.noPersonalProjects, 'text-terminal-red');
+      return;
+    }
+
     // Create the projects content as a single HTML string with collapsible functionality
     const projectsBox = getProjectsHtml(portfolioData.cv.sections.personal_projects, 'personal');
-    
+
     // Add the entire projects box as a single line
     addLine(projectsBox, 'w-full');
   }, [addLine, portfolioData]);
@@ -1998,11 +2119,11 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
   const listCommands = useCallback(() => {
     addLine('<span class="text-terminal-yellow font-bold">Available commands:</span>');
     addLine('');
-    const commands = ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'replicate', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const commands = getAllCommandNames();
     commands.forEach(cmd => {
       addLine(`<span class="text-terminal-green">${cmd}</span>`);
     });
-  }, [addLine]);
+  }, [addLine, getAllCommandNames]);
 
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
@@ -2013,6 +2134,24 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     
     const args = command.trim().split(' ');
     const cmd = args[0].toLowerCase();
+
+    // Check if command is available (exists in registry and passes availability check)
+    const availableCommandNames = getAllCommandNames();
+    if (!availableCommandNames.includes(cmd)) {
+      // Check if command exists in registry but is unavailable due to missing data
+      const commandInRegistry = COMMAND_REGISTRY.find(c =>
+        c.name === cmd || c.aliases?.includes(cmd)
+      );
+
+      if (commandInRegistry && commandInRegistry.isAvailable && !commandInRegistry.isAvailable(portfolioData)) {
+        addLine(`Command '${cmd}' is not available (no data found)`, 'text-terminal-yellow');
+        return;
+      }
+
+      // Command doesn't exist at all
+      addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
+      return;
+    }
 
     switch (cmd) {
       case 'help':
@@ -2108,7 +2247,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
-    const commands = ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'replicate', 'clone', 'fork', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
+    const commands = getAllCommandNames();
     const themeSubCommands = ['matrix', 'blue', 'purple', 'amber', 'red', 'reset']
     const subCommands = ['cat resume.txt', ...themeSubCommands.map(color => `theme ${color}`)];
     var matched = commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
@@ -2116,11 +2255,11 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       matched = subCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));
     }
     return matched;
-  }, []);
+  }, [getAllCommandNames]);
 
   const getAllCommands = useCallback(() => {
-    return ['help', 'resume', 'welcome', 'about', 'skills', 'experience', 'education', 'projects', 'personal', 'contact', 'publications', 'timeline', 'search', 'theme', 'replicate', 'clone', 'fork', 'clear', 'whoami', 'ls', 'pwd', 'cat', 'neofetch'];
-  }, []);
+    return getAllCommandNames();
+  }, [getAllCommandNames]);
 
   return {
     lines,
