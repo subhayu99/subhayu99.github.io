@@ -565,15 +565,17 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               <div class="flex items-start gap-2">
                 <span class="text-terminal-yellow font-bold">3.</span>
                 <div>
-                  <span class="text-white">Upload your </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
-                  <span class="text-white"> to the repo</span>
+                  <span class="text-white">Enable GitHub Actions & Pages: </span>
+                  <span class="text-terminal-bright-yellow">Settings → Pages → Deploy from Actions</span>
+                  <div class="text-terminal-yellow/70 text-xs mt-1">⚠️ Do this BEFORE uploading resume to avoid errors!</div>
                 </div>
               </div>
               <div class="flex items-start gap-2">
                 <span class="text-terminal-yellow font-bold">4.</span>
                 <div>
-                  <span class="text-white">Enable GitHub Pages: Settings → Pages → Deploy from Actions</span>
+                  <span class="text-white">Upload your </span>
+                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
+                  <span class="text-white"> to the repo - deployment starts automatically!</span>
                 </div>
               </div>
             </div>

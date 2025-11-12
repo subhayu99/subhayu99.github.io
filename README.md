@@ -26,6 +26,7 @@ This repository uses a **dual-branch strategy**:
 - 🎨 **Beautiful Terminal UI** - Retro-style terminal interface with multiple themes
 - 📱 **Fully Responsive** - Works perfectly on desktop, tablet, and mobile
 - 🚀 **Zero-Code Setup** - Use visual resume builder, no programming needed
+- 🤖 **AI Resume Converter** - Convert existing resumes to YAML with AI (built-in!)
 - ⚡ **Lightning Fast** - Built with React and Vite for optimal performance
 - 📄 **Auto-Generated PDF** - Your resume automatically converts to downloadable PDF
 - 🎭 **Multiple Themes** - Matrix, Blue, Purple, Amber, Red, and more
@@ -51,22 +52,39 @@ Visit **[app.rendercv.com](https://app.rendercv.com)** and create your resume us
 
 #### 💡 Pro Tip: Use AI to Convert Your Existing Resume (Even Faster!)
 
-Already have a resume? Skip the manual entry and let AI do the work:
+Already have a resume? Skip the manual entry and let AI do the work!
 
-1. **Get the example YAML** - Open [`resume.yaml.example`](./resume.yaml.example) in your repository (it's included in the template)
-2. **Prepare your prompt** - Use this template with ChatGPT, Claude, or Gemini:
+**🤖 Method 1: Built-in AI Resume Converter (Recommended)**
+
+After deploying your portfolio (Steps 2-4), you can use the built-in converter:
+
+1. Visit your live portfolio at `https://yourusername.github.io`
+2. Type `replicate` in the terminal
+3. Click **"Get AI Conversion Prompt"** button
+4. Copy the comprehensive prompt to your clipboard
+5. Paste it into ChatGPT, Claude, or Gemini along with your resume
+6. Get perfectly formatted `resume.yaml` output
+7. Upload it to your repository to update your portfolio
+
+**Time:** ~2 minutes | **Benefit:** Always uses the latest schema format!
+
+**📝 Method 2: Manual AI Conversion (Before Deployment)**
+
+If you want to prepare your resume before deploying:
+
+1. Open [`resume.yaml.example`](./resume.yaml.example) in the template repository
+2. Copy its contents
+3. Use this prompt with ChatGPT, Claude, or Gemini:
    ```
-   I have my resume below. Please convert it to the RenderCV YAML format shown in this example:
-   [Paste the contents of resume.yaml.example]
+   I have my resume below. Please convert it to this YAML format:
+   [Paste resume.yaml.example contents]
 
    Here's my resume:
    [Paste your resume text, PDF content, or LinkedIn profile]
 
-   Please maintain all my information but structure it exactly like the example YAML.
+   Please maintain all my information but structure it exactly like the example.
    ```
-3. **Copy & Save** - Copy the AI-generated YAML and save it as `resume.yaml`
-
-**Time:** ~2 minutes (vs 5+ minutes manual entry!)
+4. Copy the AI-generated YAML and save it as `resume.yaml`
 
 **Why this works:** AI excels at reformatting structured data. You get perfect YAML syntax without learning the format!
 
@@ -81,21 +99,25 @@ Already have a resume? Skip the manual entry and let AI do the work:
 
 **Time:** ~1 minute
 
-### Step 3: Upload Your Resume
+### Step 3: Enable GitHub Actions & Pages
+
+**Important:** Do this BEFORE uploading your resume to avoid workflow errors!
+
+1. Go to **Settings** → **Pages** (in left sidebar)
+2. Under **"Source"**, select **"GitHub Actions"**
+3. Go to **Settings** → **Actions** → **General**
+4. Under **"Actions permissions"**, ensure actions are enabled
+
+**Time:** ~1 minute
+
+### Step 4: Upload Your Resume
 
 1. In your new repository, click **"Add file"** → **"Upload files"**
 2. Drag and drop your `resume.yaml` file from Step 1
 3. Commit the file (click "Commit changes")
+4. The deployment will start automatically! Wait 2-5 minutes
 
-**Time:** ~1 minute
-
-### Step 4: Enable GitHub Pages
-
-1. Go to **Settings** → **Pages** (in left sidebar)
-2. Under **"Source"**, select **"GitHub Actions"**
-3. Wait 2-5 minutes for the initial deployment
-
-**Time:** ~3 minutes (mostly waiting)
+**Time:** ~3 minutes (mostly waiting for deployment)
 
 ### 🎉 Done!
 
@@ -245,7 +267,7 @@ Once your portfolio is live, try these commands in the terminal:
 | `contact` | Display contact information and social links |
 | `resume` | Download resume PDF |
 | `theme [name]` | Change terminal color theme |
-| `replicate` | Learn how to create your own portfolio |
+| `replicate` | AI Resume Converter & portfolio setup guide |
 | `neofetch` | Display system information |
 | `clear` | Clear the terminal screen |
 
@@ -262,8 +284,10 @@ subhayu99.github.io/
 │   └── public/
 │       ├── data/           # Generated resume data
 │       └── icons/          # PWA icons
-├── scripts/                # Build scripts
-│   └── generate-resume.js  # Resume generation script
+├── scripts/                     # Build scripts
+│   ├── generate-resume.js       # Resume generation script
+│   ├── generate-ai-prompt.js    # AI conversion prompt generator
+│   └── build.js                 # Smart build script
 ├── docs/                   # Documentation
 ├── examples/               # Example resume files
 ├── .github/workflows/      # GitHub Actions workflows
