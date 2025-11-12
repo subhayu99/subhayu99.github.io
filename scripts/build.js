@@ -43,6 +43,18 @@ if (existsSync(resumePath)) {
   console.log('ℹ️  No resume.yaml found - building with generic metadata\n');
 }
 
+// Generate AI resume conversion prompt
+console.log('🤖 Generating AI resume conversion prompt...\n');
+try {
+  execSync('node scripts/generate-ai-prompt.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+} catch (error) {
+  console.warn('⚠️  Could not generate AI prompt');
+  console.warn('   Continuing with build...\n');
+}
+
 // Run vite build
 console.log('🏗️  Building application...\n');
 execSync('vite build', {
