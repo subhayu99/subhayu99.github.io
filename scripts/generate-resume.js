@@ -57,7 +57,13 @@ if (!existsSync(sourceYamlPath)) {
 }
 
 const yamlContent = readFileSync(sourceYamlPath, 'utf8');
-const fullData = load(yamlContent);
+const fullData = load(yamlContent, { sortKeys: false });
+
+// Log original section order for debugging
+if (config.build.verbose && fullData.cv?.sections) {
+  const originalSectionNames = Object.keys(fullData.cv.sections);
+  console.log('📋 Original section order from YAML:', originalSectionNames.join(' → '));
+}
 
 console.log('✅ Source YAML loaded successfully\n');
 
@@ -86,7 +92,6 @@ const resumeData = JSON.parse(JSON.stringify(fullData)); // Deep clone
 
 // Process each project section defined in config
 for (const sectionName of config.fields.projectSections) {
-  const sectionPath = `cv.sections.${sectionName}`;
   const projects = resumeData.cv?.sections?.[sectionName];
 
   if (projects && Array.isArray(projects)) {
@@ -152,8 +157,14 @@ if (config.build.generatePdf || config.build.generateMarkdown) {
     console.log('📝 Creating temporary YAML for rendercv...');
   }
 
+  // Log section order for debugging
+  if (config.build.verbose && resumeData.cv?.sections) {
+    const sectionNames = Object.keys(resumeData.cv.sections);
+    console.log('📋 Section order:', sectionNames.join(' → '));
+  }
+
   const tempYamlPath = join(rootDir, config.paths.tempYaml);
-  const tempYamlContent = dump(resumeData, { lineWidth: -1, noRefs: true });
+  const tempYamlContent = dump(resumeData, { lineWidth: -1, noRefs: true, sortKeys: false });
   writeFileSync(tempYamlPath, tempYamlContent, 'utf8');
   console.log('✅ Temporary YAML created\n');
 
@@ -267,7 +278,7 @@ if (config.build.generateJson) {
 
   // Convert to JSON with configurable formatting
   const jsonReplacer = config.build.jsonSortKeys
-    ? (key, value) => {
+    ? (_key, value) => {
         if (value && typeof value === 'object' && !Array.isArray(value)) {
           return Object.keys(value).sort().reduce((sorted, k) => {
             sorted[k] = value[k];
