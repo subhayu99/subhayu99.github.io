@@ -29,7 +29,7 @@ if (existsSync(resumePath)) {
     execSync('which rendercv', { stdio: 'pipe' });
 
     // Run generate-resume
-    execSync('npm run generate-resume', {
+    execSync('npm run generate-resume:prod', {
       stdio: 'inherit',
       cwd: rootDir
     });
