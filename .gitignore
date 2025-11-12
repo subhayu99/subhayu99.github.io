@@ -32,6 +32,7 @@ client/public/data/neofetch-small.txt
 # Generated resume files (Actions will regenerate)
 client/public/resume.pdf
 client/public/resume.md
+client/public/data/ai-resume-prompt.txt
 
 # Environment variables
 .env

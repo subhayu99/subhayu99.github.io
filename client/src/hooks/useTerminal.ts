@@ -481,50 +481,49 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         </div>
         <div class="p-4 space-y-4 text-sm">
 
-          <!-- AI-Powered Quick Start -->
-          <div class="border border-terminal-purple/40 rounded p-3 bg-terminal-purple/10">
-            <div class="text-terminal-bright-purple font-bold text-base mb-3 flex items-center gap-2">
-              <span>🤖 AI-POWERED QUICK START</span>
-              <span class="text-xs bg-terminal-purple/30 px-2 py-0.5 rounded">⚡ Fastest method</span>
+          <!-- AI-Powered Resume Converter -->
+          <div class="border border-terminal-cyan/40 rounded p-3 bg-terminal-cyan/10">
+            <div class="text-terminal-cyan font-bold text-base mb-2 flex items-center gap-2">
+              <span>🔄 AI-POWERED RESUME CONVERTER</span>
+              <span class="text-xs bg-terminal-cyan/30 px-2 py-0.5 rounded">⚡ Fastest method</span>
             </div>
             <div class="text-terminal-green mb-3">
-              <strong>Already have a resume?</strong> Use AI to convert it in ~2 minutes! No manual data entry needed.
+              <strong>Already have a resume?</strong> Convert it to YAML format using AI in ~2 minutes. No manual typing!
             </div>
-            <div class="space-y-2 ml-3">
+            <div class="space-y-2 ml-3 text-sm">
               <div class="flex items-start gap-2">
-                <span class="text-terminal-purple font-bold">1.</span>
-                <div>
-                  <span class="text-white">Get </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml.example</code>
-                  <span class="text-white"> from the template repo</span>
-                </div>
+                <span class="text-terminal-cyan font-bold">1.</span>
+                <span class="text-white">Click the button below to get the AI conversion prompt</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-terminal-purple font-bold">2.</span>
-                <div>
-                  <span class="text-white">Ask ChatGPT/Claude/Gemini:</span>
-                  <div class="bg-black/50 rounded p-2 mt-1 font-mono text-xs text-terminal-green/80">
-                    "Convert my resume to this YAML format:<br/>
-                    [paste resume.yaml.example]<br/>
-                    <br/>
-                    Here's my resume:<br/>
-                    [paste your resume/LinkedIn]"
-                  </div>
-                </div>
+                <span class="text-terminal-cyan font-bold">2.</span>
+                <span class="text-white">Copy the prompt and paste it into ChatGPT/Claude/Gemini</span>
               </div>
               <div class="flex items-start gap-2">
-                <span class="text-terminal-purple font-bold">3.</span>
-                <div>
-                  <span class="text-white">Save AI output as </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
-                  <span class="text-white"> and you're done!</span>
-                </div>
+                <span class="text-terminal-cyan font-bold">3.</span>
+                <span class="text-white">Attach or paste your existing resume (PDF, text, or LinkedIn)</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-terminal-cyan font-bold">4.</span>
+                <span class="text-white">AI generates perfect YAML - save as </span>
+                <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
               </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-terminal-purple/20 text-xs text-terminal-green flex items-center justify-between">
-              <span>⚡ Time: ~2 min</span>
-              <span>🤖 AI-Assisted</span>
-              <span>💯 Perfect YAML syntax</span>
+            <div class="mt-3 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+              <button
+                id="open-ai-prompt-modal"
+                class="bg-terminal-cyan/20 hover:bg-terminal-cyan/30 border border-terminal-cyan/50 px-4 py-2 rounded text-terminal-bright-cyan font-semibold transition-all duration-200 hover:scale-105 cursor-pointer">
+                📋 Get AI Conversion Prompt
+              </button>
+              <div class="text-xs text-terminal-cyan/70">
+                Works with any AI assistant (ChatGPT, Claude, Gemini)
+              </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-terminal-cyan/20 text-xs text-terminal-green flex flex-wrap items-center gap-3">
+              <span>⚡ ~2 minutes</span>
+              <span>🤖 AI-powered</span>
+              <span>💯 Perfect formatting</span>
+              <span>📝 Supports any resume format</span>
             </div>
           </div>
 
@@ -705,6 +704,125 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     `;
 
     addLine(replicateBox);
+
+    // Add event listener for AI prompt modal after DOM renders
+    setTimeout(() => {
+      const openModalBtn = document.getElementById('open-ai-prompt-modal');
+      if (openModalBtn) {
+        openModalBtn.addEventListener('click', async () => {
+          // Fetch the AI prompt
+          try {
+            const response = await fetch(`${apiConfig.basePath}/ai-resume-prompt.txt`);
+            if (!response.ok) throw new Error('Failed to fetch prompt');
+            const promptText = await response.text();
+
+            // Create modal
+            const modal = document.createElement('div');
+            modal.id = 'ai-prompt-modal';
+            modal.innerHTML = `
+              <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" id="modal-overlay">
+                <div class="bg-terminal-bg border-2 border-terminal-cyan rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+                  <!-- Header -->
+                  <div class="border-b border-terminal-cyan/50 px-4 py-3 flex items-center justify-between bg-terminal-cyan/10">
+                    <div class="flex items-center gap-3">
+                      <span class="text-terminal-cyan font-bold text-lg">🤖 AI Resume Conversion Prompt</span>
+                      <span class="text-xs bg-terminal-cyan/30 px-2 py-1 rounded text-terminal-cyan">Ready to Copy</span>
+                    </div>
+                    <button id="close-modal" class="text-terminal-cyan hover:text-terminal-bright-cyan text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-terminal-cyan/20 rounded transition-all">
+                      ×
+                    </button>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div class="text-terminal-green text-sm space-y-2">
+                      <p><strong>How to use this prompt:</strong></p>
+                      <ol class="list-decimal list-inside space-y-1 ml-2">
+                        <li>Copy the prompt below using the button</li>
+                        <li>Open ChatGPT, Claude, or Gemini</li>
+                        <li>Paste the prompt</li>
+                        <li>Attach or paste your existing resume (PDF, text, LinkedIn profile, etc.)</li>
+                        <li>AI will generate perfect YAML - save it as <code class="bg-black/50 px-1 rounded text-terminal-bright-green">resume.yaml</code></li>
+                      </ol>
+                    </div>
+
+                    <!-- Prompt Display -->
+                    <div class="bg-black/50 rounded border border-terminal-cyan/30 p-4 overflow-x-auto">
+                      <pre class="text-terminal-green text-xs leading-relaxed font-mono whitespace-pre-wrap">${promptText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+                    </div>
+                  </div>
+
+                  <!-- Footer -->
+                  <div class="border-t border-terminal-cyan/50 px-4 py-3 bg-terminal-cyan/5 flex flex-col sm:flex-row gap-2 items-center justify-between">
+                    <div class="text-xs text-terminal-cyan/70">
+                      Prompt size: ${(promptText.length / 1024).toFixed(1)} KB
+                    </div>
+                    <div class="flex gap-2">
+                      <button id="copy-prompt-btn" class="bg-terminal-cyan/20 hover:bg-terminal-cyan/30 border border-terminal-cyan/50 px-4 py-2 rounded text-terminal-bright-cyan font-semibold transition-all">
+                        📋 Copy Prompt
+                      </button>
+                      <button id="close-modal-btn" class="bg-terminal-red/20 hover:bg-terminal-red/30 border border-terminal-red/50 px-4 py-2 rounded text-terminal-red font-semibold transition-all">
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+
+            // Copy button handler
+            const copyBtn = document.getElementById('copy-prompt-btn');
+            copyBtn?.addEventListener('click', async () => {
+              try {
+                await navigator.clipboard.writeText(promptText);
+                copyBtn.textContent = '✓ Copied!';
+                copyBtn.classList.add('bg-terminal-green/30', 'border-terminal-green/50', 'text-terminal-bright-green');
+                setTimeout(() => {
+                  copyBtn.textContent = '📋 Copy Prompt';
+                  copyBtn.classList.remove('bg-terminal-green/30', 'border-terminal-green/50', 'text-terminal-bright-green');
+                }, 2000);
+              } catch (err) {
+                console.error('Failed to copy:', err);
+                copyBtn.textContent = '❌ Copy Failed';
+                setTimeout(() => {
+                  copyBtn.textContent = '📋 Copy Prompt';
+                }, 2000);
+              }
+            });
+
+            // Close modal handlers
+            const closeModal = () => {
+              modal.remove();
+              document.body.style.overflow = '';
+            };
+
+            document.getElementById('close-modal')?.addEventListener('click', closeModal);
+            document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
+            document.getElementById('modal-overlay')?.addEventListener('click', (e) => {
+              if (e.target.id === 'modal-overlay') closeModal();
+            });
+
+            // Escape key to close
+            const escHandler = (e: KeyboardEvent) => {
+              if (e.key === 'Escape') {
+                closeModal();
+                document.removeEventListener('keydown', escHandler);
+              }
+            };
+            document.addEventListener('keydown', escHandler);
+
+          } catch (error) {
+            console.error('Failed to load AI prompt:', error);
+            alert('Failed to load the AI conversion prompt. Please try again or check your connection.');
+          }
+        });
+      }
+    }, 100);
   }, [addLine]);
 
   const showAbout = useCallback(() => {
