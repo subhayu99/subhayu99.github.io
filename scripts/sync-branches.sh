@@ -7,19 +7,26 @@
 # that touch personal files.
 #
 # USAGE:
-#   ./scripts/sync-branches.sh [--dry-run]
+#   ./scripts/sync-branches.sh [-n <number>] [--dry-run]
+#
+# OPTIONS:
+#   -n <number>   Only sync the last N commits (recommended!)
+#   --dry-run     Preview what would be synced without making changes
 #
 # EXAMPLES:
-#   # From main branch - sync template changes to personal:
+#   # Sync last 3 commits from main to personal:
 #   git checkout main
-#   ./scripts/sync-branches.sh
+#   ./scripts/sync-branches.sh -n 3
 #
-#   # From personal branch - sync bug fixes to main:
+#   # Sync last 5 commits from personal to main:
 #   git checkout personal
-#   ./scripts/sync-branches.sh
+#   ./scripts/sync-branches.sh -n 5
 #
-#   # Preview what would be synced (dry run):
-#   ./scripts/sync-branches.sh --dry-run
+#   # Preview last 2 commits (dry run):
+#   ./scripts/sync-branches.sh -n 2 --dry-run
+#
+#   # Sync ALL commits (not recommended for large histories):
+#   ./scripts/sync-branches.sh
 #
 # HOW IT WORKS:
 #   1. Detects which branch you're on (main or personal)
@@ -62,8 +69,12 @@
 #     → If a commit touches ANY personal file, it's skipped entirely.
 #       Manually cherry-pick if needed: git cherry-pick <commit-hash>
 #
-# TIP: Keep personal changes separate! Don't mix template code changes
-#      with resume updates in the same commit for easier syncing.
+# BEST PRACTICES:
+#   1. Use -n flag to limit commits (e.g., -n 3 for last 3 commits)
+#   2. Keep personal changes separate from template code changes
+#   3. Don't mix resume updates with code changes in the same commit
+#   4. Run with --dry-run first to preview what will be synced
+#   5. Sync frequently to avoid large divergences between branches
 # ============================================================================
 
 set -e  # Exit on error
@@ -88,9 +99,36 @@ PERSONAL_FILES=(
 
 # Parse arguments
 DRY_RUN=false
-if [[ "$1" == "--dry-run" ]]; then
-  DRY_RUN=true
+LIMIT_COMMITS=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -n)
+      LIMIT_COMMITS="$2"
+      if ! [[ "$LIMIT_COMMITS" =~ ^[0-9]+$ ]]; then
+        print_error "Invalid number: $LIMIT_COMMITS"
+        exit 1
+      fi
+      shift 2
+      ;;
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [-n <number>] [--dry-run]"
+      exit 1
+      ;;
+  esac
+done
+
+if [[ "$DRY_RUN" == true ]]; then
   echo -e "${CYAN}🔍 DRY RUN MODE - No changes will be made${NC}\n"
+fi
+
+if [[ -n "$LIMIT_COMMITS" ]]; then
+  echo -e "${CYAN}📊 Limiting to last $LIMIT_COMMITS commit(s)${NC}\n"
 fi
 
 # ============================================================================
@@ -187,7 +225,13 @@ echo ""
 
 # Get commits in source but not in target
 print_info "Finding commits to sync..."
-COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" --reverse)
+
+# Build git log command with optional limit
+if [[ -n "$LIMIT_COMMITS" ]]; then
+  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" -n "$LIMIT_COMMITS" | tac)
+else
+  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" --reverse)
+fi
 
 if [[ -z "$COMMITS" ]]; then
   print_success "No new commits to sync. Branches are already in sync!"
@@ -195,8 +239,40 @@ if [[ -z "$COMMITS" ]]; then
 fi
 
 COMMIT_COUNT=$(echo "$COMMITS" | wc -l)
-print_info "Found $COMMIT_COUNT commit(s) in $SOURCE_BRANCH that are not in $TARGET_BRANCH"
+if [[ -n "$LIMIT_COMMITS" ]]; then
+  print_info "Found $COMMIT_COUNT commit(s) to sync (limited to last $LIMIT_COMMITS)"
+else
+  print_info "Found $COMMIT_COUNT commit(s) in $SOURCE_BRANCH that are not in $TARGET_BRANCH"
+
+  # Warn if syncing many commits without limit
+  if [[ $COMMIT_COUNT -gt 10 ]]; then
+    echo ""
+    print_warning "You're about to sync $COMMIT_COUNT commits!"
+    print_info "Consider using -n flag to limit: ./scripts/sync-branches.sh -n 5"
+    echo ""
+  fi
+fi
+
+# Show commit preview
 echo ""
+print_info "Commits to be processed:"
+while IFS= read -r commit; do
+  COMMIT_SHORT=$(git rev-parse --short "$commit")
+  COMMIT_MSG=$(git log -1 --format="%s" "$commit")
+  echo "  ${COMMIT_SHORT} - $COMMIT_MSG"
+done <<< "$COMMITS"
+echo ""
+
+# Ask for confirmation (unless dry-run)
+if [[ "$DRY_RUN" == false ]]; then
+  read -p "$(echo -e ${YELLOW}Continue with sync? [y/N]: ${NC})" -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    print_info "Sync cancelled by user"
+    exit 0
+  fi
+  echo ""
+fi
 
 # Arrays to track results
 SYNCED_COMMITS=()
