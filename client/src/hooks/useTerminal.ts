@@ -3,6 +3,7 @@ import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
+import { parse } from 'date-fns';
 
 export interface TerminalLine {
   id: string;
@@ -21,13 +22,53 @@ function getUsername(portfolioData: PortfolioData, network: string): string | un
 
 // Helper function to parse dates and create timeline events
 const parseDate = (dateStr: string): Date => {
-  // Handle various date formats: "2022-06", "Jun 2022", "2022", etc.
-  const cleanDate = dateStr.replace(/[^\d-]/g, '').trim();
-  if (cleanDate.includes('-')) {
-    const [year, month] = cleanDate.split('-');
-    return new Date(parseInt(year), month ? parseInt(month) - 1 : 0);
+  // Handle "Present" or ongoing dates
+  if (!dateStr || dateStr.toLowerCase().includes('present') || dateStr.toLowerCase().includes('current')) {
+    return new Date(); // Return current date for ongoing items
   }
-  return new Date(parseInt(cleanDate), 0);
+
+  // Split date ranges (handle en-dash, em-dash, hyphen, "to")
+  const rangeSeparators = ['–', '—', ' - ', ' to '];
+  for (const separator of rangeSeparators) {
+    if (dateStr.includes(separator)) {
+      // Take only the start date from range for sorting purposes
+      const [startDate] = dateStr.split(separator).map(s => s.trim());
+      return parseDate(startDate);
+    }
+  }
+
+  // Try multiple date formats
+  const formats = [
+    'yyyy-MM-dd',      // 2023-03-28
+    'yyyy-MM',         // 2022-06
+    'yyyy',            // 2021
+    'MMM yyyy',        // Jun 2022, May 2025
+    'MMMM yyyy',       // January 2022, September 2021
+    'MMM. yyyy',       // Jan. 2024
+  ];
+
+  for (const formatStr of formats) {
+    try {
+      const parsed = parse(dateStr.trim(), formatStr, new Date());
+      // Check if parse was successful (not Invalid Date)
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    } catch {
+      // Continue to next format
+      continue;
+    }
+  }
+
+  // Fallback: Try to extract year and use January of that year
+  const yearMatch = dateStr.match(/\d{4}/);
+  if (yearMatch) {
+    return new Date(parseInt(yearMatch[0]), 0);
+  }
+
+  // Last resort: return epoch date
+  console.warn(`Could not parse date: "${dateStr}"`);
+  return new Date(0);
 };
 
 const formatDateForDisplay = (dateStr: string): string => {

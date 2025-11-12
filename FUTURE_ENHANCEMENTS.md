@@ -31,7 +31,9 @@ Ideas and improvements to implement in future versions.
 
 ---
 
-### Fix Date Parsing Logic
+### ✅ Fix Date Parsing Logic (COMPLETED)
+**Status**: Implemented with date-fns multi-format parser
+
 **Issue**: Current regex-based date parsing breaks on common formats, causing incorrect dates in timeline and displays.
 
 **Problems**:
@@ -74,9 +76,18 @@ const parseDate = (dateStr: string): Date => {
 - Better error messages help users debug date issues
 - No new dependencies needed (date-fns already included)
 
+**Implementation** (`client/src/hooks/useTerminal.ts:23-72`):
+- Replaced regex-based parser with date-fns multi-format parser
+- Added support for ISO formats, Month-Year formats, and date ranges
+- Handles "Present" keyword for ongoing dates
+- Includes proper validation and fallback error handling
+- Supports en-dash (–), em-dash (—), hyphen (-), and "to" as range separators
+
 ---
 
-### Fix PDF Section Ordering
+### ✅ Fix PDF Section Ordering (COMPLETED)
+**Status**: Implemented with sortKeys: false in YAML processing
+
 **Issue**: Reordering sections in `resume.yaml` doesn't change the section order in the generated PDF resume.
 
 **Current Behavior**:
@@ -134,6 +145,14 @@ Likely causes in `scripts/generate-resume.js`:
 - Students can prioritize education and projects over limited experience
 - Professionals can lead with experience and achievements
 - Better alignment with RenderCV's flexible philosophy
+
+**Implementation** (`scripts/generate-resume.js`):
+- Added `sortKeys: false` to yaml.load() (line 60) to preserve YAML key order
+- Added `sortKeys: false` to yaml.dump() (line 162) to maintain order when writing
+- Added verbose logging to display section order at load and before PDF generation
+- Sections now render in PDF in the exact order they appear in resume.yaml
+
+**Testing**: Verified by reordering sections in resume.yaml and generating PDF ✓
 
 ---
 
