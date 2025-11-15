@@ -3,6 +3,7 @@ import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
+import { renderCustomFields } from '../lib/fieldRenderer';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -82,7 +83,7 @@ const formatDateForDisplay = (dateStr: string): string => {
 
 const getCollapsibleId = (type: string, index: number): string => `${type}-collapsible-${index}`;
 
-function getProjectsHtml(projectData: { name: string; date: string; highlights: string[] }[], type: string): string {
+function getProjectsHtml(projectData: Array<Record<string, unknown>>, type: string): string {
   return `
     <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
       <div class="border-b border-terminal-green/30 px-3 py-1">
@@ -105,8 +106,8 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
               <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${projectId}')">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
-                    <span class="text-terminal-yellow font-semibold">${project.name}</span>
-                    <span class="text-white opacity-60 text-xs ml-2">${project.date}</span>
+                    <span class="text-terminal-yellow font-semibold">${project.name as string}</span>
+                    <span class="text-white opacity-60 text-xs ml-2">${project.date as string}</span>
                   </div>
                   <div class="text-terminal-bright-green ml-2">
                     <span id="${projectId}-icon">▶</span>
@@ -115,12 +116,13 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
               </div>
               <div id="${projectId}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                 <div class="space-y-1">
-                  ${project.highlights.map(highlight => `
+                  ${(project.highlights as string[] || []).map(highlight => `
                     <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
                       • ${highlight}
                     </div>
                   `).join('')}
                 </div>
+                ${renderCustomFields(project, 'projects')}
               </div>
             </div>
           `;
@@ -1033,6 +1035,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                       </div>
                     `).join('')}
                   </div>
+                  ${renderCustomFields(job, 'experience')}
                 </div>
               </div>
             `;
@@ -1092,6 +1095,9 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                     </div>
                   </div>
                 ` : ''}
+                <div class="ml-2">
+                  ${renderCustomFields(edu, 'education')}
+                </div>
               </div>
             `;
           }).join('')}
