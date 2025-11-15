@@ -31,6 +31,107 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
 // ============================================================================
+// RENDERCV SCHEMA COMPATIBILITY
+// ============================================================================
+
+/**
+ * Complete mapping of RenderCV-supported fields for CV sections.
+ *
+ * RenderCV YAML structure has 4 main fields:
+ * - cv: Resume content (THIS is where we strip custom fields)
+ * - design: Theme/design options (preserved entirely - passed through as-is)
+ * - locale: Language/formatting strings (preserved entirely - passed through as-is)
+ * - rendercv_settings: RenderCV settings (preserved entirely - passed through as-is)
+ *
+ * Our Zod schema allows custom fields via .passthrough() for the web interface,
+ * but RenderCV's Pydantic validation may reject them in practice. This function
+ * strips custom fields from CV entries while preserving all RenderCV config fields.
+ *
+ * Based on RenderCV's official documentation:
+ * - EducationEntry: institution*, area*, degree, location, start_date, end_date, date, summary, highlights
+ * - ExperienceEntry: company*, position*, location, start_date, end_date, date, summary, highlights
+ * - NormalEntry: name*, location, start_date, end_date, date, summary, highlights
+ * - OneLineEntry: label*, details*
+ * - PublicationEntry: title*, authors*, doi, url, journal, date
+ *
+ * Fields marked with * are mandatory in RenderCV's schema.
+ *
+ * Source: https://github.com/rendercv/rendercv/blob/main/docs/user_guide/structure_of_the_yaml_input_file.md
+ * Last verified: 2025-11-15 (see lines 65-96 for entry types)
+ *
+ * ⚠️ MAINTENANCE NOTE: Check the above URL periodically for RenderCV schema updates.
+ *    If new fields are added to entry types, update this mapping accordingly.
+ */
+const RENDERCV_ALLOWED_FIELDS = {
+  // CV-level: social_networks (lines 59-64)
+  social_networks: ['network', 'username'],
+
+  // Section entry types - mapped to our section names
+  technologies: ['label', 'details'],  // OneLineEntry (lines 200-205)
+
+  experience: [  // ExperienceEntry (lines 154-168)
+    'company', 'position',  // mandatory
+    'location', 'start_date', 'end_date', 'date', 'summary', 'highlights'  // optional
+  ],
+
+  education: [  // EducationEntry (lines 137-152)
+    'institution', 'area',  // mandatory
+    'degree', 'location', 'start_date', 'end_date', 'date', 'summary', 'highlights'  // optional
+  ],
+
+  professional_projects: [  // NormalEntry (lines 184-198)
+    'name',  // mandatory
+    'location', 'start_date', 'end_date', 'date', 'summary', 'highlights'  // optional
+  ],
+
+  personal_projects: [  // NormalEntry (lines 184-198)
+    'name',  // mandatory
+    'location', 'start_date', 'end_date', 'date', 'summary', 'highlights'  // optional
+  ],
+
+  publication: [  // PublicationEntry (lines 170-182)
+    'title', 'authors',  // mandatory
+    'doi', 'url', 'journal', 'date'  // optional
+  ],
+};
+
+function stripCustomFields(data) {
+  const cleaned = JSON.parse(JSON.stringify(data)); // Deep clone
+
+  // Strip custom fields from social_networks
+  if (cleaned.cv?.social_networks && Array.isArray(cleaned.cv.social_networks)) {
+    cleaned.cv.social_networks = cleaned.cv.social_networks.map(item => {
+      const allowed = {};
+      for (const field of RENDERCV_ALLOWED_FIELDS.social_networks) {
+        if (item[field] !== undefined) {
+          allowed[field] = item[field];
+        }
+      }
+      return allowed;
+    });
+  }
+
+  // Strip custom fields from all sections
+  if (cleaned.cv?.sections) {
+    for (const [sectionName, sectionData] of Object.entries(cleaned.cv.sections)) {
+      if (Array.isArray(sectionData) && RENDERCV_ALLOWED_FIELDS[sectionName]) {
+        cleaned.cv.sections[sectionName] = sectionData.map(item => {
+          const allowed = {};
+          for (const field of RENDERCV_ALLOWED_FIELDS[sectionName]) {
+            if (item[field] !== undefined) {
+              allowed[field] = item[field];
+            }
+          }
+          return allowed;
+        });
+      }
+    }
+  }
+
+  return cleaned;
+}
+
+// ============================================================================
 // LOAD CONFIGURATION
 // ============================================================================
 
@@ -149,7 +250,15 @@ for (const sectionName of config.fields.projectSections) {
 console.log('✅ Empty sections removed\n');
 
 // ============================================================================
-// STEP 3: WRITE TEMPORARY YAML FOR RENDERCV
+// STEP 3: STRIP CUSTOM FIELDS FOR RENDERCV COMPATIBILITY
+// ============================================================================
+
+console.log('🔧 Stripping custom fields for RenderCV compatibility...');
+const rendercvData = stripCustomFields(resumeData);
+console.log('✅ Custom fields removed\n');
+
+// ============================================================================
+// STEP 4: WRITE TEMPORARY YAML FOR RENDERCV
 // ============================================================================
 
 if (config.build.generatePdf || config.build.generateMarkdown) {
@@ -158,18 +267,18 @@ if (config.build.generatePdf || config.build.generateMarkdown) {
   }
 
   // Log section order for debugging
-  if (config.build.verbose && resumeData.cv?.sections) {
-    const sectionNames = Object.keys(resumeData.cv.sections);
+  if (config.build.verbose && rendercvData.cv?.sections) {
+    const sectionNames = Object.keys(rendercvData.cv.sections);
     console.log('📋 Section order:', sectionNames.join(' → '));
   }
 
   const tempYamlPath = join(rootDir, config.paths.tempYaml);
-  const tempYamlContent = dump(resumeData, { lineWidth: -1, noRefs: true, sortKeys: false });
+  const tempYamlContent = dump(rendercvData, { lineWidth: -1, noRefs: true, sortKeys: false });
   writeFileSync(tempYamlPath, tempYamlContent, 'utf8');
   console.log('✅ Temporary YAML created\n');
 
   // ============================================================================
-  // STEP 4: RUN RENDERCV
+  // STEP 5: RUN RENDERCV
   // ============================================================================
 
   console.log('🎨 Running rendercv to generate PDF and markdown...');
@@ -198,7 +307,7 @@ if (config.build.generatePdf || config.build.generateMarkdown) {
   }
 
   // ============================================================================
-  // STEP 5: COPY GENERATED FILES
+  // STEP 6: COPY GENERATED FILES
   // ============================================================================
 
   console.log('📋 Copying generated files to output directory...');
@@ -249,7 +358,7 @@ if (config.build.generatePdf || config.build.generateMarkdown) {
 }
 
 // ============================================================================
-// STEP 6: GENERATE WEBSITE JSON
+// STEP 7: GENERATE WEBSITE JSON
 // ============================================================================
 
 if (config.build.generateJson) {
@@ -312,7 +421,7 @@ if (config.build.generateJson) {
 }
 
 // ============================================================================
-// STEP 7: AUTO-GENERATE ASCII ART NAME
+// STEP 8: AUTO-GENERATE ASCII ART NAME
 // ============================================================================
 
 if (config.build.verbose) {
@@ -336,7 +445,7 @@ if (!existsSync(styledNamePath)) {
 }
 
 // ============================================================================
-// STEP 8: AUTO-GENERATE MANIFEST.JSON
+// STEP 9: AUTO-GENERATE MANIFEST.JSON
 // ============================================================================
 
 if (config.build.verbose) {
@@ -362,7 +471,7 @@ if (!existsSync(manifestPath)) {
 console.log(); // Empty line for spacing
 
 // ============================================================================
-// STEP 9: CLEANUP
+// STEP 10: CLEANUP
 // ============================================================================
 
 if (config.build.cleanupTemp) {
