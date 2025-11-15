@@ -231,9 +231,9 @@ Users no longer need to manually create neofetch files.
 
 ---
 
-### ✅ Make Schema More Flexible (PARTIALLY COMPLETED - Phases 1-2)
+### ✅ Make Schema More Flexible (PARTIALLY COMPLETED - Phases 1-2.5)
 
-**Status**: Custom fields and optional fields implemented. Dynamic sections remain for future work.
+**Status**: Custom fields, optional fields, and dynamic rendering implemented. Dynamic sections remain for future work.
 
 **Issue**: Current schema is too rigid - doesn't allow custom sections or extra fields like RenderCV does.
 
@@ -276,6 +276,22 @@ Users no longer need to manually create neofetch files.
 - Made `location` optional in `educationSchema` (was already done)
 - Made `highlights` optional in `educationSchema`
 
+**Phase 2.5: Dynamic Custom Field Rendering** ✅ **COMPLETED**
+
+- Created `client/src/lib/fieldRenderer.ts` utility for automatic custom field detection and display
+- Integrated into terminal display functions: `showExperience`, `showEducation`, `showProjects`
+- Type-aware rendering:
+  - **URLs**: Become clickable links with hover effects
+  - **Booleans**: Show ✓ Yes / ✗ No indicators
+  - **Arrays**: Display as formatted chip badges
+  - **Numbers**: Highlighted in bold
+  - **Strings**: Sanitized for XSS protection
+  - **Objects**: Simplified representation
+- Field name formatting: `tech_stack` → "Tech Stack" (snake_case to Title Case)
+- Custom fields display in "📋 Additional Info" section below core content
+- Automatically excludes core fields (company, position, highlights, etc.)
+- Zero hardcoding required - any new custom field automatically renders
+
 **Phase 3: Dynamic Section Names** ⏳ **DEFERRED**
 
 ```typescript
@@ -295,16 +311,22 @@ sections: z.record(
 
 - Updated `resume.yaml.example` with custom field examples and comments
 - All schemas now include inline comments explaining the flexibility
-- Updated `scripts/generate-resume.js` to strip custom fields before RenderCV processing
+- Updated `scripts/generate-resume.js` with complete RenderCV field mappings:
+  - All documented RenderCV fields now supported (summary, date, etc.)
+  - Linked to official RenderCV documentation with maintenance reminder
+  - Preserves design, locale, and rendercv_settings fields
+- Created `client/src/lib/fieldRenderer.ts` for dynamic custom field rendering
+- Updated `client/src/hooks/useTerminal.ts` to display custom fields automatically in terminal
 
 **How Custom Fields Work**:
 
 Custom fields are fully supported with automatic compatibility handling:
 
 1. **Web Interface**: Custom fields are preserved in `resume.json` and accessible in the terminal portfolio
-2. **PDF Generation**: Custom fields are automatically stripped by `scripts/generate-resume.js` before passing to RenderCV
-3. **Schema Validation**: Zod schemas use `.passthrough()` to accept any extra fields
-4. **Backward Compatibility**: RenderCV's strict Pydantic schema doesn't break the build
+2. **Terminal Display**: Custom fields automatically render in terminal portfolio via dynamic field renderer
+3. **PDF Generation**: Custom fields are automatically stripped by `scripts/generate-resume.js` before passing to RenderCV
+4. **Schema Validation**: Zod schemas use `.passthrough()` to accept any extra fields
+5. **Backward Compatibility**: RenderCV's strict Pydantic schema doesn't break the build
 
 This "best of both worlds" approach means:
 
@@ -315,6 +337,8 @@ This "best of both worlds" approach means:
 **Benefits Achieved**:
 
 - ✅ Users can add custom fields to any entry (profile_url, tech_stack, gpa, etc.)
+- ✅ Custom fields automatically display in terminal interface (no hardcoding needed)
+- ✅ Type-aware rendering makes data more readable and interactive
 - ✅ Support for non-traditional career paths (remote workers, freelancers)
 - ✅ Better alignment with RenderCV's philosophy of minimal requirements
 - ✅ Future-proof for new field requirements
