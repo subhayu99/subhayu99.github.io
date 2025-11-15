@@ -34,8 +34,8 @@ cv:
     - network: "GitHub"
       username: "janedev"
     # Add more networks as needed:
-    # - network: "Twitter"
-    #   username: "janedev"
+    - network: "Twitter"
+      username: "janedev"
 
   sections:
     intro:
@@ -182,12 +182,78 @@ cv:
           - "Implemented real-time collaboration using Firestore"
           - "Designed drag-and-drop kanban board interface"
 
+    # ====================================================================
+    # 🆕 DYNAMIC SECTIONS SUPPORT (Phase 3)
+    # ====================================================================
+    # You can add ANY custom section names! Examples: certifications, awards,
+    # volunteer_work, speaking, courses, etc.
+    #
+    # These sections will:
+    #   ✅ Appear in your terminal portfolio automatically
+    #   ✅ Be available as commands (e.g., "certifications", "awards")
+    #   ✅ Work with RenderCV PDF generation
+    #   ✅ Support all entry types (experience-like, project-like, text, etc.)
+    #
+    # Examples below show different entry types you can use:
+
+    # Example: Project-like entries (NormalEntry) - use "name" field
+    certifications:
+      - name: "AWS Certified Solutions Architect - Professional"
+        date: "2024-03"
+        highlights:
+          - "Demonstrated expertise in designing distributed systems on AWS"
+          - "Achieved score of 920/1000"
+          - "Valid until 2027-03"
+        # Custom fields are fully supported!
+        issuer: "Amazon Web Services"
+        certification_id: "AWS-PSA-12345"
+        verification_url: "https://aws.amazon.com/verify/AWS-PSA-12345"
+    
+      - name: "Certified Kubernetes Application Developer (CKAD)"
+        date: "2023-11"
+        highlights:
+          - "Hands-on certification for cloud-native applications"
+          - "Passed performance-based exam with 88% score"
+        issuer: "Cloud Native Computing Foundation"
+        expiry_date: "2026-11"
+
+    # Example: Project-like entries for awards
+    awards:
+      - name: "Engineering Excellence Award"
+        date: "2024-01"
+        highlights:
+          - "Recognized for outstanding technical contribution"
+          - "Led platform rewrite improving performance by 60%"
+        awarded_by: "Tech Corp Engineering Team"
+        award_category: "Technical Innovation"
+    
+      - name: "Hackathon Winner - Best Developer Tool"
+        date: "2023-08"
+        highlights:
+          - "Built AI-powered code review assistant in 48 hours"
+          - "Reduced review time by 30% in pilot program"
+        event: "Internal Tech Corp Hackathon"
+        team_size: 4
+
+    # Example: Simple text entries (TextEntry)
+    languages:
+      - "English (Native)"
+      - "Spanish (Professional working proficiency)"
+      - "French (Limited working proficiency)"
+
+    # Example: OneLineEntry format (like technologies section)
+    interests:
+      - label: "Technical"
+        details: "Open source, Cloud architecture, DevOps, AI/ML"
+      - label: "Personal"
+        details: "Hiking, Photography, Reading sci-fi novels"
+
     # Optional: Add publications section if you have research papers or blog posts
-    # publication:
-    #   - title: "Optimizing React Performance at Scale"
-    #     authors:
-    #       - "Jane Developer"
-    #       - "John Doe"
-    #     date: "2023-11-15"
-    #     journal: "Medium Engineering Blog"
-    #     doi: "example.com/article"
+    publication:
+      - title: "Optimizing React Performance at Scale"
+        authors:
+          - "Jane Developer"
+          - "John Doe"
+        date: "2023-11-15"
+        journal: "Medium Engineering Blog"
+        doi: "example.com/article"

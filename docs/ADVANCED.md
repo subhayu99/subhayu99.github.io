@@ -168,17 +168,26 @@ transforms:
     replacement: '<b>$1</b>'
 ```
 
-## 🎨 Custom Fields in Resume
+## 🎨 Custom Fields & Dynamic Sections in Resume
 
 ### Overview
 
-The template supports adding **any custom fields** to your resume YAML. This feature provides maximum flexibility while maintaining compatibility with RenderCV.
+The template supports adding **any custom fields** AND **any custom sections** to your resume YAML. This feature provides maximum flexibility while maintaining compatibility with RenderCV.
 
 **How it works:**
-1. Custom fields are defined in your `resume.yaml`
+
+**Custom Fields:**
+1. Custom fields are defined in your `resume.yaml` within existing sections
 2. Zod schemas use `.passthrough()` to accept extra fields
 3. Custom fields are preserved in `resume.json` (web interface)
 4. Custom fields are auto-stripped when generating PDF (RenderCV compatibility)
+
+**Dynamic Sections:**
+1. Dynamic sections (like `certifications`, `awards`, etc.) can be added to your resume
+2. Zod schema uses `.catchall()` to validate arbitrary section names
+3. Dynamic sections automatically become terminal commands (e.g., `certifications`, `awards`)
+4. Entry types are auto-detected for proper rendering
+5. RenderCV compatibility maintained through entry type detection
 
 ### Adding Custom Fields
 
@@ -395,9 +404,55 @@ cv:
 
 This custom data works seamlessly:
 - ✅ Validates with Zod schema
-- ✅ Appears in web interface (if you code it to display)
+- ✅ Appears in web interface (custom fields render automatically!)
 - ✅ Auto-stripped for PDF generation
 - ✅ No errors, no manual management
+
+### Adding Dynamic Sections
+
+Beyond custom fields, you can add completely new sections with any name you want! These sections automatically become terminal commands.
+
+**Example: Certifications**
+
+```yaml
+certifications:
+  - name: "AWS Certified Solutions Architect"
+    date: "2024-03"
+    highlights:
+      - "Demonstrated expertise in cloud architecture"
+    issuer: "Amazon Web Services"  # ✨ Custom field!
+    certification_id: "AWS-123"  # ✨ Custom field!
+```
+
+Type `certifications` in the terminal → see your certifications displayed automatically!
+
+**More Examples:**
+
+```yaml
+awards:
+  - name: "Engineering Excellence Award"
+    date: "2024-01"
+    awarded_by: "Tech Corp"
+
+languages:  # Simple text entries
+  - "English (Native)"
+  - "Spanish (Professional)"
+
+volunteer_work:
+  - name: "Code Mentor at Local Bootcamp"
+    date: "2023-2024"
+    highlights:
+      - "Mentored 15+ junior developers"
+```
+
+**Supported entry types:**
+- **NormalEntry** (name-based): certifications, awards, volunteer_work
+- **ExperienceEntry** (company-based): internships, freelance
+- **EducationEntry** (institution-based): training, bootcamps
+- **OneLineEntry** (label-details): interests, skills
+- **TextEntry** (strings): languages, hobbies
+
+See `resume.yaml.example` and `FUTURE_ENHANCEMENTS.md` for complete documentation.
 
 ## 🎨 Creating Custom Themes
 

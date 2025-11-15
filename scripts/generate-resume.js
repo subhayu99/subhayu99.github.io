@@ -95,6 +95,79 @@ const RENDERCV_ALLOWED_FIELDS = {
   ],
 };
 
+/**
+ * Detects the RenderCV entry type based on the fields present in an entry.
+ * This enables support for dynamic section names (like "certifications", "awards", etc.)
+ *
+ * @param {*} entry - The entry object to analyze
+ * @returns {string|null} - The entry type or null if unknown
+ */
+function detectEntryType(entry) {
+  // Handle text entries (simple strings) - TextEntry
+  if (typeof entry === 'string') {
+    return 'text';
+  }
+
+  // Not an object - unknown type
+  if (typeof entry !== 'object' || entry === null) {
+    return null;
+  }
+
+  // ExperienceEntry: Must have 'company' and 'position'
+  if ('company' in entry && 'position' in entry) {
+    return 'experience';
+  }
+
+  // EducationEntry: Must have 'institution' and 'area'
+  if ('institution' in entry && 'area' in entry) {
+    return 'education';
+  }
+
+  // PublicationEntry: Must have 'title' and 'authors' (authors must be array)
+  if ('title' in entry && 'authors' in entry && Array.isArray(entry.authors)) {
+    return 'publication';
+  }
+
+  // OneLineEntry: Must have 'label' and 'details'
+  if ('label' in entry && 'details' in entry) {
+    return 'technologies';
+  }
+
+  // NormalEntry: Must have 'name' (covers projects, certifications, awards, etc.)
+  if ('name' in entry) {
+    return 'projects';
+  }
+
+  // Unknown type - preserve as-is
+  return null;
+}
+
+/**
+ * Gets the allowed RenderCV fields for a detected entry type.
+ *
+ * @param {string} entryType - The detected entry type
+ * @returns {Array<string>|null} - Array of allowed field names, or null to preserve all fields
+ */
+function getAllowedFieldsForEntryType(entryType) {
+  switch (entryType) {
+    case 'experience':
+      return RENDERCV_ALLOWED_FIELDS.experience;
+    case 'education':
+      return RENDERCV_ALLOWED_FIELDS.education;
+    case 'projects':
+      // NormalEntry - same as professional_projects/personal_projects
+      return RENDERCV_ALLOWED_FIELDS.professional_projects;
+    case 'technologies':
+      return RENDERCV_ALLOWED_FIELDS.technologies;
+    case 'publication':
+      return RENDERCV_ALLOWED_FIELDS.publication;
+    case 'text':
+      return []; // Text entries are just strings, no fields to strip
+    default:
+      return null; // Unknown type - preserve all fields
+  }
+}
+
 function stripCustomFields(data) {
   const cleaned = JSON.parse(JSON.stringify(data)); // Deep clone
 
@@ -111,13 +184,45 @@ function stripCustomFields(data) {
     });
   }
 
-  // Strip custom fields from all sections
+  // Strip custom fields from all sections (both standard and dynamic)
   if (cleaned.cv?.sections) {
     for (const [sectionName, sectionData] of Object.entries(cleaned.cv.sections)) {
-      if (Array.isArray(sectionData) && RENDERCV_ALLOWED_FIELDS[sectionName]) {
+      if (!Array.isArray(sectionData)) {
+        continue; // Skip non-array sections
+      }
+
+      // Check if this is a known section with predefined fields
+      if (RENDERCV_ALLOWED_FIELDS[sectionName]) {
+        // Use predefined field mapping for known sections
         cleaned.cv.sections[sectionName] = sectionData.map(item => {
           const allowed = {};
           for (const field of RENDERCV_ALLOWED_FIELDS[sectionName]) {
+            if (item[field] !== undefined) {
+              allowed[field] = item[field];
+            }
+          }
+          return allowed;
+        });
+      } else {
+        // Dynamic section - detect entry type and strip fields accordingly
+        cleaned.cv.sections[sectionName] = sectionData.map(item => {
+          // Text entries (strings) pass through unchanged
+          if (typeof item === 'string') {
+            return item;
+          }
+
+          // Detect entry type
+          const entryType = detectEntryType(item);
+          const allowedFields = getAllowedFieldsForEntryType(entryType);
+
+          // If unknown type, preserve all fields (safety fallback)
+          if (!allowedFields) {
+            return item;
+          }
+
+          // Strip custom fields based on detected entry type
+          const allowed = {};
+          for (const field of allowedFields) {
             if (item[field] !== undefined) {
               allowed[field] = item[field];
             }

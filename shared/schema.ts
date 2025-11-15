@@ -47,6 +47,18 @@ export const publicationSchema = z.object({
   doi: z.string().optional(),
 }).passthrough(); // Allow custom fields like citation_count, impact_factor, etc.
 
+// Phase 3: Dynamic Section Names
+// Union of all possible entry types for dynamic sections
+// Maps to RenderCV entry types: ExperienceEntry, EducationEntry, NormalEntry, OneLineEntry, PublicationEntry, TextEntry
+export const sectionEntrySchema = z.union([
+  experienceSchema,     // ExperienceEntry
+  educationSchema,      // EducationEntry
+  projectSchema,        // NormalEntry (projects, certifications, etc.)
+  technologySchema,     // OneLineEntry (skills, technologies, etc.)
+  publicationSchema,    // PublicationEntry
+  z.string(),          // TextEntry (simple text items)
+]);
+
 export const portfolioSchema = z.object({
   cv: z.object({
     name: z.string(),
@@ -57,6 +69,7 @@ export const portfolioSchema = z.object({
     website: z.string().optional(),
     social_networks: z.array(socialNetworkSchema).optional(),
     sections: z.object({
+      // Standard sections (preserved for backward compatibility and type safety)
       intro: z.array(z.string()).optional(),
       technologies: z.array(technologySchema).optional(),
       experience: z.array(experienceSchema).optional(),
@@ -64,7 +77,7 @@ export const portfolioSchema = z.object({
       professional_projects: z.array(projectSchema).optional(),
       personal_projects: z.array(projectSchema).optional(),
       publication: z.array(publicationSchema).optional(),
-    }),
+    }).catchall(z.array(sectionEntrySchema)), // Allow arbitrary section names with validated entry types
   }),
 });
 
@@ -74,4 +87,5 @@ export type Experience = z.infer<typeof experienceSchema>;
 export type Education = z.infer<typeof educationSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Publication = z.infer<typeof publicationSchema>;
+export type SectionEntry = z.infer<typeof sectionEntrySchema>;
 export type PortfolioData = z.infer<typeof portfolioSchema>;
