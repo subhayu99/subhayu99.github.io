@@ -168,6 +168,237 @@ transforms:
     replacement: '<b>$1</b>'
 ```
 
+## 🎨 Custom Fields in Resume
+
+### Overview
+
+The template supports adding **any custom fields** to your resume YAML. This feature provides maximum flexibility while maintaining compatibility with RenderCV.
+
+**How it works:**
+1. Custom fields are defined in your `resume.yaml`
+2. Zod schemas use `.passthrough()` to accept extra fields
+3. Custom fields are preserved in `resume.json` (web interface)
+4. Custom fields are auto-stripped when generating PDF (RenderCV compatibility)
+
+### Adding Custom Fields
+
+You can add custom fields to any section of your resume:
+
+#### Social Networks
+
+```yaml
+social_networks:
+  - network: "LinkedIn"
+    username: "yourname"
+    # ✨ Custom fields:
+    profile_url: "https://linkedin.com/in/yourname"
+    verified: true
+    followers: 5000
+    connection_count: 1200
+```
+
+#### Technologies
+
+```yaml
+technologies:
+  - label: "Languages"
+    details: "JavaScript, TypeScript, Python"
+    # ✨ Custom fields:
+    proficiency_level: "Expert"
+    years_experience: 5
+    certifications: ["AWS Certified", "Google Cloud Professional"]
+    favorite: true
+```
+
+#### Experience
+
+```yaml
+experience:
+  - company: "Tech Company"
+    position: "Senior Engineer"
+    start_date: "2021-06"
+    # ✨ Custom fields:
+    github_team: "tech-company/platform"
+    tech_stack: ["React", "Node.js", "PostgreSQL", "AWS"]
+    team_size: 8
+    employment_type: "Full-time"
+    manager: "Jane Doe"
+    reports: 3
+    budget_managed: "$2M"
+    achievements_count: 15
+```
+
+#### Education
+
+```yaml
+education:
+  - institution: "University of Technology"
+    degree: "B.S. Computer Science"
+    start_date: "2014"
+    end_date: "2018"
+    # ✨ Custom fields:
+    gpa: 3.8
+    max_gpa: 4.0
+    honors: "Magna Cum Laude"
+    thesis_title: "Machine Learning in Distributed Systems"
+    advisor: "Dr. Smith"
+    scholarships: ["Presidential Scholarship", "Dean's List"]
+    clubs: ["ACM", "IEEE", "Robotics Club"]
+```
+
+#### Projects
+
+```yaml
+professional_projects:
+  - name: "E-Commerce Platform"
+    date: "2023-06"
+    # ✨ Custom fields:
+    github_repo: "https://github.com/company/ecommerce"
+    live_url: "https://shop.example.com"
+    tech_stack: ["React", "TypeScript", "Next.js", "Tailwind"]
+    role: "Tech Lead"
+    team_size: 6
+    duration_months: 8
+    impact_metrics:
+      conversion_rate_increase: "25%"
+      load_time_reduction: "50%"
+      lighthouse_score: 95
+```
+
+### Implementation Details
+
+**Schema Definition** (`shared/schema.ts`):
+
+All schemas use `.passthrough()`:
+
+```typescript
+export const experienceSchema = z.object({
+  company: z.string(),
+  position: z.string(),
+  location: z.string().optional(),
+  start_date: z.string(),
+  end_date: z.string().optional(),
+  highlights: z.array(z.string()).default([]),
+}).passthrough(); // ← Allows any extra fields
+```
+
+**Build Pipeline** (`scripts/generate-resume.js`):
+
+Custom fields are automatically handled:
+
+```typescript
+// For web interface: custom fields preserved in resume.json
+const websiteData = fullData; // Includes all custom fields
+
+// For PDF generation: custom fields stripped for RenderCV
+const rendercvData = stripCustomFields(resumeData);
+```
+
+**RenderCV Compatibility**:
+
+The `stripCustomFields()` function maintains a whitelist of RenderCV-supported fields:
+
+```javascript
+const RENDERCV_ALLOWED_FIELDS = {
+  social_networks: ['network', 'username'],
+  technologies: ['label', 'details'],
+  experience: ['company', 'position', 'location', 'start_date', 'end_date', 'highlights'],
+  // ... other sections
+};
+```
+
+### Accessing Custom Fields in Code
+
+If you want to display custom fields in the terminal interface:
+
+**In `client/src/hooks/useTerminal.ts`:**
+
+```typescript
+const showExperience = useCallback(() => {
+  const experiences = portfolioData.cv.sections?.experience || [];
+
+  experiences.forEach((exp) => {
+    addLine(`${exp.position} at ${exp.company}`, 'text-terminal-bright-green');
+
+    // Access custom fields
+    if (exp.tech_stack) {
+      addLine(`  Tech Stack: ${exp.tech_stack.join(', ')}`, 'text-terminal-green');
+    }
+
+    if (exp.team_size) {
+      addLine(`  Team Size: ${exp.team_size}`, 'text-terminal-green');
+    }
+
+    if (exp.github_team) {
+      addLine(`  GitHub: ${exp.github_team}`, 'text-terminal-green');
+    }
+  });
+}, [portfolioData, addLine]);
+```
+
+### TypeScript Support
+
+Custom fields are type-safe thanks to `.passthrough()`. TypeScript will infer the base schema and allow additional properties:
+
+```typescript
+import type { Experience } from '@/shared/schema';
+
+// Base fields are typed
+const exp: Experience = {
+  company: "Acme Corp",
+  position: "Engineer",
+  start_date: "2021-06",
+};
+
+// Custom fields also work
+const expWithCustom = {
+  ...exp,
+  tech_stack: ["React", "Node.js"], // ✅ Works!
+  team_size: 8,                     // ✅ Works!
+};
+```
+
+### Best Practices
+
+1. **Naming**: Use snake_case for consistency with existing fields
+2. **Types**: Keep types simple (string, number, boolean, array)
+3. **Optional**: Assume all custom fields are optional
+4. **Documentation**: Comment your custom fields in `resume.yaml`
+5. **Testing**: Test both web interface and PDF generation
+
+### Example: Full Custom Resume
+
+```yaml
+cv:
+  name: "Jane Developer"
+  custom_title: "🚀 Full-Stack Wizard"  # ✨ Custom!
+
+  social_networks:
+    - network: "LinkedIn"
+      username: "jane-developer"
+      profile_url: "https://linkedin.com/in/jane-developer"  # ✨ Custom!
+      verified: true  # ✨ Custom!
+      premium: true  # ✨ Custom!
+
+  sections:
+    experience:
+      - company: "Tech Startup"
+        position: "Senior Engineer"
+        start_date: "2021-06"
+        tech_stack: ["React", "Node.js", "PostgreSQL"]  # ✨ Custom!
+        github_team: "tech-startup/platform"  # ✨ Custom!
+        team_culture_rating: 5  # ✨ Custom!
+        remote_friendly: true  # ✨ Custom!
+        highlights:
+          - "Led microservices migration"
+```
+
+This custom data works seamlessly:
+- ✅ Validates with Zod schema
+- ✅ Appears in web interface (if you code it to display)
+- ✅ Auto-stripped for PDF generation
+- ✅ No errors, no manual management
+
 ## 🎨 Creating Custom Themes
 
 Themes are defined in `client/src/lib/themes.ts`.
