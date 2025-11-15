@@ -4,6 +4,8 @@ Ideas and improvements to implement in future versions.
 
 ## High Priority
 
+### `cat resume.txt` is broken! Need to fix
+
 ### Make Resume Sections Optional for Students
 **Issue**: Currently all sections (experience, projects) are required, which isn't ideal for students who may not have work experience yet.
 
