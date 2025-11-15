@@ -4,7 +4,7 @@
 
 **Live Demo:** [subhayu99.github.io](https://subhayu99.github.io)
 
-![Terminal Portfolio Screenshot](https://via.placeholder.com/800x400/000000/00FF00?text=Terminal+Portfolio+Demo)
+![Terminal Portfolio Screencast](client/public/screenshots/short-demo.gif)
 
 ---
 
