@@ -37,6 +37,7 @@ This repository uses a **dual-branch strategy**:
 - ♿ **Accessible** - ARIA labels and keyboard navigation support
 - 🔄 **Auto-Deploy** - Push changes to GitHub, site updates automatically
 - 🎨 **Custom Fields Support** - Add any custom fields to personalize your resume beyond the standard schema
+- 📂 **Dynamic Sections** - Create custom sections (certifications, awards, etc.) that become terminal commands automatically
 
 ## 🌟 Easy Mode - Get Started in 10 Minutes
 
@@ -182,7 +183,9 @@ Customize the `neofetch` output (the welcome banner):
 Customize the PWA (installable app) settings:
 
 1. Copy `client/public/manifest.json.example` to `client/public/manifest.json`
+
 2. Edit the file:
+
    ```json
    {
      "name": "Your Name - Terminal Portfolio",
@@ -190,11 +193,12 @@ Customize the PWA (installable app) settings:
      "description": "Your description here"
    }
    ```
+
 3. Commit the changes
 
-### Custom Fields Support
+### Custom Fields & Dynamic Sections Support
 
-Want to add extra information beyond the standard resume fields? You can add **any custom fields** you want!
+Want to add extra information beyond the standard resume fields? You can add **any custom fields** AND **any custom sections** you want!
 
 **Examples of custom fields you can add:**
 
@@ -230,14 +234,46 @@ projects:
     github_repo: "https://github.com/you/project"  # ✨ Custom field!
     live_url: "https://project.com"  # ✨ Custom field!
     tech_stack: ["React", "TypeScript"]  # ✨ Custom field!
+
+# 🆕 Dynamic Sections! Add ANY section you need:
+certifications:
+  - name: "AWS Certified Solutions Architect"
+    date: "2024-03"
+    highlights:
+      - "Demonstrated expertise in designing distributed systems"
+    issuer: "Amazon Web Services"  # ✨ Custom field!
+    certification_id: "AWS-PSA-12345"  # ✨ Custom field!
+
+awards:
+  - name: "Engineering Excellence Award"
+    date: "2024-01"
+    highlights:
+      - "Recognized for outstanding technical contribution"
+    awarded_by: "Tech Corp"  # ✨ Custom field!
+
+# Simple text entries also work!
+languages:
+  - "English (Native)"
+  - "Spanish (Professional)"
 ```
 
 **How it works:**
 
-- ✅ **Web Interface:** Custom fields are preserved and accessible in your terminal portfolio
+- ✅ **Custom Fields:** Add any extra fields to standard sections - they appear in your portfolio automatically
+- ✅ **Dynamic Sections:** Create new sections (like certifications, awards, languages) - they become terminal commands!
+- ✅ **Web Interface:** Custom fields and sections are fully accessible in your terminal portfolio
 - ✅ **PDF Generation:** Custom fields are automatically stripped for RenderCV compatibility
 - ✅ **Zero Errors:** No manual management needed - it just works!
 - ✅ **Fully Backward Compatible:** All existing resumes continue to work
+
+**Examples of dynamic sections you can add:**
+- `certifications` - Professional certifications
+- `awards` - Awards and recognitions
+- `languages` - Language proficiencies
+- `volunteer_work` - Volunteer experience
+- `speaking` - Speaking engagements
+- `courses` - Online courses or training
+- Any section name you want!
 
 **See [`resume.yaml.example`](./resume.yaml.example) for more examples and inspiration!**
 

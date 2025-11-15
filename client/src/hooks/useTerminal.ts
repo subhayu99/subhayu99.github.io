@@ -399,12 +399,37 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
   // Get available commands based on portfolio data
   const getAvailableCommands = useCallback((): CommandMetadata[] => {
-    return COMMAND_REGISTRY.filter(cmd => {
+    const standardCommands = COMMAND_REGISTRY.filter(cmd => {
       // If command has no availability check, it's always available
       if (!cmd.isAvailable) return true;
       // Otherwise, check if data meets requirements
       return cmd.isAvailable(portfolioData);
     });
+
+    // Add dynamic section commands (e.g., certifications, awards, volunteer_work)
+    const dynamicCommands: CommandMetadata[] = [];
+    if (portfolioData?.cv?.sections) {
+      const sections = portfolioData.cv.sections as Record<string, unknown[]>;
+      const standardSectionNames = ['intro', 'technologies', 'experience', 'education', 'professional_projects', 'personal_projects', 'publication'];
+
+      Object.keys(sections).forEach(sectionName => {
+        // Skip standard sections (already in COMMAND_REGISTRY)
+        if (standardSectionNames.includes(sectionName)) return;
+
+        // Skip empty sections
+        if (!Array.isArray(sections[sectionName]) || sections[sectionName].length === 0) return;
+
+        // Add dynamic section as a command
+        dynamicCommands.push({
+          name: sectionName,
+          description: `Show ${sectionName.replace(/_/g, ' ')} information`,
+          category: 'professional',
+          isAvailable: () => true, // Already checked above
+        });
+      });
+    }
+
+    return [...standardCommands, ...dynamicCommands];
   }, [portfolioData]);
 
   // Get all command names including aliases
@@ -957,6 +982,139 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     // Add the entire about box as a single line
     addLine(aboutBox, 'w-full');
   }, [addLine, portfolioData]);
+
+  /**
+   * Generic section renderer for dynamic sections (e.g., certifications, awards, volunteer_work)
+   * Automatically detects entry type and renders accordingly
+   */
+  const showGenericSection = useCallback((sectionName: string, sectionData: unknown[]) => {
+    if (!portfolioData || !sectionData || sectionData.length === 0) {
+      addLine(`No data available for section: ${sectionName}`, 'text-terminal-yellow');
+      return;
+    }
+
+    // Format section name for display (e.g., "certifications" -> "CERTIFICATIONS")
+    const displayTitle = sectionName.replace(/_/g, ' ').toUpperCase();
+
+    const sectionBox = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span class="text-terminal-bright-green text-sm font-bold">${displayTitle}</span>
+        </div>
+        <div class="p-3 space-y-4 text-xs sm:text-sm">
+          ${sectionData.map((entry, index) => {
+            // Handle text entries (simple strings)
+            if (typeof entry === 'string') {
+              return `
+                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="text-white text-xs">${entry}</div>
+                </div>
+              `;
+            }
+
+            // Handle object entries
+            const item = entry as Record<string, unknown>;
+
+            // Render based on detected entry type
+            if ('company' in item && 'position' in item) {
+              // Experience-like entry
+              const period = formatExperiencePeriod(item.start_date as string, item.end_date as string | undefined);
+              return `
+                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="mb-3">
+                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                      <span class="text-terminal-yellow font-semibold">${item.position}</span>
+                      <span class="text-white"> @ </span>
+                      <span class="text-terminal-bright-green font-bold">${item.company}</span>
+                    </div>
+                    ${item.location ? `<div class="ml-2"><span class="text-white opacity-80 text-xs">${item.location} | ${period}</span></div>` : `<div class="ml-2"><span class="text-white opacity-80 text-xs">${period}</span></div>`}
+                  </div>
+                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
+                    <div class="ml-2">
+                      <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Key Achievements:</div>
+                      <div class="space-y-1">
+                        ${(item.highlights as string[]).map(h => `
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                  ${renderCustomFields(item, 'experience')}
+                </div>
+              `;
+            } else if ('institution' in item && 'area' in item) {
+              // Education-like entry
+              return `
+                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="mb-3">
+                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                      <span class="text-terminal-bright-green font-bold">${item.institution}</span>
+                    </div>
+                    <div class="ml-2 space-y-1">
+                      <div><span class="text-terminal-yellow font-semibold">${item.degree || ''} ${item.area}</span></div>
+                      ${item.start_date ? `<div class="text-white opacity-80 text-xs">${item.start_date} - ${item.end_date || 'Present'}</div>` : ''}
+                    </div>
+                  </div>
+                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
+                    <div class="ml-2">
+                      <div class="space-y-1">
+                        ${(item.highlights as string[]).map(h => `
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                  ${renderCustomFields(item, 'education')}
+                </div>
+              `;
+            } else if ('name' in item) {
+              // Project-like entry (NormalEntry - covers certifications, awards, etc.)
+              return `
+                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="mb-3">
+                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
+                      <span class="text-terminal-bright-green font-bold">${item.name}</span>
+                      ${item.date ? `<span class="text-white opacity-60 text-xs ml-2">(${item.date})</span>` : ''}
+                    </div>
+                  </div>
+                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
+                    <div class="ml-2">
+                      <div class="space-y-1">
+                        ${(item.highlights as string[]).map(h => `
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                  ${renderCustomFields(item, 'projects')}
+                </div>
+              `;
+            } else if ('label' in item && 'details' in item) {
+              // OneLineEntry (like technologies)
+              return `
+                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="flex gap-2">
+                    <span class="text-terminal-yellow font-semibold min-w-[100px]">${item.label}:</span>
+                    <span class="text-white">${item.details}</span>
+                  </div>
+                  ${renderCustomFields(item, 'technologies')}
+                </div>
+              `;
+            } else {
+              // Unknown entry type - render as JSON for debugging
+              return `
+                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
+                  <div class="text-white text-xs font-mono bg-terminal-green/5 p-2 rounded">${JSON.stringify(item, null, 2)}</div>
+                </div>
+              `;
+            }
+          }).join('')}
+        </div>
+      </div>
+    `.trim();
+
+    addLine(sectionBox, 'w-full');
+  }, [addLine, portfolioData, formatExperiencePeriod]);
 
   const showSkills = useCallback(() => {
     if (!portfolioData) {
@@ -2388,10 +2546,19 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         clearTerminal();
         break;
       default:
+        // Check if this is a dynamic section command
+        if (portfolioData?.cv?.sections) {
+          const sections = portfolioData.cv.sections as Record<string, unknown[]>;
+          if (cmd in sections && Array.isArray(sections[cmd]) && sections[cmd].length > 0) {
+            showGenericSection(cmd, sections[cmd]);
+            return;
+          }
+        }
+        // Command not found
         addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
         addLine(`Type \`<a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a>\` or click on a command above to get started.`, 'text-terminal-yellow');
     }
-  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal]);
+  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
