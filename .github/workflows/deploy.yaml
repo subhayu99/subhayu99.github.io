@@ -92,7 +92,7 @@ jobs:
 
         echo "✅ Template setup complete!"
 
-    - name: 🔧 Compute base path for deployment
+    - name: 🔧 Compute base path and deployment URL
       id: compute-base-path
       run: |
         # Extract repository name from GITHUB_REPOSITORY (format: owner/repo)
@@ -103,21 +103,26 @@ jobs:
         if [ "$REPO_NAME" = "${REPO_OWNER}.github.io" ]; then
           # User/org site: use root path
           BASE_PATH="/"
+          SITE_URL="https://${REPO_OWNER}.github.io"
           echo "📍 Detected user/org site: ${REPO_NAME}"
         else
           # Project site: use /repo-name/ path
           BASE_PATH="/${REPO_NAME}/"
+          SITE_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}"
           echo "📍 Detected project site: ${REPO_NAME}"
         fi
 
         echo "🔗 Base path: ${BASE_PATH}"
+        echo "🌐 Site URL: ${SITE_URL}"
         echo "BASE_PATH=${BASE_PATH}" >> $GITHUB_OUTPUT
+        echo "SITE_URL=${SITE_URL}" >> $GITHUB_OUTPUT
 
     - name: 🏗️  Build application
       # Note: npm run build now automatically generates resume files if resume.yaml exists
       run: npm run build
       env:
         VITE_BASE_PATH: ${{ steps.compute-base-path.outputs.BASE_PATH }}
+        VITE_SITE_URL: ${{ steps.compute-base-path.outputs.SITE_URL }}
 
 
     - name: ⚙️  Configure GitHub Pages
