@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import DOMPurify from 'dompurify';
 import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { enhanceContent, getLinkUrl } from '../lib/linkRenderer';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { getPromptString, uiText, apiConfig } from '../config';
 
-export default function Terminal() {
+function Terminal() {
   const [hasTyped, setHasTyped] = useState(false);
   const [input, setInput] = useState('');
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -96,9 +97,28 @@ export default function Terminal() {
       // Otherwise, show the default welcome message
       showWelcomeMessage();
     }
-    
+
     welcomeMessageShown.current = true; // Mark as shown
   }, [urlCommand, isLoading, portfolioData, executeCommand, clearCommand, showWelcomeMessage]);
+
+  // Handle offline/online status
+  useEffect(() => {
+    const handleOffline = () => {
+      executeCommand('echo "⚠️  You are offline. Some features may be unavailable."');
+    };
+
+    const handleOnline = () => {
+      executeCommand('echo "✅ You are back online!"');
+    };
+
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, [executeCommand]);
 
   // Handle keydown events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -280,10 +300,11 @@ export default function Terminal() {
           <div className="flex items-center space-x-2 text-xs opacity-60">
             {isInstalled && <span className="hidden sm:block">PWA</span>}
             {isInstallable && (
-              <button 
+              <button
                 onClick={installApp}
-                className="text-terminal-green hover:text-terminal-bright-green transition-colors"
+                className="text-terminal-green hover:text-terminal-bright-green transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                 title="Install app"
+                aria-label="Install app as PWA"
               >
                 📱
               </button>
@@ -302,10 +323,10 @@ export default function Terminal() {
           {/* Command Output */}
           <div className="space-y-1 text-xs sm:text-sm lg:text-base">
             {lines.map((line) => (
-              <div 
-                key={line.id} 
+              <div
+                key={line.id}
                 className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
-                dangerouslySetInnerHTML={{ __html: enhanceContent(line.content) }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(enhanceContent(line.content)) }}
               />
             ))}
           </div>
@@ -338,11 +359,17 @@ export default function Terminal() {
               
               {/* Autocomplete Dropdown */}
               {showAutocomplete && suggestions.length > 0 && (
-                <div className="absolute bottom-full left-0 mb-1 bg-terminal-black border border-terminal-green/50 rounded-sm shadow-lg terminal-glow z-10 min-w-full max-w-xs">
+                <div
+                  role="listbox"
+                  aria-label="Command suggestions"
+                  className="absolute bottom-full left-0 mb-1 bg-terminal-black border border-terminal-green/50 rounded-sm shadow-lg terminal-glow z-10 min-w-full max-w-xs"
+                >
                   <div className="py-1">
                     {suggestions.map((suggestion, index) => (
                       <div
                         key={suggestion}
+                        role="option"
+                        aria-selected={index === selectedSuggestion}
                         className={`px-3 py-1 text-xs sm:text-sm cursor-pointer border border-transparent rounded-sm transition-all duration-150 ease-in-out ${
                           index === selectedSuggestion
                             ? 'border-terminal-green text-terminal-bright-green shadow-[0_0_8px_rgba(55,255,135,0.5)]' // Enhanced selected state
@@ -359,7 +386,7 @@ export default function Terminal() {
                     ))}
                   </div>
                   <div className="border-t border-terminal-green/30 px-3 py-1">
-                    <div className="text-xs text-terminal-green/60">
+                    <div className="text-xs text-terminal-green/60" role="status" aria-live="polite">
                       ↑↓ navigate • Tab/Enter select • Esc close
                     </div>
                   </div>
@@ -372,3 +399,6 @@ export default function Terminal() {
     </div>
   );
 }
+
+// Export memoized Terminal component for better performance
+export default memo(Terminal);

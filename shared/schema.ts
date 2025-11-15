@@ -1,23 +1,26 @@
 import { z } from "zod";
 
+// Phase 1: Add .passthrough() to allow custom fields
+// Phase 2: Make non-essential fields optional with defaults
+
 export const socialNetworkSchema = z.object({
   network: z.string(),
   username: z.string(),
-});
+}).passthrough(); // Allow custom fields like profile_url, verified, etc.
 
 export const technologySchema = z.object({
   label: z.string(),
   details: z.string(),
-});
+}).passthrough(); // Allow custom fields like proficiency_level, years_experience, etc.
 
 export const experienceSchema = z.object({
   company: z.string(),
   position: z.string(),
-  location: z.string(),
+  location: z.string().optional(), // Made optional - supports remote/distributed roles
   start_date: z.string(),
   end_date: z.string().optional(),
-  highlights: z.array(z.string()),
-});
+  highlights: z.array(z.string()).default([]), // Made optional with default - simple roles don't need highlights
+}).passthrough(); // Allow custom fields like github_team, tech_stack, team_size, etc.
 
 export const educationSchema = z.object({
   institution: z.string(),
@@ -27,14 +30,14 @@ export const educationSchema = z.object({
   start_date: z.string(),
   end_date: z.string(),
   highlights: z.array(z.string()).optional(),
-});
+}).passthrough(); // Allow custom fields like gpa, honors, thesis_title, etc.
 
 export const projectSchema = z.object({
   name: z.string(),
   date: z.string(),
-  highlights: z.array(z.string()),
+  highlights: z.array(z.string()).default([]), // Made optional with default
   show_on_resume: z.boolean().optional().default(true),
-});
+}).passthrough(); // Allow custom fields like github_repo, live_url, tech_stack, etc.
 
 export const publicationSchema = z.object({
   title: z.string(),
@@ -42,7 +45,7 @@ export const publicationSchema = z.object({
   date: z.string(),
   journal: z.string(),
   doi: z.string().optional(),
-});
+}).passthrough(); // Allow custom fields like citation_count, impact_factor, etc.
 
 export const portfolioSchema = z.object({
   cv: z.object({

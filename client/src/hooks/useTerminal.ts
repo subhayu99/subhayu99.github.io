@@ -3,7 +3,8 @@ import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
-import { parse } from 'date-fns';
+// Import specific date-fns functions for better tree-shaking
+import { parse } from 'date-fns/parse';
 
 export interface TerminalLine {
   id: string;
@@ -17,7 +18,7 @@ export interface UseTerminalProps {
 }
 
 function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
-  return portfolioData.cv.social_networks.find(sn => sn.network.toLowerCase() === network.toLowerCase())?.username;
+  return portfolioData.cv.social_networks?.find(sn => sn.network.toLowerCase() === network.toLowerCase())?.username;
 }
 
 // Helper function to parse dates and create timeline events
@@ -66,9 +67,9 @@ const parseDate = (dateStr: string): Date => {
     return new Date(parseInt(yearMatch[0]), 0);
   }
 
-  // Last resort: return epoch date
-  console.warn(`Could not parse date: "${dateStr}"`);
-  return new Date(0);
+  // Last resort: return current date and log error
+  console.error(`[Date Parser] Unable to parse date: "${dateStr}". Supported formats: yyyy-MM-dd, yyyy-MM, yyyy, MMM yyyy, MMMM yyyy. Using current date as fallback.`);
+  return new Date(); // Return current date instead of epoch
 };
 
 const formatDateForDisplay = (dateStr: string): string => {
@@ -138,7 +139,7 @@ function getProjectsHtml(projectData: { name: string; date: string; highlights: 
 }
 
 async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<string> {
-  const sanitizedPhone = portfolioData.cv.phone.replace(/[^\d+]/g, '');
+  const sanitizedPhone = portfolioData.cv.phone?.replace(/[^\d+]/g, '') || '';
   const filePath = apiConfig.endpoints.styledName;
 
   const response = await fetch(filePath);
@@ -184,7 +185,7 @@ async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<stri
       <div class="mb-4">
         <p class="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
         <p class="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
-          ${portfolioData.cv.sections.intro[0]}
+          ${portfolioData.cv.sections?.intro[0]}
         </p>
       </div>
 
@@ -199,7 +200,7 @@ async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<stri
           </div>
           <div class="flex">
             <span class="text-terminal-yellow w-16 font-bold">ROLE</span>
-            <span class="text-white">${portfolioData.cv.sections.experience[0].position}</span>
+            <span class="text-white">${portfolioData.cv.sections?.experience[0].position}</span>
           </div>
           <div class="flex">
             <span class="text-terminal-yellow w-16 font-bold">LOC</span>
@@ -304,31 +305,31 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
     name: 'skills',
     description: 'View my technical skills and expertise',
     category: 'professional',
-    isAvailable: (data) => !!data?.cv.sections.technologies && data.cv.sections.technologies.length > 0
+    isAvailable: (data) => !!data?.cv.sections?.technologies && data.cv.sections?.technologies.length > 0
   },
   {
     name: 'experience',
     description: 'Browse my work experience',
     category: 'professional',
-    isAvailable: (data) => !!data?.cv.sections.experience && data.cv.sections.experience.length > 0
+    isAvailable: (data) => !!data?.cv.sections?.experience && data.cv.sections?.experience.length > 0
   },
   {
     name: 'education',
     description: 'View my educational background',
     category: 'professional',
-    isAvailable: (data) => !!data?.cv.sections.education && data.cv.sections.education.length > 0
+    isAvailable: (data) => !!data?.cv.sections?.education && data.cv.sections?.education.length > 0
   },
   {
     name: 'projects',
     description: 'Explore my professional projects',
     category: 'professional',
-    isAvailable: (data) => !!data?.cv.sections.professional_projects && data.cv.sections.professional_projects.length > 0
+    isAvailable: (data) => !!data?.cv.sections?.professional_projects && data.cv.sections?.professional_projects.length > 0
   },
   {
     name: 'personal',
     description: 'Check out my personal projects',
     category: 'professional',
-    isAvailable: (data) => !!data?.cv.sections.personal_projects && data.cv.sections.personal_projects.length > 0
+    isAvailable: (data) => !!data?.cv.sections?.personal_projects && data.cv.sections?.personal_projects.length > 0
   },
   {
     name: 'publications',
@@ -342,8 +343,8 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
     category: 'professional',
     isAvailable: (data) => {
       // Timeline needs at least experience or education
-      const hasExperience = !!data?.cv.sections.experience && data.cv.sections.experience.length > 0;
-      const hasEducation = !!data?.cv.sections.education && data.cv.sections.education.length > 0;
+      const hasExperience = !!data?.cv.sections?.experience && data.cv.sections?.experience.length > 0;
+      const hasEducation = !!data?.cv.sections?.education && data.cv.sections?.education.length > 0;
       return hasExperience || hasEducation;
     }
   },
@@ -847,7 +848,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
             document.getElementById('close-modal')?.addEventListener('click', closeModal);
             document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
             document.getElementById('modal-overlay')?.addEventListener('click', (e) => {
-              if (e.target.id === 'modal-overlay') closeModal();
+              if ((e.target as HTMLElement)?.id === 'modal-overlay') closeModal();
             });
 
             // Escape key to close
@@ -884,7 +885,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
             <div class="space-y-2 ml-2">
-              ${portfolioData.cv.sections.intro.map(paragraph => 
+              ${portfolioData.cv.sections?.intro.map(paragraph => 
                 `<div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">${paragraph}</div>`
               ).join('')}
             </div>
@@ -898,7 +899,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div class="col-span-9 bg-terminal-green/5">
                   <span class="text-white">
-                    <a href="${portfolioData.cv.website}" class="hover:text-terminal-bright-green">${portfolioData.cv.website.replace('https://', '').trim()}</a> (you are here)
+                    <a href="${portfolioData.cv.website}" class="hover:text-terminal-bright-green">${portfolioData.cv.website?.replace('https://', '').trim()}</a> (you are here)
                   </span>
                 </div>
               </div>
@@ -969,7 +970,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         </div>
         <div class="p-3 space-y-3 text-xs sm:text-sm">
           <div class="space-y-1 ml-2">
-            ${portfolioData.cv.sections.technologies.map(tech => `
+            ${portfolioData.cv.sections?.technologies.map(tech => `
               <div class="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
                 <div class="md:col-span-3 bg-terminal-green/10 p-2 rounded">
                   <span class="text-terminal-yellow font-semibold mb-1">${tech.label}</span>
@@ -1009,10 +1010,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <span class="text-terminal-bright-green text-sm font-bold">PROFESSIONAL EXPERIENCE</span>
         </div>
         <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${portfolioData.cv.sections.experience.map((job, index) => {
+          ${portfolioData.cv.sections?.experience.map((job, index) => {
             const period = formatExperiencePeriod(job.start_date, job.end_date);
             return `
-              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections.experience.length - 1 ? 'border-b-0 pb-0' : ''}">
+              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections?.experience.length - 1 ? 'border-b-0 pb-0' : ''}">
                 <div class="mb-3">
                   <div class="bg-terminal-green/5 p-2 rounded mb-2">
                     <span class="text-terminal-yellow font-semibold">${job.position}</span>
@@ -1065,10 +1066,10 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <span class="text-terminal-bright-green text-sm font-bold">EDUCATION</span>
         </div>
         <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${portfolioData.cv.sections.education.map((edu, index) => {
+          ${portfolioData.cv.sections?.education.map((edu, index) => {
             const period = `${edu.start_date} - ${edu.end_date}`;
             return `
-              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections.education.length - 1 ? 'border-b-0 pb-0' : ''}">
+              <div class="border-b border-terminal-green/20 pb-4 ${index === portfolioData.cv.sections?.education.length - 1 ? 'border-b-0 pb-0' : ''}">
                 <div class="mb-3">
                   <div class="bg-terminal-green/5 p-2 rounded mb-2">
                     <span class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area}</span>
@@ -1076,7 +1077,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                     <span class="text-terminal-bright-green font-bold">${edu.institution}</span>
                   </div>
                   <div class="ml-2">
-                    <span class="text-white opacity-80 text-xs">${edu.location} | ${period}</span>
+                    <span class="text-white opacity-80 text-xs">${edu.location || ""} | ${period}</span>
                   </div>
                 </div>
                 ${edu.highlights && edu.highlights.length > 0 ? `
@@ -1116,13 +1117,13 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    if (!portfolioData?.cv.sections.professional_projects || portfolioData.cv.sections.professional_projects.length === 0) {
+    if (!portfolioData?.cv.sections?.professional_projects || portfolioData.cv.sections?.professional_projects.length === 0) {
       addLine(uiText.messages.error.noProfessionalProjects, 'text-terminal-red');
       return;
     }
 
     // Create the projects content as a single HTML string with collapsible functionality
-    const projectsBox = getProjectsHtml(portfolioData.cv.sections.professional_projects, 'professional');
+    const projectsBox = getProjectsHtml(portfolioData.cv.sections?.professional_projects, 'professional');
 
     // Add the entire projects box as a single line
     addLine(projectsBox, 'w-full');
@@ -1134,13 +1135,13 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       return;
     }
 
-    if (!portfolioData?.cv.sections.personal_projects || portfolioData.cv.sections.personal_projects.length === 0) {
+    if (!portfolioData?.cv.sections?.personal_projects || portfolioData.cv.sections?.personal_projects.length === 0) {
       addLine(uiText.messages.error.noPersonalProjects, 'text-terminal-red');
       return;
     }
 
     // Create the projects content as a single HTML string with collapsible functionality
-    const projectsBox = getProjectsHtml(portfolioData.cv.sections.personal_projects, 'personal');
+    const projectsBox = getProjectsHtml(portfolioData.cv.sections?.personal_projects, 'personal');
 
     // Add the entire projects box as a single line
     addLine(projectsBox, 'w-full');
@@ -1240,7 +1241,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     }> = [];
 
     // Add education events
-    portfolioData.cv.sections.education.forEach(edu => {
+    portfolioData.cv.sections?.education.forEach(edu => {
       timelineEvents.push({
         date: parseDate(edu.start_date),
         dateStr: edu.start_date,
@@ -1249,13 +1250,13 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         subtitle: edu.institution,
         endDate: parseDate(edu.end_date),
         endDateStr: edu.end_date,
-        description: edu.location,
+        description: edu.location || "",
         status: 'completed'
       });
     });
 
     // Add experience events
-    portfolioData.cv.sections.experience.forEach(exp => {
+    portfolioData.cv.sections?.experience.forEach(exp => {
       timelineEvents.push({
         date: parseDate(exp.start_date),
         dateStr: exp.start_date,
@@ -1270,7 +1271,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Add major projects (limit to recent ones to avoid clutter)
-    portfolioData.cv.sections.professional_projects
+    portfolioData.cv.sections?.professional_projects
       .slice(0, 3) // Take only top 3 projects
       .forEach(proj => {
         const dateRange = proj.date.split(' – ');
@@ -1437,25 +1438,25 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div class="bg-terminal-green/5 rounded-lg p-3">
                   <div class="text-terminal-bright-green font-bold text-lg">
-                    ${portfolioData.cv.sections.experience.length}
+                    ${portfolioData.cv.sections?.experience.length}
                   </div>
                   <div class="text-white/70 text-xs">Positions</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
                   <div class="text-blue-400 font-bold text-lg">
-                    ${portfolioData.cv.sections.education.length}
+                    ${portfolioData.cv.sections?.education.length}
                   </div>
                   <div class="text-white/70 text-xs">Degrees</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
                   <div class="text-purple-400 font-bold text-lg">
-                    ${portfolioData.cv.sections.professional_projects.length + portfolioData.cv.sections.personal_projects.length}
+                    ${portfolioData.cv.sections?.professional_projects.length + portfolioData.cv.sections?.personal_projects.length}
                   </div>
                   <div class="text-white/70 text-xs">Projects</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
                   <div class="text-yellow-400 font-bold text-lg">
-                    ${portfolioData.cv.sections.publication?.length || 0}
+                    ${portfolioData.cv.sections?.publication?.length || 0}
                   </div>
                   <div class="text-white/70 text-xs">Publications</div>
                 </div>
@@ -1524,7 +1525,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     };
 
     // Search in intro/about section
-    cv.sections.intro.forEach((intro, i) => {
+    cv.sections?.intro.forEach((intro, i) => {
       if (intro.toLowerCase().includes(searchTerm)) {
         results.push({
           category: 'About',
@@ -1535,7 +1536,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Search in technologies/skills
-    cv.sections.technologies.forEach(tech => {
+    cv.sections?.technologies.forEach(tech => {
       if (tech.label.toLowerCase().includes(searchTerm) || tech.details.toLowerCase().includes(searchTerm)) {
         const matchedContent = [];
         if (tech.label.toLowerCase().includes(searchTerm)) {
@@ -1553,7 +1554,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Search in experience
-    cv.sections.experience.forEach(exp => {
+    cv.sections?.experience.forEach(exp => {
       const matchedContent = [];
       
       if (exp.company.toLowerCase().includes(searchTerm)) {
@@ -1583,7 +1584,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Search in education
-    cv.sections.education.forEach(edu => {
+    cv.sections?.education.forEach(edu => {
       const matchedContent = [];
       
       if (edu.institution.toLowerCase().includes(searchTerm)) {
@@ -1595,12 +1596,12 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       if (edu.area.toLowerCase().includes(searchTerm)) {
         matchedContent.push(`Major: ${highlightMatch(edu.area, searchTerm)}`);
       }
-      if (edu.location.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Location: ${highlightMatch(edu.location, searchTerm)}`);
+      if (edu.location?.toLowerCase().includes(searchTerm)) {
+        matchedContent.push(`Location: ${highlightMatch(edu.location || "", searchTerm)}`);
       }
       
       // Check highlights for matches
-      edu.highlights.forEach((highlight, index) => {
+      edu.highlights?.forEach((highlight, index) => {
         if (highlight.toLowerCase().includes(searchTerm)) {
           matchedContent.push(`Highlight ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
         }
@@ -1616,7 +1617,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Search in professional projects
-    cv.sections.professional_projects.forEach(proj => {
+    cv.sections?.professional_projects.forEach(proj => {
       const matchedContent = [];
       
       if (proj.name.toLowerCase().includes(searchTerm)) {
@@ -1640,7 +1641,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
     });
 
     // Search in personal projects
-    cv.sections.personal_projects.forEach(proj => {
+    cv.sections?.personal_projects.forEach(proj => {
       const matchedContent = [];
       
       if (proj.name.toLowerCase().includes(searchTerm)) {
@@ -1809,8 +1810,8 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div class="col-span-9 bg-terminal-green/5">
                   <span class="text-white">
-                    <a href="${cv.phone}" class="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer">
-                      ${cv.phone.replace(/[^\d\+]/g, '')}
+                    <a href="${cv.phone || ""}" class="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer">
+                      ${cv.phone?.replace(/[^\d\+]/g, '')}
                     </a>
                     </span>
                 </div>
@@ -1820,7 +1821,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
           <div>
             <div class="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
             <div class="space-y-1 ml-2">
-              ${cv.social_networks.map(social => {
+              ${cv.social_networks?.map(social => {
                 const url = getSocialNetworkUrl(social.network, social.username);
                 return `
                   <div class="grid grid-cols-12 gap-4">
@@ -1862,7 +1863,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
 
     addLine(`<span class="text-terminal-green">User:</span> <span class="text-white">${portfolioData.cv.name}</span>`);
     addLine(`<span class="text-terminal-green">Location:</span> <span class="text-white">${portfolioData.cv.location}</span>`);
-    addLine(`<span class="text-terminal-green">Role:</span> <span class="text-white">${portfolioData.cv.sections.experience[0]?.position || uiText.labels.professional}</span>`);
+    addLine(`<span class="text-terminal-green">Role:</span> <span class="text-white">${portfolioData.cv.sections?.experience[0]?.position || uiText.labels.professional}</span>`);
   }, [addLine, portfolioData]);
 
   const showCat = useCallback((args: string[]) => {
@@ -1917,20 +1918,20 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 <span class="text-terminal-yellow">Email:</span> <span class="text-terminal-green">${cv.email}</span>
               </div>
               <div class="text-terminal-green">
-                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone}" class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer">
-                  ${cv.phone.replace(/[^\d\+]/g, '')}
+                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone || ""}" class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer">
+                  ${cv.phone?.replace(/[^\d\+]/g, '')}
                 </a>
               </div>
               ${cv.social_networks?.length > 0 ? `
                 <div class="text-terminal-green">
-                  ${cv.social_networks.map(social => `
+                  ${cv.social_networks?.map(social => `
                     <div><span class="text-terminal-yellow">${social.network}:</span> <span class="text-terminal-green">${getSocialNetworkUrl(social.network, social.username)}</span></div>
                   `).join('')}
                 </div>
               ` : ''}
             </div>
 
-            ${cv.sections.intro?.length > 0 ? `
+            ${cv.sections?.intro?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 0)}')">
                   <div class="flex items-center justify-between">
@@ -1944,7 +1945,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 0)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-1">
-                    ${cv.sections.intro.map(line => `
+                    ${cv.sections?.intro.map(line => `
                       <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
                         ${line}
                       </div>
@@ -1954,7 +1955,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${cv.sections.technologies?.length > 0 ? `
+            ${cv.sections?.technologies?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 1)}')">
                   <div class="flex items-center justify-between">
@@ -1968,7 +1969,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 1)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-1">
-                    ${cv.sections.technologies.map(tech => `
+                    ${cv.sections?.technologies.map(tech => `
                       <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
                         <span class="text-terminal-yellow font-semibold">• ${tech.label}</span>
                         <span class="text-white"> - ${tech.details}</span>
@@ -1979,7 +1980,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${cv.sections.experience?.length > 0 ? `
+            ${cv.sections?.experience?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 2)}')">
                   <div class="flex items-center justify-between">
@@ -1993,7 +1994,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 2)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
-                    ${cv.sections.experience.map(exp => {
+                    ${cv.sections?.experience.map(exp => {
                       const endDate = exp.end_date || uiText.labels.present;
                       return `
                         <div class="bg-terminal-green/5 p-3 rounded">
@@ -2020,7 +2021,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${cv.sections.education?.length > 0 ? `
+            ${cv.sections?.education?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 3)}')">
                   <div class="flex items-center justify-between">
@@ -2034,14 +2035,14 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 3)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
-                    ${cv.sections.education.map(edu => `
+                    ${cv.sections?.education.map(edu => `
                       <div class="bg-terminal-green/5 p-3 rounded">
                         <div class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area} from ${edu.institution}</div>
-                        <div class="text-terminal-green">${edu.location}</div>
+                        <div class="text-terminal-green">${edu.location || ""}</div>
                         <div class="text-terminal-green">${edu.start_date} - ${edu.end_date}</div>
                         ${edu.highlights?.length > 0 ? `
                           <div class="space-y-1 mt-2">
-                            ${edu.highlights.map(highlight => `
+                            ${edu.highlights?.map(highlight => `
                               <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
                                 • ${highlight}
                               </div>
@@ -2055,7 +2056,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${cv.sections.professional_projects?.length > 0 ? `
+            ${cv.sections?.professional_projects?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 4)}')">
                   <div class="flex items-center justify-between">
@@ -2069,7 +2070,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 4)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
-                    ${cv.sections.professional_projects.map(project => `
+                    ${cv.sections?.professional_projects.map(project => `
                       <div class="bg-terminal-green/5 p-3 rounded">
                         <div class="mb-2">
                           <span class="text-terminal-yellow font-semibold">${project.name}</span>
@@ -2091,7 +2092,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${cv.sections.personal_projects?.length > 0 ? `
+            ${cv.sections?.personal_projects?.length > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 5)}')">
                   <div class="flex items-center justify-between">
@@ -2105,7 +2106,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
                 </div>
                 <div id="${getCollapsibleId('resume', 5)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
                   <div class="space-y-3">
-                    ${cv.sections.personal_projects.map(project => `
+                    ${cv.sections?.personal_projects.map(project => `
                       <div class="bg-terminal-green/5 p-3 rounded">
                         <div class="mb-2">
                           <span class="text-terminal-yellow font-semibold">${project.name}</span>
@@ -2127,7 +2128,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
               </div>
             ` : ''}
 
-            ${(cv.sections.publication?.length ?? 0) > 0 ? `
+            ${(cv.sections?.publication?.length || 0) > 0 ? `
               <div class="border border-terminal-green/20 rounded">
                 <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 6)}')">
                   <div class="flex items-center justify-between">

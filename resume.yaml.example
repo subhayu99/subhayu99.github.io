@@ -1,3 +1,23 @@
+# ====================================================================
+# Terminal Portfolio - Resume Configuration
+# ====================================================================
+# 🎨 CUSTOM FIELDS SUPPORT:
+#   This template supports custom fields! Add any extra fields you need
+#   to personalize your resume beyond the standard schema.
+#
+# 📋 How it works:
+#   - Custom fields appear in your web portfolio (terminal interface)
+#   - Custom fields are auto-stripped when generating PDF (RenderCV compatibility)
+#   - No errors, no manual management - it just works!
+#
+# 💡 Examples throughout this file show custom fields you can add:
+#   - social_networks: profile_url, verified
+#   - technologies: proficiency_level, years_experience
+#   - experience: github_team, tech_stack, team_size
+#   - education: gpa, honors, thesis_title
+#   - projects: github_repo, live_url, tech_stack, role
+# ====================================================================
+
 cv:
   name: "Jane Developer"
   location: "San Francisco, CA"
@@ -8,6 +28,9 @@ cv:
   social_networks:
     - network: "LinkedIn"
       username: "jane-developer"
+      # 🆕 Custom fields supported! Add any extra fields you need:
+      profile_url: "https://linkedin.com/in/jane-developer"
+      verified: true
     - network: "GitHub"
       username: "janedev"
     # Add more networks as needed:
@@ -23,6 +46,9 @@ cv:
     technologies:
       - label: "Languages"
         details: "JavaScript, TypeScript, Python, Go, SQL"
+        # 🆕 Custom fields supported! Examples:
+        proficiency_level: "Expert"
+        years_experience: 5
       - label: "Frontend"
         details: "React, Vue.js, Next.js, Tailwind CSS, Redux, React Query"
       - label: "Backend"
@@ -37,13 +63,18 @@ cv:
     experience:
       - company: "Tech Startup Inc"
         position: "Senior Software Engineer"
-        location: "San Francisco, CA (Remote)"
+        location: "San Francisco, CA (Remote)"  # ✨ Location now optional! Omit for fully remote roles
         start_date: "2021-06"
-        highlights:
+        highlights:  # ✨ Highlights now optional with empty default!
           - "**Led microservices migration** reducing system latency by 60% and improving scalability for 1M+ users"
           - "**Architected real-time data pipeline** processing 100K+ events per second using Kafka and Redis"
           - "**Mentored 4 junior engineers** through pair programming and code reviews, improving team velocity by 40%"
           - "**Implemented comprehensive testing** achieving 90%+ code coverage and reducing production bugs by 70%"
+        # 🆕 Custom fields supported! Examples:
+        github_team: "tech-startup/platform"
+        tech_stack: ["React", "Node.js", "PostgreSQL", "AWS"]
+        team_size: 8
+        employment_type: "Full-time"
 
       - company: "Tech Startup Inc"
         position: "Software Engineer"
@@ -71,10 +102,14 @@ cv:
         degree: "B.S."
         start_date: "2014-09"
         end_date: "2018-05"
-        highlights:
+        highlights:  # ✨ Highlights are optional!
           - "GPA: **3.8**/4.0"
           - "Relevant Coursework: Data Structures, Algorithms, Distributed Systems, Machine Learning"
           - "Activities: ACM Chapter President, Hackathon Winner (2017)"
+        # 🆕 Custom fields supported! Examples:
+        gpa: 3.8
+        honors: "Magna Cum Laude"
+        thesis_title: "Distributed Systems at Scale"
 
     professional_projects:
       - name: "E-Commerce Platform Redesign"
