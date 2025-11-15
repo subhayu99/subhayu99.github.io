@@ -95,6 +95,25 @@ export default defineConfig({
     emptyOutDir: true,
     // Ensure assets are properly referenced
     assetsDir: "assets",
+    // Code splitting for better performance
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core
+          'react-vendor': ['react', 'react-dom'],
+          // React Query
+          'react-query': ['@tanstack/react-query'],
+          // UI components - group Radix components together
+          'ui-components': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-slot',
+          ],
+          // Utilities
+          'utils': ['date-fns', 'dompurify'],
+        },
+      },
+    },
   },
   server: {
     fs: {

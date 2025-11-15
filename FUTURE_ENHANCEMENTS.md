@@ -231,96 +231,157 @@ Users no longer need to manually create neofetch files.
 
 ---
 
-### Make Schema More Flexible (Inspired by RenderCV)
+### ✅ Make Schema More Flexible (PARTIALLY COMPLETED - Phases 1-2)
+
+**Status**: Custom fields and optional fields implemented. Dynamic sections remain for future work.
+
 **Issue**: Current schema is too rigid - doesn't allow custom sections or extra fields like RenderCV does.
 
 **Current Limitations** (in `shared/schema.ts`):
+
 1. **Fixed Section Names**: Only supports hardcoded sections (`intro`, `technologies`, `experience`, etc.)
    - Cannot add custom sections like "Certifications" or "Awards" without modifying schema
-2. **Strict Field Requirements**: Many fields are required even when not applicable
-   - Experience requires `location` (problematic for remote-first roles)
-   - Projects require `highlights` array (should be optional)
-3. **No Custom Fields**: Cannot add extra fields to entries
-   - Cannot add `company_logo_url` or `github_repo` to projects
-   - Cannot add `relevance_score` or custom metadata
+2. ~~**Strict Field Requirements**: Many fields are required even when not applicable~~ ✅ **FIXED**
+   - ~~Experience requires `location` (problematic for remote-first roles)~~ ✅ Now optional
+   - ~~Projects require `highlights` array (should be optional)~~ ✅ Now optional with default
+3. ~~**No Custom Fields**: Cannot add extra fields to entries~~ ✅ **FIXED**
+   - ~~Cannot add `company_logo_url` or `github_repo` to projects~~ ✅ Now supported via .passthrough()
+   - ~~Cannot add `relevance_score` or custom metadata~~ ✅ Now supported
 
 **How RenderCV Handles This**:
+
 - **Flexible Sections**: "Section titles are arbitrary" - use any section names
-- **Minimal Requirements**: Only truly essential fields are required
-- **Extra Fields Supported**: "RenderCV allows the usage of any number of extra keys in the entries"
-- **Graceful Handling**: Custom fields don't break output, can be used in custom designs
+- **Minimal Requirements**: Only truly essential fields are required ✅ **Implemented**
+- **Extra Fields Supported**: "RenderCV allows the usage of any number of extra keys in the entries" ✅ **Implemented**
+- **Graceful Handling**: Custom fields don't break output, can be used in custom designs ✅ **Implemented**
 
-**Solution**: Make schema progressive and extensible
+**Implementation** (`shared/schema.ts`):
 
-**Work Required**:
-1. **Add `.passthrough()` to All Schemas** (2 hours):
-   ```typescript
-   export const experienceSchema = z.object({
-     company: z.string(),
-     position: z.string(),
-     // ... other fields
-   }).passthrough(); // Allow extra fields
-   ```
+**Phase 1: Custom Fields Support** ✅ **COMPLETED**
 
-2. **Make More Fields Optional** (2 hours):
-   - `location` in experience (already done in education)
-   - `highlights` in projects/experience (use `.default([])`)
-   - Consider making `company`/`position` optional for freelance cases
+- Added `.passthrough()` to all 6 schemas:
+  - `socialNetworkSchema` - allows custom fields like `profile_url`, `verified`
+  - `technologySchema` - allows custom fields like `proficiency_level`, `years_experience`
+  - `experienceSchema` - allows custom fields like `github_team`, `tech_stack`, `team_size`
+  - `educationSchema` - allows custom fields like `gpa`, `honors`, `thesis_title`
+  - `projectSchema` - allows custom fields like `github_repo`, `live_url`, `tech_stack`
+  - `publicationSchema` - allows custom fields like `citation_count`, `impact_factor`
 
-3. **Support Dynamic Section Names** (3 hours):
-   ```typescript
-   // Instead of fixed keys, allow any section name
-   sections: z.record(
-     z.string(), // section name (e.g., "Certifications")
-     z.array(z.union([/* all entry types */]))
-   ).optional()
-   ```
+**Phase 2: Optional Fields** ✅ **COMPLETED**
 
-4. **Update Type Handling** (1 hour):
-   - Update `client/src/hooks/useTerminal.ts` to handle dynamic sections
-   - Add fallback rendering for unknown section types
-   - Update TypeScript types to reflect new flexibility
+- Made `location` optional in `experienceSchema` (supports remote/distributed roles)
+- Made `highlights` optional with `default([])` in:
+  - `experienceSchema` - simple roles don't need highlights
+  - `projectSchema` - not all projects need detailed highlights
+- Made `location` optional in `educationSchema` (was already done)
+- Made `highlights` optional in `educationSchema`
 
-**Estimated effort**: 6-8 hours total
+**Phase 3: Dynamic Section Names** ⏳ **DEFERRED**
 
-**Benefits**:
-- Users can add custom sections without modifying code
-- Support for non-traditional career paths (freelancers, consultants)
-- Better alignment with RenderCV's philosophy
-- Future-proof for new field requirements
-- More inclusive for diverse backgrounds
-
-**Breaking Changes**: None if done carefully
-- Existing resume.yaml files continue to work
-- New features are opt-in via custom fields
-
-**Example Use Cases**:
-```yaml
-sections:
-  certifications:  # Custom section!
-    - name: "AWS Certified Solutions Architect"
-      issuer: "Amazon Web Services"
-      date: "2024"
-      credential_id: "ABC123"  # Custom field!
-
-  experience:
-    - company: "Acme Corp"
-      position: "Senior Engineer"
-      github_team: "acme-corp/platform"  # Custom field!
-      stack: ["TypeScript", "React"]     # Custom field!
+```typescript
+// Future work - allow custom section names
+sections: z.record(
+  z.string(), // section name (e.g., "Certifications", "Awards")
+  z.array(z.union([/* all entry types */]))
+).optional()
 ```
+
+- Would enable completely arbitrary section names
+- Requires updating useTerminal.ts to handle unknown sections
+- Need to decide on fallback rendering strategy
+- **Estimated effort**: 3-4 hours
+
+**Documentation**:
+
+- Updated `resume.yaml.example` with custom field examples and comments
+- All schemas now include inline comments explaining the flexibility
+- Updated `scripts/generate-resume.js` to strip custom fields before RenderCV processing
+
+**How Custom Fields Work**:
+
+Custom fields are fully supported with automatic compatibility handling:
+
+1. **Web Interface**: Custom fields are preserved in `resume.json` and accessible in the terminal portfolio
+2. **PDF Generation**: Custom fields are automatically stripped by `scripts/generate-resume.js` before passing to RenderCV
+3. **Schema Validation**: Zod schemas use `.passthrough()` to accept any extra fields
+4. **Backward Compatibility**: RenderCV's strict Pydantic schema doesn't break the build
+
+This "best of both worlds" approach means:
+
+- Users can add custom fields for the web interface (e.g., `profile_url`, `tech_stack`, `gpa`)
+- PDF generation always works (unknown fields auto-stripped)
+- No manual field management required
+
+**Benefits Achieved**:
+
+- ✅ Users can add custom fields to any entry (profile_url, tech_stack, gpa, etc.)
+- ✅ Support for non-traditional career paths (remote workers, freelancers)
+- ✅ Better alignment with RenderCV's philosophy of minimal requirements
+- ✅ Future-proof for new field requirements
+- ✅ More inclusive for diverse backgrounds
+- ⏳ Custom sections still require schema changes (Phase 3)
+
+**Breaking Changes**: None
+
+- Existing resume.yaml files continue to work unchanged
+- New features are opt-in via custom fields
+- Backward compatible with all existing resumes
+
+**Example Use Cases** (now supported):
+
+```yaml
+social_networks:
+  - network: "LinkedIn"
+    username: "jane-developer"
+    profile_url: "https://linkedin.com/in/jane-developer"  # Custom field!
+    verified: true  # Custom field!
+
+technologies:
+  - label: "Languages"
+    details: "JavaScript, TypeScript, Python"
+    proficiency_level: "Expert"  # Custom field!
+    years_experience: 5  # Custom field!
+
+experience:
+  - company: "Acme Corp"
+    position: "Senior Engineer"
+    # location is now optional - omit for fully remote roles
+    github_team: "acme-corp/platform"  # Custom field!
+    tech_stack: ["TypeScript", "React", "Node.js"]  # Custom field!
+    team_size: 8  # Custom field!
+    highlights: []  # Can be empty or omitted entirely
+
+education:
+  - institution: "University"
+    area: "Computer Science"
+    degree: "B.S."
+    start_date: "2014"
+    end_date: "2018"
+    gpa: 3.8  # Custom field!
+    honors: "Magna Cum Laude"  # Custom field!
+    # highlights is optional
+```
+
+**Remaining Work** (Phase 3):
+
+- Support completely custom section names (e.g., "Certifications", "Awards")
+- Update useTerminal.ts command handlers for dynamic sections
+- Design fallback rendering for unknown section types
 
 ---
 
 ## Low Priority
 
 ### Voice Commands
+
 Enable voice input for terminal commands using Web Speech API
 
 ### Custom Command Framework
+
 Allow users to define custom commands in config file
 
 ### Multi-language Support
+
 Support for resume in multiple languages
 
 ---

@@ -32,8 +32,11 @@ This repository uses a **dual-branch strategy**:
 - 🎭 **Multiple Themes** - Matrix, Blue, Purple, Amber, Red, and more
 - 🔍 **Smart Search** - Search across all your content instantly
 - 📊 **Interactive Commands** - Explore your portfolio through terminal commands
-- 💾 **PWA Support** - Installable as a progressive web app
+- 💾 **PWA Support** - Installable as a progressive web app with offline capabilities
+- 🔒 **Secure** - Built-in XSS protection and Content Security Policy
+- ♿ **Accessible** - ARIA labels and keyboard navigation support
 - 🔄 **Auto-Deploy** - Push changes to GitHub, site updates automatically
+- 🎨 **Custom Fields Support** - Add any custom fields to personalize your resume beyond the standard schema
 
 ## 🌟 Easy Mode - Get Started in 10 Minutes
 
@@ -189,6 +192,55 @@ Customize the PWA (installable app) settings:
    ```
 3. Commit the changes
 
+### Custom Fields Support
+
+Want to add extra information beyond the standard resume fields? You can add **any custom fields** you want!
+
+**Examples of custom fields you can add:**
+
+```yaml
+social_networks:
+  - network: "LinkedIn"
+    username: "yourname"
+    profile_url: "https://linkedin.com/in/yourname"  # ✨ Custom field!
+    verified: true  # ✨ Custom field!
+
+technologies:
+  - label: "Languages"
+    details: "JavaScript, TypeScript, Python"
+    proficiency_level: "Expert"  # ✨ Custom field!
+    years_experience: 5  # ✨ Custom field!
+
+experience:
+  - company: "Tech Company"
+    position: "Senior Engineer"
+    github_team: "tech-company/platform"  # ✨ Custom field!
+    tech_stack: ["React", "Node.js", "AWS"]  # ✨ Custom field!
+    team_size: 8  # ✨ Custom field!
+
+education:
+  - institution: "University"
+    degree: "B.S. Computer Science"
+    gpa: 3.8  # ✨ Custom field!
+    honors: "Magna Cum Laude"  # ✨ Custom field!
+
+projects:
+  - name: "Cool Project"
+    date: "2024"
+    github_repo: "https://github.com/you/project"  # ✨ Custom field!
+    live_url: "https://project.com"  # ✨ Custom field!
+    tech_stack: ["React", "TypeScript"]  # ✨ Custom field!
+```
+
+**How it works:**
+
+- ✅ **Web Interface:** Custom fields are preserved and accessible in your terminal portfolio
+- ✅ **PDF Generation:** Custom fields are automatically stripped for RenderCV compatibility
+- ✅ **Zero Errors:** No manual management needed - it just works!
+- ✅ **Fully Backward Compatible:** All existing resumes continue to work
+
+**See [`resume.yaml.example`](./resume.yaml.example) for more examples and inspiration!**
+
 ## 🔧 Advanced Mode (For Developers)
 
 Want full control? Clone the repository and customize everything!
@@ -264,11 +316,19 @@ Once your portfolio is live, try these commands in the terminal:
 | `experience` | Show work experience and roles |
 | `education` | Display educational background |
 | `projects` | Show professional projects |
+| `personal` | Show personal projects |
+| `publications` | Display publications (if available) |
+| `timeline` | Show chronological timeline of all events |
 | `contact` | Display contact information and social links |
 | `resume` | Download resume PDF |
 | `theme [name]` | Change terminal color theme |
 | `replicate` | AI Resume Converter & portfolio setup guide |
 | `neofetch` | Display system information |
+| `search [query]` | Search across all portfolio content |
+| `whoami` | Display your name and title |
+| `ls` | List available commands (alias for help) |
+| `pwd` | Print working directory |
+| `cat [file]` | Display file contents |
 | `clear` | Clear the terminal screen |
 
 ## 🏗️ Project Structure
