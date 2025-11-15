@@ -23,6 +23,7 @@ cv:
   location: "San Francisco, CA"
   email: "jane@example.com"
   phone: "tel:+1-555-0123"
+  # 🌐 Optional: Will auto-fill with GitHub Pages URL if left empty
   website: "https://janedeveloper.dev"
   resume_url: "https://janedeveloper.dev/resume.pdf"
   social_networks:

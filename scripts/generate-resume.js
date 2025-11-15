@@ -14,6 +14,7 @@
  *
  * Environment variables:
  *   NODE_ENV or RESUME_ENV - Set environment (development, production, ci)
+ *   VITE_SITE_URL - Auto-injected GitHub Pages URL (set by CI/CD workflow)
  *   Example: NODE_ENV=production node scripts/generate-resume.js
  */
 
@@ -264,6 +265,15 @@ if (!existsSync(sourceYamlPath)) {
 
 const yamlContent = readFileSync(sourceYamlPath, 'utf8');
 const fullData = load(yamlContent, { sortKeys: false });
+
+// Auto-inject website URL if missing (from GitHub Pages deployment URL)
+if (fullData.cv && (!fullData.cv.website || fullData.cv.website.trim() === '')) {
+  const deploymentUrl = process.env.VITE_SITE_URL;
+  if (deploymentUrl) {
+    fullData.cv.website = deploymentUrl;
+    console.log(`🌐 Auto-injecting website URL: ${deploymentUrl}`);
+  }
+}
 
 // Log original section order for debugging
 if (config.build.verbose && fullData.cv?.sections) {
