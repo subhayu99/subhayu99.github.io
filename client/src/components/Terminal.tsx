@@ -326,7 +326,11 @@ function Terminal() {
               <div
                 key={line.id}
                 className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(enhanceContent(line.content)) }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(enhanceContent(line.content), {
+                    ADD_ATTR: ["onclick"],
+                  }),
+                }}
               />
             ))}
           </div>
