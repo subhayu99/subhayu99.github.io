@@ -166,7 +166,7 @@ cv:
         highlights:
           - "Designed and built a zero-trust secure document system to solve granular access control challenges where traditional RBAC/ACLs fail, ensuring data confidentiality even from system administrators."
           - "Implemented a robust cryptographic model featuring end-to-end encryption (AES-GCM) and secure key exchange (RSA) to enforce permissions at a data level, not just application logic."
-          - "Built a FastAPI interface for secure document sharing and revocation, with the full project documented and open-sourced on [GitHub](https://github.com/subhayu99/DocumentAccessPOC)."
+          - "Built a FastAPI interface for secure document sharing and revocation, with the full project documented and open-sourced on [GitHub](https://subhayu99.github.io/DocumentAccessPOC/)."
 
       # Website-only personal projects
       - name: "creatree"
