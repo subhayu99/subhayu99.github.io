@@ -27,32 +27,40 @@ cv:
       - label: "Cloud & DevOps"
         details: "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
       - label: "Application & API Development"
-        details: "FastAPI, Django, DRF, Flask, REST APIs, Typer CLI"
+        details: "FastAPI, Django, DRF, Flask, REST APIs, Typer CLI, Textual, Click"
       - label: "Databases & Vector Stores"
         details: "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
       - label: "Security & Quality Assurance"
         details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, PII Data Handling, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
       - label: "Specialized & Visualization"
-        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, Real-time Monitoring Systems, Workflow Automation, Quantum Computing Simulation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
+        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, Real-time Monitoring Systems, Workflow Automation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
     experience:
-      - company: "FiftyFive Technologies"
-        position: "Data Engineer"
-        location: "Gurugram, India (Remote)"
-        start_date: "2022-06"
-        highlights:
-          - "**Delivered >99.99% Performance Gains:** Re-architected a 27.5-hour legacy SQL procedure into a 5-second Python/DuckDB process, successfully handling 80M+ financial records and unlocking significant operational efficiency for the client."
-          - "**Engineered and Shipped Production AI:** Built and deployed a production-grade agentic LLM system from the ground up, using fine-tuned Mistral/Llama models to achieve >95% accuracy in real-time data processing and tool orchestration."
-          - "**Enabled a $6M Series A Funding Round:** Architected the foundational data platform from scratch on GCP for a high-growth startup, providing the critical infrastructure and real-time analytics that were instrumental in their successful funding."
-          - "**Ensured Enterprise Data Compliance:** Implemented robust data pipelines for a major healthcare client (Johnson & Johnson), engineering complex consent logic to meet strict data governance and privacy standards in regulated markets."
-      - company: "FiftyFive Technologies"
-        position: "Software Engineer Intern"
-        location: "Gurugram, India (Remote)"
-        start_date: "2022-01"
-        end_date: "2022-05"
-        highlights:
-          - "Contributed across the full development lifecycle, from building a geospatial backend platform that earned direct client commendation to establishing CI/CD pipelines on Azure DevOps for services supporting 50k+ daily users."
+    - company: "FiftyFive Technologies"
+      position: "Data Engineer"
+      location: "Gurugram, HR (Remote)"
+      start_date: "2022-06"
+      highlights:
+        - "**Artefact (Jul 2025 – Present):** Provided platform enhancements (Azure-based PDM/Initio), including implementing **ADF currency conversion pipelines** and resolving critical Databricks compute provisioning issues. Designed **medallion architecture** (Bronze→Silver→Gold) pipelines for stock reconciliation, integrating **SAP ByDesign API** with **Power BI**."
+        - "**AGY Logistics (Jun 2025 – Sep 2025):** Built real-time IoT monitoring on **GCP** (Cloud Functions, BigQuery) for refrigerated cargo, implementing intelligent filtering to reduce false positive alerts by **70%**. Migrated orchestration from Make.com to **N8N** for cost and control."
+        - "**Johnson & Johnson (Feb 2025 – Jun 2025):** Architected scalable **Treasure Data** pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a **12-scenario truth table for multichannel consent** and ensuring enterprise **GDPR/PII compliance**."
+        - "**Wade Insight (Nov 2024 – Feb 2025):** Led enterprise migration from Azure Data Factory to **Microsoft Fabric** Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using **Azure APIs**, reducing manual troubleshooting by **80%**."
+        - "**Prospexs (Jul 2024 – Oct 2024):** Built an AI outreach platform (**Python/FastAPI/MongoDB**) integrating multiple APIs (OpenAI, Perplexity) to validate profiles and generate personalized communications, improving client response rates by **45%**."
+        - "**QxLab (Jan 2024 – Jun 2024):** Led core LLM development: fine-tuned Llama/Mistral models using **Axolotl** on **H100 clusters** to achieve **>95% accuracy** in the production agentic system, deployed with custom inference logic. Separately, I created high-throughput internal tooling to standardize and process **TeraByte-scale Hugging Face datasets** (SFT/DPO, semantic deduplication), an intelligent solution to an infrastructure bottleneck. This essential tool was later released as the open-source **DatasetPipeline**."
+        - "**CV Advisors (Jan 2024):** **>99.9% Performance Gain:** Re-architected a 1900+ line legacy SQL procedure using **Python/Pandas/DuckDB**, reducing runtime from **27.5 hours to under 5 seconds** for 80M+ financial records across 150 clients."
+        - "**Logical Contract (Oct 2023 – Dec 2023):** Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
+        - "**SlideNinja (Jul 2023 – Oct 2023):** Developed a GenAI RAG platform for a **McKinsey partner**, leveraging **LangChain** and SerpAPI to generate presentations from minimal input during the early GenAI boom."
+        - "**LoopKitchen (Sep 2022 – Jun 2023):** Built core data infrastructure from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a **$6M Series A** round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash), enabling real-time performance analytics."
+
+    - company: "FiftyFive Technologies"
+      position: "Software Engineer Intern"
+      location: "Gurugram, HR (Remote)"
+      start_date: "2022-01"
+      end_date: "2022-05"
+      highlights:
+        - "**Eningo (Apr 2022 – Aug 2022):** Developed a cloud-based geospatial platform for automating cable network issue requests. Migrated legacy data from **Postgres to MongoDB** for enhanced scalability."
+        - "**NIBE: (Feb 2022 – Mar 2022)** Managed and established **Azure DevOps CI/CD** pipelines for critical services supporting **50,000+ daily users**."
     education:
-      - institution: "CIEM"
+      - institution: "Calcutta Institute of Engineering and Management (MAKAUT)"
         location: "Kolkata"
         area: "Information Technology"
         degree: "B.Tech"
@@ -61,65 +69,64 @@ cv:
         highlights:
           - "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
     professional_projects:
-      # Resume + Website projects (show_on_resume: true)
+      # Website-only projects (show_on_resume: false)
       - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
         date: "Jul 2025 – Present"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Provided ongoing technical support and enhancements for Azure-based data platforms (PDM and Initio), implementing currency conversion pipelines with ADF and resolving critical Databricks compute provisioning issues affecting production workflows."
           - "Built end-to-end stock reconciliation dashboard integrating SAP ByDesign API and warehouse data sources, designing medallion architecture pipelines (Bronze→Silver→Gold) with Power BI visualizations for inventory management."
           - "Executed data privacy compliance projects including PII-protected data extraction and delivery for legal audits, while maintaining data quality through systematic investigation and resolution of discrepancies across multiple data sources."
       - name: "AGY Logistics - Reefer Temperature Monitoring System"
         date: "Jun 2025 – Sep 2025"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Built real-time monitoring system for refrigerated cargo trailers, integrating Ditat and Samsara APIs to track temperature compliance and prevent cold chain violations across multi-stop routes."
           - "Designed scalable data pipelines on GCP using Cloud Functions and BigQuery with medallion architecture, implementing alert logic for temperature deviations, dry loads, and driver setpoint mismatches."
           - "Reduced false positive alerts by 70% through intelligent filtering that accounts for loading/unloading states and trip transitions, while migrating workflows from Make.com to N8N for improved cost efficiency and control."
       - name: "Johnson & Johnson - Healthcare Data Platform"
         date: "Feb 2025 – Jun 2025"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Architected and maintained scalable data pipelines (Bronze-Silver-Gold layers) in Treasure Data using SQL, processing millions of records for JP and ANZ Healthcare Professionals' marketing analytics."
           - "Engineered complex data transformation logic including a 12-scenario truth table for multichannel consent processing, integrating data across platforms (CDP, S3, Treasure Data, SFMC, GA4) using Python and APIs."
           - "Ensured enterprise-grade data quality and pipeline reliability by implementing robust consistency checks and automated data processing workflows for regulated healthcare environments."
       - name: "Wade Insight - Cloud-Native Data Orchestration Platform"
         date: "Nov 2024 – Feb 2025"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Enhanced core pipeline orchestration features for WADE's Azure SaaS platform, implementing comprehensive continue_on_failure mechanisms with SQL dependency handling and advanced job execution tracking."
           - "Led migration of enterprise data pipelines from Azure Data Factory to Microsoft Fabric Data Factory, managing ARM template adaptation and deployment for clients processing millions of records."
           - "Developed automated healthcheck processes leveraging Azure APIs to monitor running pipelines, reducing manual troubleshooting overhead by 80% and enabling faster insight delivery."
       - name: "Prospexs - AI-Powered Outreach Platform"
         date: "Jul 2024 – Oct 2024"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Built an AI-powered outreach platform using Python/FastAPI and MongoDB, reducing manual prospecting effort by 60% through intelligent automation."
           - "Integrated multiple APIs (OpenAI, Perplexity, LinkedIn) to validate profiles and generate personalized communications, improving client response rates by 45%."
           - "Developed email generation system with dynamic tone adjustment capabilities, enabling scalable personalized outreach for B2B sales teams."
       - name: "QxLab - State-of-the-Art Agent-Based LLM System"
         date: "Jan 2024 – Jun 2024"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Built a production-ready agent-based LLM system using fine-tuned Mistral7B and Llama 13B models for real-time API data processing, achieving over 95% accuracy with custom schema management for tool orchestration."
           - "Developed advanced CLI tool with Typer for language model fine-tuning and dataset manipulation, processing millions of data points and 10B+ tokens in minutes through optimized pipelines."
           - "Orchestrated FastAPI deployment on Docker for GPU-accelerated model inference with multi-threading capabilities, enabling scalable AI model serving infrastructure."
       - name: "CV Advisors - High-Performance Financial Data Processing"
         date: "Jan 2024 – Jan 2024"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Developed a Python/Pandas/DuckDB proof-of-concept for financial data processing pipeline, reducing runtime of a 1900+ line SQL procedure from 27.5 hours to under 5 seconds."
           - "Demonstrated Python's capability for high-performance data processing on 80M+ rows across 150 clients, enabling batch execution and significant operational efficiency improvements."
       - name: "LoopKitchen (now Loop) - Food Delivery Intelligence Platform"
         date: "Sep 2022 – Jun 2023"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Built core data infrastructure from scratch for a food delivery analytics startup using comprehensive GCP stack: FastAPI/SQLModel APIs on Cloud Run/Functions, BigQuery for data warehousing, Firestore for metadata, orchestrated via GCP Composer and Workflows."
           - "Developed multi-platform data ingestion pipelines scraping and processing millions of orders from UberEats, DoorDash, and Grubhub APIs, enabling real-time performance analytics for restaurant brands and franchises."
           - "Created custom Streamlit monitoring dashboard providing real-time visibility into complex orchestration workflows with granular tracking (brand→region→chain→store→order level), essential for debugging long-running processes across multiple third-party platforms."
           - "Contributed as core team member (10-person startup) working directly with technical leadership, helping build the foundation for a platform that secured $6M Series A funding and now serves major restaurant chains like Dave's Hot Chicken and Freddy's."
 
-      # Website-only projects (show_on_resume: false)
       - name: "Logical Contract - AI-Powered Contract Generator"
         date: "Oct 2023 — Dec 2023"
         show_on_resume: false
@@ -146,6 +153,13 @@ cv:
 
     personal_projects:
       # Resume + Website projects
+      - name: "SQLStream"
+        date: "Nov 2025"
+        show_on_resume: true
+        highlights:
+          - "Created a zero-setup SQL tool to quickly analyze data files (CSV, Parquet, Markdown, HTML, etc.) via a **CLI** or **Python library**, streamlining repetitive data quality checks without database overhead."
+          - "Built a powerful **interactive shell** with syntax highlighting and history for data exploration, alongside a standard query mode for piping results into other terminal tools."
+          - "Engineered a flexible system that auto-switches between **DuckDB**, **Pandas**, or native Python to execute queries, implementing smart optimizations to filter data before loading; published on [PyPI](https://pypi.org/project/sqlstream) with full [documentation](https://subhayu99.github.io/sqlstream)."
       - name: "DatasetPipeline"
         date: "May 2025"
         show_on_resume: true
@@ -166,7 +180,7 @@ cv:
         highlights:
           - "Designed and built a zero-trust secure document system to solve granular access control challenges where traditional RBAC/ACLs fail, ensuring data confidentiality even from system administrators."
           - "Implemented a robust cryptographic model featuring end-to-end encryption (AES-GCM) and secure key exchange (RSA) to enforce permissions at a data level, not just application logic."
-          - "Built a FastAPI interface for secure document sharing and revocation, with the full project documented and open-sourced on [GitHub](https://subhayu99.github.io/DocumentAccessPOC/)."
+          - "Built a FastAPI interface for secure document sharing and revocation; project is on [GitHub](https://github.com/subhayu99/DocumentAccessPOC) with detailed [documentation](https://subhayu99.github.io/DocumentAccessPOC/)."
 
       # Website-only personal projects
       - name: "creatree"
@@ -201,76 +215,74 @@ cv:
         journal: "IET Quantum Communication"
         doi: "10.1049/qtc2.12058"
 design:
-  theme: "moderncv"
+  theme: engineeringresumes
   page:
-    size: "a4"
-    top_margin: "1.6cm"
-    bottom_margin: "1.6cm"
-    left_margin: "1.6cm"
-    right_margin: "1.6cm"
+    size: a4
+    top_margin: 1.12cm
+    bottom_margin: 1.12cm
+    left_margin: 1.12cm
+    right_margin: 1.12cm
     show_page_numbering: false
     show_last_updated_date: false
   colors:
-    text: "black"
-    name: "#004f90"
-    connections: "#004f90"
-    section_titles: "#004f90"
-    links: "#004f90"
-    last_updated_date_and_page_numbering: "grey"
+    text: rgba(35, 53, 77)
+    name: rgba(35, 53, 77)
+    connections: rgba(35, 53, 77)
+    section_titles: rgba(35, 53, 77)
+    links: rgba(35, 53, 77)
   text:
-    font_family: "Source Sans 3"
-    font_size: "10pt"
-    leading: "0.6em"
-    alignment: "justified"
-    date_and_location_column_alignment: "right"
-  links:
-    underline: false
-    use_external_link_icon: true
+    font_family: Lato
+    font_size: 9.2pt
+    alignment: justified
+    date_and_location_column_alignment: right
   header:
-    name_font_family: "Source Sans 3"
-    name_font_size: "30pt"
+    name_font_family: Lato
+    name_font_size: 16pt
     name_bold: true
     small_caps_for_name: false
-    photo_width: "3.5cm"
-    vertical_space_between_name_and_connections: "0.7cm"
-    vertical_space_between_connections_and_first_section: "0.7cm"
-    horizontal_space_between_connections: "0.5cm"
-    connections_font_family: "Source Sans 3"
-    separator_between_connections: ""
+    photo_width: 3.5cm
+    vertical_space_between_name_and_connections: 0.4cm
+    vertical_space_between_connections_and_first_section: 0.4cm
+    horizontal_space_between_connections: 0.4cm
+    connections_font_family: Lato
+    separator_between_connections: '|'
     use_icons_for_connections: true
-    alignment: "center"
+    make_connections_links: true
+    alignment: center
   section_titles:
-    type: "with-partial-line"
-    font_family: "Source Sans 3"
-    font_size: "1.4em"
+    type: with-full-line
+    font_family: Lato
+    font_size: 1.2em
     bold: true
-    small_caps: false
-    line_thickness: "0.5pt"
-    vertical_space_above: "0.5cm"
-    vertical_space_below: "0.3cm"
+    small_caps: true
+    vertical_space_above: 0.3cm
+    vertical_space_below: 0.2cm
   entries:
-    date_and_location_width: "4.15cm"
-    left_and_right_margin: "0.2cm"
-    horizontal_space_between_columns: "0.1cm"
-    vertical_space_between_entries: "1.2em"
+    date_and_location_width: 4cm
+    left_and_right_margin: 0cm
+    horizontal_space_between_columns: 0.1cm
+    vertical_space_between_entries: 0.8em
     allow_page_break_in_sections: true
     allow_page_break_in_entries: true
     short_second_row: false
     show_time_spans_in: []
   highlights:
-    bullet: "•"
-    top_margin: "0.25cm"
-    left_margin: "0.4cm"
-    vertical_space_between_highlights: "0.25cm"
-    horizontal_space_between_bullet_and_highlight: "0.5em"
-    summary_left_margin: "0cm"
+    bullet: •
+    nested_bullet: '-'
+    top_margin: 0.18cm
+    left_margin: 0.3cm
+    vertical_space_between_highlights: 0.17cm
+    horizontal_space_between_bullet_and_highlight: 0.4em
+    summary_left_margin: 1cm
   entry_types:
     one_line_entry:
-      template: "**LABEL:** DETAILS"
+      template: '**LABEL:** DETAILS'
     education_entry:
-      main_column_first_row_template: "**INSTITUTION**, (DEGREE - AREA)"
-      # degree_column_template: ""
-      degree_column_width: "1cm"
+      main_column_first_row_template: |-
+        **INSTITUTION**
+        DEGREE in AREA
+      degree_column_template: ''
+      degree_column_width: 3cm
       main_column_second_row_template: |-
         SUMMARY
         HIGHLIGHTS
@@ -278,7 +290,7 @@ design:
         LOCATION
         DATE
     normal_entry:
-      main_column_first_row_template: "**NAME**"
+      main_column_first_row_template: '**NAME**'
       main_column_second_row_template: |-
         SUMMARY
         HIGHLIGHTS
@@ -286,7 +298,9 @@ design:
         LOCATION
         DATE
     experience_entry:
-      main_column_first_row_template: "**COMPANY**, POSITION"
+      main_column_first_row_template: |-
+        **COMPANY**
+        POSITION
       main_column_second_row_template: |-
         SUMMARY
         HIGHLIGHTS
@@ -315,8 +329,8 @@ locale:
   months: "months"
   year: "year"
   years: "years"
-  present: "present"
-  to: "–"
+  present: "Present"
+  to: "-"
   abbreviations_for_months:
     - "Jan"
     - "Feb"
