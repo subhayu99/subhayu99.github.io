@@ -61,7 +61,7 @@ cv:
         - "**NIBE: (Feb 2022 – Mar 2022)** Managed and established **Azure DevOps CI/CD** pipelines for critical services supporting **50,000+ daily users**."
     education:
       - institution: "Calcutta Institute of Engineering and Management (MAKAUT)"
-        location: "Kolkata"
+        location: "Kolkata, WB"
         area: "Information Technology"
         degree: "B.Tech"
         start_date: "2018-07"
@@ -225,11 +225,11 @@ design:
     show_page_numbering: false
     show_last_updated_date: false
   colors:
-    text: "black"
-    name: "#004f90"
-    connections: "#004f90"
-    section_titles: "#004f90"
-    links: "#004f90"
+    text: "#011629"
+    name: "#124d86"
+    connections: "#124d86"
+    section_titles: "#124d86"
+    links: "#124d86"
     last_updated_date_and_page_numbering: "grey"
   text:
     font_family: Lato
@@ -256,7 +256,7 @@ design:
     font_size: 1.2em
     bold: true
     small_caps: true
-    vertical_space_above: 0.3cm
+    vertical_space_above: 0.35cm
     vertical_space_below: 0.2cm
   entries:
     date_and_location_width: 4cm
@@ -269,7 +269,7 @@ design:
     show_time_spans_in: []
   highlights:
     bullet: •
-    nested_bullet: '-'
+    nested_bullet: ◦
     top_margin: 0.18cm
     left_margin: 0.3cm
     vertical_space_between_highlights: 0.17cm
