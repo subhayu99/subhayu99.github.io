@@ -41,26 +41,26 @@ cv:
       start_date: "2022-06"
       summary: "Delivered end-to-end data and AI solutions for 10+ enterprise clients across healthcare, finance, logistics, and tech sectors. Responsibilities extended beyond technical delivery: conducted 100+ technical interviews, led client onboarding and scoping calls, created PoCs/demos, mentored teammates, and drove adoption of emerging technologies (DuckDB, MCP) across the organization.\\ **Client Engagements:**"
       highlights:
-        - "**SBGC Group (Jul 2025 – Present):** Owned Azure data platform (ADF, Databricks, ADLS) across **2 brand environments** and **4 currency regions**, integrating **SAP, Shopify, Klaviyo, GA4, and warehouse APIs**. Built **medallion architecture** pipelines feeding **Hightouch CDP** and **Power BI** dashboards for inventory and fulfillment analytics. Delivered **GDPR-compliant extracts** for **Advent International** due diligence; achieved **\\<1% revenue variance**."
-        - "**AGY Logistics (Jun 2025 – Sep 2025):** Sole architect of GDP-compliant cold chain monitoring on **GCP** (BigQuery, Cloud Run, Cloud SQL), coordinating cross-functional frontend and backend teams. Built **4-layer medallion architecture** with smart time-series merging across IoT and TMS sources. Enriched alerts with Weather and routing APIs; replaced BQML with statistical analysis—**70%** fewer false alerts, significantly lower cloud costs."
-        - "**Johnson & Johnson (Feb 2025 – Jun 2025):** Architected scalable **Treasure Data** pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a **12-scenario truth table for multichannel consent** and ensuring enterprise **GDPR/PII compliance**."
-        - "**Wade Insight (Nov 2024 – Feb 2025):** Led enterprise migration from **ADF** to **Microsoft Fabric** Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using **Azure APIs**, reducing manual troubleshooting by **80%**."
-        - "**Prospexs (Jul 2024 – Oct 2024):** Built an AI outreach platform (**Python/FastAPI/MongoDB**) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by **45%**."
-        - "**QxLab (Jan 2024 – Jun 2024):** Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using **Axolotl** on **H100 clusters** to achieve **>95% accuracy** in the production agentic system, deployed with custom inference logic. Separately, I created high-throughput internal tooling to standardize and process **TeraByte-scale Hugging Face datasets** (SFT/DPO, semantic deduplication), an intelligent solution to an infrastructure bottleneck. This essential tool was later released as the open-source **DatasetPipeline**."
-        - "**CV Advisors (Jan 2024):** **>99.9% Performance Gain:** Re-architected a 1900+ line legacy SQL procedure using **Pandas & DuckDB** for high-speed transformation, reducing runtime from **27.5 hours to under 5 seconds** for 80M+ financial records across 150 clients."
-        - "**Logical Contract (Oct 2023 – Dec 2023):** Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
-        - "**SlideNinja (Jul 2023 – Oct 2023):** Developed a GenAI RAG platform for a **McKinsey partner**, leveraging **LangChain** and SerpAPI to generate presentations from minimal input during the early GenAI boom."
-        - "**LoopKitchen (Sep 2022 – Jun 2023):** Built core data architecture from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a **$6M Series A** round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash, Grubhub), enabling real-time performance analytics."
+        - "**SBGC Group (Retail Analytics)**: Owned a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical data explosion (slashing volume 99%) and delivered an inventory dashboard worth ~$250k."
+        - "**AGY Logistics (IoT & Automation)**: Sole architect of a GDP-compliant cold chain system on GCP (BigQuery, Cloud Run). Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings. Engineered smart time-series merging and statistical analysis on a 4-layer medallion architecture to reduce false alerts by 70%."
+        - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a 12-scenario truth table for multichannel consent and ensuring enterprise GDPR/PII compliance."
+        - "**Wade Insight (Cloud Migration)**: Led enterprise migration from ADF to Microsoft Fabric Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using Azure APIs, reducing manual troubleshooting by 80%."
+        - "**Prospexs (AI Outreach)**: Built an AI outreach platform (Python/FastAPI/MongoDB) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by 45%."
+        - "**QxLab (Agentic AI Infrastructure)**: Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using Axolotl on H100 clusters to achieve >95% accuracy in production agentic system, deployed with custom inference logic. Separately, created a high-throughput internal tooling to standardize and process TeraByte-scale Hugging Face datasets (SFT/DPO/RLHF), solving infrastructure bottlenecks. Later released this as an open-source project (DatasetPipeline)."
+        - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line legacy SQL procedure (iterative cursors) into vectorized logic (DuckDB/Pandas), processing 80M+ records across 150 clients. Reduced runtime from 27.5h to \\<5s (\\>99.9% gain). Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
+        - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
+        # - "**SlideNinja**: Developed a GenAI RAG platform for a McKinsey partner, leveraging LangChain and SerpAPI to generate presentations from minimal input during the early GenAI boom."
+        - "**LoopKitchen (Food Tech)**: Built core data architecture from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a $6M Series A round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash, Grubhub), enabling real-time performance analytics."
 
     - company: "FiftyFive Technologies"
       position: "Software Engineer Intern"
       location: "Gurugram, HR (Remote)"
       start_date: "2022-01"
       end_date: "2022-05"
-      summary: "Gained hands-on experience with production infra. (Docker, Terraform, K8s, CI/CD), backend best practices, and client-facing delivery.\\ **Client Engagements:**"
+      summary: "Gained experience with production infrastructure (Docker, Terraform, K8s, CI/CD), backend best practices, and client-facing delivery.\\ **Client Engagements:**"
       highlights:
-        - "**Eningo (Apr 2022 – Aug 2022):** Developed a cloud-based geospatial platform for automating cable network issue requests. Migrated legacy data from **Postgres to MongoDB** for enhanced scalability."
-        - "**NIBE (Feb 2022 – Mar 2022):** Managed and established **Azure DevOps CI/CD** pipelines for critical services supporting **50,000+ daily users**."
+        - "**Eningo**: Developed a cloud-based geospatial platform; migrated legacy data from Postgres to MongoDB for enhanced scalability."
+        - "**NIBE**: Managed and established Azure DevOps CI/CD pipelines for critical services supporting 50,000+ daily users."
     education:
       - institution: "Calcutta Institute of Engineering and Management (MAKAUT)"
         location: "Kolkata, WB"
@@ -70,9 +70,9 @@ cv:
         end_date: "2022-06"
         highlights:
           - "**CGPA:** 8.57/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
-          - "**Google DSC Lead (2020-2021):** Led campus developer community; organized workshops and tech talks. [G.dev Profile](https://g.dev/subhayu99)"
-          - "**CodeChef Chapter Lead (2020-2021):** Hosted 4 competitive programming events, growing participation from 4 to 21 students. [Certificate](https://drive.google.com/file/d/1NYokFweEGTAfgL3sZO6qeEiyC6HD9pQ7/view)"
-          - "**Linux Foundation Scholarship Recipient:** Merit-based selection for LFS201 Linux System Administration course. [Email](https://drive.google.com/file/d/19Fh33ySf5wbnNT-ws5Z9OKNct06u_vKh/view)"
+          - "**Google DSC Lead (2020-2021):** Led developer community, organized workshops and tech talks. [G.dev Profile](https://g.dev/subhayu99)"
+          - "**CodeChef Chapter Lead (2020-2021):** Hosted 4 competitive programming events (4 to 21 students). [Certificate](https://drive.google.com/file/d/1NYokFweEGTAfgL3sZO6qeEiyC6HD9pQ7/view)"
+          - "**Linux Foundation Scholarship Recipient:** Merit selection for LFS201 Linux System Administration. [Email](https://drive.google.com/file/d/19Fh33ySf5wbnNT-ws5Z9OKNct06u_vKh/view)"
     professional_projects:
       # Website-only projects (show_on_resume: false)
       - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
@@ -241,6 +241,7 @@ design:
     font_size: 9.2pt
     alignment: justified
     date_and_location_column_alignment: right
+    leading: "0.65em"
   header:
     name_font_family: Lato
     name_font_size: 16pt
@@ -261,7 +262,7 @@ design:
     font_size: 1.2em
     bold: true
     small_caps: true
-    vertical_space_above: 0.35cm
+    vertical_space_above: 0.4cm
     vertical_space_below: 0.2cm
   entries:
     date_and_location_width: 4cm
@@ -277,7 +278,7 @@ design:
     nested_bullet: ◦
     top_margin: 0.2cm
     left_margin: 0.3cm
-    vertical_space_between_highlights: 0.18cm
+    vertical_space_between_highlights: 0.2cm
     horizontal_space_between_bullet_and_highlight: 0.4em
     summary_left_margin: 0.2cm
   entry_types:
