@@ -23,29 +23,30 @@ cv:
       - label: "Data Engineering & Orchestration"
         details: "ETL/ELT/ETLT Pipelines, Data Modeling, Data Warehousing, Data Lakes, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Databricks, Microsoft Fabric, Azure Data Factory (ADF), Treasure Data"
       - label: "AI & LLM Engineering"
-        details: "OpenAI, Gemini, LangChain, Agentic Architecture (MCP, A2A), RAG (Retrieval-Augmented Generation), Axolotl, LLM Fine-tuning (SFT, DPO, RLHF), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
+        details: "OpenAI, Gemini, LangChain, Agentic Architecture (MCP, A2A), Retrieval Augmented Generation (RAG), Axolotl, LLM Fine-tuning (SFT, DPO, RLHF), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
       - label: "Cloud & DevOps"
         details: "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
       - label: "Application & API Development"
-        details: "FastAPI, Django, DRF, Flask, REST APIs, Typer CLI, Textual, Click"
+        details: "FastAPI, Django, DRF, Flask, REST APIs, Streamlit, CLI Tools(Typer, Textual)"
       - label: "Databases & Vector Stores"
         details: "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
       - label: "Security & Quality Assurance"
         details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, PII Data Handling, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
       - label: "Specialized & Visualization"
-        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, GeoPandas, PostGIS, Realtime Monitoring Systems, Automations, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
+        details: "System Design, Solution Architecture, CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Matplotlib, Plotly, GeoPandas, PostGIS, Realtime Monitoring Systems, Automations, Agile (Scrum/Kanban), Code Reviews, Technical Consultation"
     experience:
     - company: "FiftyFive Technologies"
       position: "Data Engineer"
       location: "Gurugram, HR (Remote)"
       start_date: "2022-06"
+      summary: "Delivered end-to-end data and AI solutions for 10+ enterprise clients across healthcare, finance, logistics, and tech sectors. Responsibilities extended beyond technical delivery: conducted 100+ technical interviews, led client onboarding and scoping calls, created PoCs/demos, mentored teammates, and drove adoption of emerging technologies (DuckDB, MCP) across the organization.\\ **Client Engagements:**"
       highlights:
         - "**SBGC Group (Jul 2025 – Present):** Owned Azure data platform (ADF, Databricks, ADLS) across **2 brand environments** and **4 currency regions**, integrating **SAP, Shopify, Klaviyo, GA4, and warehouse APIs**. Built **medallion architecture** pipelines feeding **Hightouch CDP** and **Power BI** dashboards for inventory and fulfillment analytics. Delivered **GDPR-compliant extracts** for **Advent International** due diligence; achieved **\\<1% revenue variance**."
-        - "**AGY Logistics (Jun 2025 – Sep 2025):** Sole architect of GDP-compliant cold chain monitoring on **GCP** (BigQuery, Cloud Run, Cloud SQL). Built **4-layer medallion architecture** with smart time-series merging across IoT and TMS sources. Enriched alerts with Weather and routing APIs; replaced BQML with statistical analysis—**70%** fewer false alerts, significantly lower cloud costs."
+        - "**AGY Logistics (Jun 2025 – Sep 2025):** Sole architect of GDP-compliant cold chain monitoring on **GCP** (BigQuery, Cloud Run, Cloud SQL), coordinating cross-functional frontend and backend teams. Built **4-layer medallion architecture** with smart time-series merging across IoT and TMS sources. Enriched alerts with Weather and routing APIs; replaced BQML with statistical analysis—**70%** fewer false alerts, significantly lower cloud costs."
         - "**Johnson & Johnson (Feb 2025 – Jun 2025):** Architected scalable **Treasure Data** pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a **12-scenario truth table for multichannel consent** and ensuring enterprise **GDPR/PII compliance**."
         - "**Wade Insight (Nov 2024 – Feb 2025):** Led enterprise migration from **ADF** to **Microsoft Fabric** Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using **Azure APIs**, reducing manual troubleshooting by **80%**."
-        - "**Prospexs (Jul 2024 – Oct 2024):** Built an AI outreach platform (**Python/FastAPI/MongoDB**) integrating multiple APIs (OpenAI, Perplexity) to validate profiles and generate personalized communications, improving client response rates by **45%**."
-        - "**QxLab (Jan 2024 – Jun 2024):** Led core LLM development: fine-tuned Llama/Mistral models using **Axolotl** on **H100 clusters** to achieve **>95% accuracy** in the production agentic system, deployed with custom inference logic. Separately, I created high-throughput internal tooling to standardize and process **TeraByte-scale Hugging Face datasets** (SFT/DPO, semantic deduplication), an intelligent solution to an infrastructure bottleneck. This essential tool was later released as the open-source **DatasetPipeline**."
+        - "**Prospexs (Jul 2024 – Oct 2024):** Built an AI outreach platform (**Python/FastAPI/MongoDB**) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by **45%**."
+        - "**QxLab (Jan 2024 – Jun 2024):** Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using **Axolotl** on **H100 clusters** to achieve **>95% accuracy** in the production agentic system, deployed with custom inference logic. Separately, I created high-throughput internal tooling to standardize and process **TeraByte-scale Hugging Face datasets** (SFT/DPO, semantic deduplication), an intelligent solution to an infrastructure bottleneck. This essential tool was later released as the open-source **DatasetPipeline**."
         - "**CV Advisors (Jan 2024):** **>99.9% Performance Gain:** Re-architected a 1900+ line legacy SQL procedure using **Pandas & DuckDB** for high-speed transformation, reducing runtime from **27.5 hours to under 5 seconds** for 80M+ financial records across 150 clients."
         - "**Logical Contract (Oct 2023 – Dec 2023):** Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
         - "**SlideNinja (Jul 2023 – Oct 2023):** Developed a GenAI RAG platform for a **McKinsey partner**, leveraging **LangChain** and SerpAPI to generate presentations from minimal input during the early GenAI boom."
@@ -56,9 +57,10 @@ cv:
       location: "Gurugram, HR (Remote)"
       start_date: "2022-01"
       end_date: "2022-05"
+      summary: "Gained hands-on experience with production infra. (Docker, Terraform, K8s, CI/CD), backend best practices, and client-facing delivery.\\ **Client Engagements:**"
       highlights:
         - "**Eningo (Apr 2022 – Aug 2022):** Developed a cloud-based geospatial platform for automating cable network issue requests. Migrated legacy data from **Postgres to MongoDB** for enhanced scalability."
-        - "**NIBE: (Feb 2022 – Mar 2022)** Managed and established **Azure DevOps CI/CD** pipelines for critical services supporting **50,000+ daily users**."
+        - "**NIBE (Feb 2022 – Mar 2022):** Managed and established **Azure DevOps CI/CD** pipelines for critical services supporting **50,000+ daily users**."
     education:
       - institution: "Calcutta Institute of Engineering and Management (MAKAUT)"
         location: "Kolkata, WB"
@@ -67,7 +69,10 @@ cv:
         start_date: "2018-07"
         end_date: "2022-06"
         highlights:
-          - "CGPA: **8.57**/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+          - "**CGPA:** 8.57/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+          - "**Google DSC Lead (2020-2021):** Led campus developer community; organized workshops and tech talks. [G.dev Profile](https://g.dev/subhayu99)"
+          - "**CodeChef Chapter Lead (2020-2021):** Hosted 4 competitive programming events, growing participation from 4 to 21 students. [Certificate](https://drive.google.com/file/d/1NYokFweEGTAfgL3sZO6qeEiyC6HD9pQ7/view)"
+          - "**Linux Foundation Scholarship Recipient:** Merit-based selection for LFS201 Linux System Administration course. [Email](https://drive.google.com/file/d/19Fh33ySf5wbnNT-ws5Z9OKNct06u_vKh/view)"
     professional_projects:
       # Website-only projects (show_on_resume: false)
       - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
@@ -154,28 +159,28 @@ cv:
     personal_projects:
       # Resume + Website projects
       - name: "SQLStream"
-        date: "Nov 2025"
+        # date: "Nov 2025"
         show_on_resume: true
         highlights:
           - "Created a zero-setup SQL tool to quickly analyze data files (CSV, Parquet, Markdown, HTML, etc.) via a **CLI** or **Python library**, streamlining repetitive data quality checks without database overhead."
           - "Built a powerful **interactive shell** with syntax highlighting and history for data exploration, alongside a standard query mode for piping results into other terminal tools."
           - "Engineered a flexible system that auto-switches between **DuckDB**, **Pandas**, or native Python to execute queries, implementing smart optimizations to filter data before loading; published on [PyPI](https://pypi.org/project/sqlstream) with full [documentation](https://subhayu99.github.io/sqlstream)."
       - name: "DatasetPipeline"
-        date: "May 2025"
+        # date: "May 2025"
         show_on_resume: true
         highlights:
           - "Developed a production-ready CLI tool for transforming messy datasets into ML-ready formats; supports SFT, DPO, semantic deduplication, and quality analysis with plugin architecture."
           - "Features smart role mapping, auto-formatting for OpenAI-style training, and reproducible workflows via YAML/JSON configuration for enterprise ML pipelines."
           - "Published on [PyPI](https://pypi.org/project/datasetpipeline) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
       - name: "Smart Commit"
-        date: "May 2025"
+        # date: "May 2025"
         show_on_resume: true
         highlights:
           - "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity and project history quality."
           - "Intelligently adapts to different projects by analyzing the existing tech stack, commit history, and file changes, ensuring contextually relevant and consistent messages."
           - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) and [GitHub](https://github.com/subhayu99/smart-commit) with Model Context Protocol (MCP) server for direct AI assistant integration."
       - name: "DocumentAccessPOC"
-        date: "Jan 2025"
+        # date: "Jan 2025"
         show_on_resume: true
         highlights:
           - "Designed and built a zero-trust secure document system to solve granular access control challenges where traditional RBAC/ACLs fail, ensuring data confidentiality even from system administrators."
@@ -270,11 +275,11 @@ design:
   highlights:
     bullet: •
     nested_bullet: ◦
-    top_margin: 0.18cm
+    top_margin: 0.2cm
     left_margin: 0.3cm
-    vertical_space_between_highlights: 0.17cm
+    vertical_space_between_highlights: 0.18cm
     horizontal_space_between_bullet_and_highlight: 0.4em
-    summary_left_margin: 1cm
+    summary_left_margin: 0.2cm
   entry_types:
     one_line_entry:
       template: '**LABEL:** DETAILS'
