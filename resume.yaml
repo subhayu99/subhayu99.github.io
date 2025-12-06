@@ -2,7 +2,7 @@ cv:
   name: "Subhayu Kumar Bala"
   location: "Kolkata, India"
   email: "balasubhayu99@gmail.com"
-  phone: "tel:+91-9382877751"
+  phone: "tel:+919382877751"
   website: "https://subhayu99.github.io"
   resume_url: "https://subhayu99.github.io/resume.pdf"
   social_networks:
@@ -14,16 +14,16 @@ cv:
     #   username: "0000-0001-8195-3118"
   sections:
     intro:
-      - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP)."
-      - "Proven track record of exceptional performance optimization—including reducing a 27-hour SQL procedure to 5 seconds and building scalable architectures through event-driven design, real-time monitoring, and agentic LLM frameworks."
-      - "My work has enabled measurable business outcomes: helping a startup secure $6M Series A funding, ensuring enterprise data compliance for Fortune 500 healthcare clients, and delivering production AI systems with 95%+ accuracy."
+      - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
+      - "Proven track record of exceptional performance optimization—including reducing a 27-hour SQL procedure to 5 seconds and building scalable data architectures through event-driven design, real-time data pipelines, and agentic LLM frameworks."
+      - "Delivered measurable business outcomes: data infrastructure enabling a startup's $6M Series A, GDPR-compliant extracts for Advent International investor review, enterprise compliance for a Fortune 500 healthcare client, and production AI with 95%+ accuracy."
     technologies:
       - label: "Core Languages & Tools"
         details: "Python, SQL, BASH, JavaScript, Git"
       - label: "Data Engineering & Orchestration"
-        details: "ETL/ELT Pipelines, Data Modeling, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Databricks, Microsoft Fabric, ADF, Treasure Data, GeoPandas, PostGIS"
+        details: "ETL/ELT/ETLT Pipelines, Data Modeling, Data Warehousing, Data Lakes, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Databricks, Microsoft Fabric, Azure Data Factory (ADF), Treasure Data"
       - label: "AI & LLM Engineering"
-        details: "OpenAI APIs, Gemini, LangChain, Agentic Architecture (MCP, A2A), RAG, Axolotl, LLM Fine-tuning (SFT, DPO), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
+        details: "OpenAI, Gemini, LangChain, Agentic Architecture (MCP, A2A), RAG (Retrieval-Augmented Generation), Axolotl, LLM Fine-tuning (SFT, DPO, RLHF), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
       - label: "Cloud & DevOps"
         details: "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
       - label: "Application & API Development"
@@ -33,23 +33,23 @@ cv:
       - label: "Security & Quality Assurance"
         details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, PII Data Handling, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
       - label: "Specialized & Visualization"
-        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, Real-time Monitoring Systems, Workflow Automation, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
+        details: "CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Streamlit, Plotly, Matplotlib, GeoPandas, PostGIS, Realtime Monitoring Systems, Automations, Agile (Scrum/Kanban), Code Reviews, Technical Consultation & Solution Design"
     experience:
     - company: "FiftyFive Technologies"
       position: "Data Engineer"
       location: "Gurugram, HR (Remote)"
       start_date: "2022-06"
       highlights:
-        - "**Artefact (Jul 2025 – Present):** Provided platform enhancements (Azure-based PDM/Initio), including implementing **ADF currency conversion pipelines** and resolving critical Databricks compute provisioning issues. Designed **medallion architecture** (Bronze→Silver→Gold) pipelines for stock reconciliation, integrating **SAP ByDesign API** with **Power BI**."
-        - "**AGY Logistics (Jun 2025 – Sep 2025):** Built real-time IoT monitoring on **GCP** (Cloud Functions, BigQuery) for refrigerated cargo, implementing intelligent filtering to reduce false positive alerts by **70%**. Migrated orchestration from Make.com to **N8N** for cost and control."
+        - "**SBGC Group (Jul 2025 – Present):** Owned Azure data platform (ADF, Databricks, ADLS) across **2 brand environments** and **4 currency regions**, integrating **SAP, Shopify, Klaviyo, GA4, and warehouse APIs**. Built **medallion architecture** pipelines feeding **Hightouch CDP** and **Power BI** dashboards for inventory and fulfillment analytics. Delivered **GDPR-compliant extracts** for **Advent International** due diligence; achieved **\\<1% revenue variance**."
+        - "**AGY Logistics (Jun 2025 – Sep 2025):** Sole architect of GDP-compliant cold chain monitoring on **GCP** (BigQuery, Cloud Run, Cloud SQL). Built **4-layer medallion architecture** with smart time-series merging across IoT and TMS sources. Enriched alerts with Weather and routing APIs; replaced BQML with statistical analysis—**70%** fewer false alerts, significantly lower cloud costs."
         - "**Johnson & Johnson (Feb 2025 – Jun 2025):** Architected scalable **Treasure Data** pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a **12-scenario truth table for multichannel consent** and ensuring enterprise **GDPR/PII compliance**."
-        - "**Wade Insight (Nov 2024 – Feb 2025):** Led enterprise migration from Azure Data Factory to **Microsoft Fabric** Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using **Azure APIs**, reducing manual troubleshooting by **80%**."
+        - "**Wade Insight (Nov 2024 – Feb 2025):** Led enterprise migration from **ADF** to **Microsoft Fabric** Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using **Azure APIs**, reducing manual troubleshooting by **80%**."
         - "**Prospexs (Jul 2024 – Oct 2024):** Built an AI outreach platform (**Python/FastAPI/MongoDB**) integrating multiple APIs (OpenAI, Perplexity) to validate profiles and generate personalized communications, improving client response rates by **45%**."
         - "**QxLab (Jan 2024 – Jun 2024):** Led core LLM development: fine-tuned Llama/Mistral models using **Axolotl** on **H100 clusters** to achieve **>95% accuracy** in the production agentic system, deployed with custom inference logic. Separately, I created high-throughput internal tooling to standardize and process **TeraByte-scale Hugging Face datasets** (SFT/DPO, semantic deduplication), an intelligent solution to an infrastructure bottleneck. This essential tool was later released as the open-source **DatasetPipeline**."
-        - "**CV Advisors (Jan 2024):** **>99.9% Performance Gain:** Re-architected a 1900+ line legacy SQL procedure using **Python/Pandas/DuckDB**, reducing runtime from **27.5 hours to under 5 seconds** for 80M+ financial records across 150 clients."
+        - "**CV Advisors (Jan 2024):** **>99.9% Performance Gain:** Re-architected a 1900+ line legacy SQL procedure using **Pandas & DuckDB** for high-speed transformation, reducing runtime from **27.5 hours to under 5 seconds** for 80M+ financial records across 150 clients."
         - "**Logical Contract (Oct 2023 – Dec 2023):** Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
         - "**SlideNinja (Jul 2023 – Oct 2023):** Developed a GenAI RAG platform for a **McKinsey partner**, leveraging **LangChain** and SerpAPI to generate presentations from minimal input during the early GenAI boom."
-        - "**LoopKitchen (Sep 2022 – Jun 2023):** Built core data infrastructure from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a **$6M Series A** round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash), enabling real-time performance analytics."
+        - "**LoopKitchen (Sep 2022 – Jun 2023):** Built core data architecture from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a **$6M Series A** round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash, Grubhub), enabling real-time performance analytics."
 
     - company: "FiftyFive Technologies"
       position: "Software Engineer Intern"
@@ -110,7 +110,7 @@ cv:
         show_on_resume: false
         highlights:
           - "Built a production-ready agent-based LLM system using fine-tuned Mistral7B and Llama 13B models for real-time API data processing, achieving over 95% accuracy with custom schema management for tool orchestration."
-          - "Developed advanced CLI tool with Typer for language model fine-tuning and dataset manipulation, processing millions of data points and 10B+ tokens in minutes through optimized pipelines."
+          - "Developed advanced CLI tool with Typer for Large Language Model (LLM) fine-tuning and dataset manipulation, processing millions of data points and 10B+ tokens in minutes through optimized pipelines."
           - "Orchestrated FastAPI deployment on Docker for GPU-accelerated model inference with multi-threading capabilities, enabling scalable AI model serving infrastructure."
       - name: "CV Advisors - High-Performance Financial Data Processing"
         date: "Jan 2024 – Jan 2024"
@@ -218,10 +218,10 @@ design:
   theme: engineeringresumes
   page:
     size: a4
-    top_margin: 1.12cm
-    bottom_margin: 1.12cm
-    left_margin: 1.12cm
-    right_margin: 1.12cm
+    top_margin: 1cm
+    bottom_margin: 1cm
+    left_margin: 1cm
+    right_margin: 1cm
     show_page_numbering: false
     show_last_updated_date: false
   colors:
@@ -244,10 +244,10 @@ design:
     photo_width: 3.5cm
     vertical_space_between_name_and_connections: 0.4cm
     vertical_space_between_connections_and_first_section: 0.4cm
-    horizontal_space_between_connections: 0.4cm
+    horizontal_space_between_connections: 0.25cm
     connections_font_family: Lato
     separator_between_connections: '|'
-    use_icons_for_connections: true
+    use_icons_for_connections: false
     make_connections_links: true
     alignment: center
   section_titles:
@@ -322,7 +322,7 @@ design:
       date_and_location_column_template: "DATE"
 locale:
   language: "en"
-  phone_number_format: "international"
+  phone_number_format: international
   page_numbering_template: "NAME - Page PAGE_NUMBER of TOTAL_PAGES"
   last_updated_date_template: "Last updated in TODAY"
   date_template: "MONTH_ABBREVIATION YEAR"

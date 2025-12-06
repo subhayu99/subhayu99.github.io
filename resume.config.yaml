@@ -56,7 +56,7 @@ fields:
   # CV root fields to exclude from resume PDF (but keep in website JSON)
   # Example: ["phone", "location", "email"] to hide contact info from PDF
   excludeCvFields:
-    - "phone"
+    # - "phone"
     - "location"
 
   # Fields to remove from resume YAML (not needed by rendercv)
