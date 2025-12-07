@@ -41,16 +41,16 @@ cv:
       start_date: "2022-06"
       summary: "Delivered end-to-end data and AI solutions for 10+ enterprise clients across healthcare, finance, logistics, and tech sectors. Responsibilities extended beyond technical delivery: conducted 100+ technical interviews, led client onboarding and scoping calls, created PoCs/demos, mentored teammates, and drove adoption of emerging technologies (DuckDB, MCP) across the organization.\\ **Client Engagements:**"
       highlights:
-        - "**SBGC Group (Retail Analytics)**: Owned a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical data explosion (slashing volume 99%) and delivered an inventory dashboard worth ~$250k."
+        - "**SBGC Group (E-commerce Data Platform)**: Owned a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical data explosion (slashing volume 99%) and delivered an inventory dashboard worth ~$250k."
         - "**AGY Logistics (IoT & Automation)**: Sole architect of a GDP-compliant cold chain system on GCP (BigQuery, Cloud Run). Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings. Engineered smart time-series merging and statistical analysis on a 4-layer medallion architecture to reduce false alerts by 70%."
-        - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a 12-scenario truth table for multichannel consent and ensuring enterprise GDPR/PII compliance."
+        - "**Johnson & Johnson (CDP & Data Governance)**: Architected scalable Treasure Data pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a 12-scenario truth table for multichannel consent and ensuring enterprise GDPR/PII compliance."
         - "**Wade Insight (Cloud Migration)**: Led enterprise migration from ADF to Microsoft Fabric Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using Azure APIs, reducing manual troubleshooting by 80%."
-        - "**Prospexs (AI Outreach)**: Built an AI outreach platform (Python/FastAPI/MongoDB) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by 45%."
-        - "**QxLab (Agentic AI Infrastructure)**: Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using Axolotl on H100 clusters to achieve >95% accuracy in production agentic system, deployed with custom inference logic. Separately, created a high-throughput internal tooling to standardize and process TeraByte-scale Hugging Face datasets (SFT/DPO/RLHF), solving infrastructure bottlenecks. Later released this as an open-source project (DatasetPipeline)."
+        - "**Prospexs (AI Sales Tech)**: Built an AI outreach platform (Python/FastAPI/MongoDB) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by 45%."
+        - "**QxLab (LLM Infrastructure)**: Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using Axolotl on H100 clusters to achieve >95% accuracy in production agentic system, deployed with custom inference logic. Separately, created a high-throughput internal tooling to standardize and process TeraByte-scale Hugging Face datasets (SFT/DPO/RLHF), solving infrastructure bottlenecks. Later released this as an open-source project (DatasetPipeline)."
         - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line legacy SQL procedure (iterative cursors) into vectorized logic (DuckDB/Pandas), processing 80M+ records across 150 clients. Reduced runtime from 27.5h to \\<5s (\\>99.9% gain). Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
-        - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
-        # - "**SlideNinja**: Developed a GenAI RAG platform for a McKinsey partner, leveraging LangChain and SerpAPI to generate presentations from minimal input during the early GenAI boom."
-        - "**LoopKitchen (Food Tech)**: Built core data architecture from scratch (GCP, BigQuery, FastAPI/Cloud Run), facilitating a $6M Series A round. Developed multi-platform data ingestion pipelines scraping millions of orders from delivery APIs (UberEats, DoorDash, Grubhub), enabling real-time performance analytics."
+        # - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
+        - "**SlideNinja (GenAI/RAG)**: Developed a GenAI RAG platform for a McKinsey partner, leveraging LangChain and SerpAPI to generate presentations from minimal input during the early GenAI boom."
+        - "**LoopKitchen (Real-time Data Ingestion)**: Built core data architecture (GCP/BigQuery/FastAPI) enabling a $6M Series A. Migrated fragile legacy scrapers to robust official API integrations (UberEats/DoorDash/Grubhub) for millions of orders and engineered an automated dispute resolution system to recover lost revenue."
 
     - company: "FiftyFive Technologies"
       position: "Software Engineer Intern"
@@ -69,10 +69,10 @@ cv:
         start_date: "2018-07"
         end_date: "2022-06"
         highlights:
-          - "**CGPA:** 8.57/10 ([Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
-          - "**Google DSC Lead (2020-2021):** Led developer community, organized workshops and tech talks. [G.dev Profile](https://g.dev/subhayu99)"
-          - "**CodeChef Chapter Lead (2020-2021):** Hosted 4 competitive programming events (4 to 21 students). [Certificate](https://drive.google.com/file/d/1NYokFweEGTAfgL3sZO6qeEiyC6HD9pQ7/view)"
-          - "**Linux Foundation Scholarship Recipient:** Merit selection for LFS201 Linux System Administration. [Email](https://drive.google.com/file/d/19Fh33ySf5wbnNT-ws5Z9OKNct06u_vKh/view)"
+          - "**CGPA:** 8.57/10 ([View Certificate](https://drive.google.com/file/d/1xX8XtAlEEnXSgkcJ3jYmYSJOQWRylA6S/view))"
+          - "**Google DSC Lead (2020-2021):** Led developer community, organized workshops and tech talks. [Google Dev Profile](https://g.dev/subhayu99)"
+          - "**CodeChef Chapter Lead (2020-2021):** Hosted 4 competitive programming events (4 to 21 students). [View Certificate](https://drive.google.com/file/d/1NYokFweEGTAfgL3sZO6qeEiyC6HD9pQ7/view)"
+          - "**Linux Foundation Scholarship Recipient:** Merit selection for LFS201 Linux System Administration. [Credly Profile](https://www.credly.com/users/subhayu99/badges)"
     professional_projects:
       # Website-only projects (show_on_resume: false)
       - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
