@@ -15,7 +15,7 @@ cv:
   sections:
     intro:
       - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
-      - "Proven track record of exceptional performance optimization—including reducing a 27-hour SQL procedure to 5 seconds and building scalable data architectures through event-driven design, real-time data pipelines, and agentic LLM frameworks."
+      - "Proven track record of exceptional performance optimization—including reducing runtime from 27.5-hours to under 5 seconds, and building scalable data architectures through event-driven design, real-time data pipelines, and agentic LLM frameworks."
       - "Delivered measurable business outcomes: data infrastructure enabling a startup's $6M Series A, GDPR-compliant extracts for Advent International investor review, enterprise compliance for a Fortune 500 healthcare client, and production AI with 95%+ accuracy."
     technologies:
       - label: "Core Languages & Tools"
@@ -27,7 +27,7 @@ cv:
       - label: "Cloud & DevOps"
         details: "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
       - label: "Application & API Development"
-        details: "FastAPI, Django, DRF, Flask, REST APIs, Streamlit, CLI Tools(Typer, Textual)"
+        details: "FastAPI, Django, DRF, Flask, REST APIs, Streamlit, CLI Tools (Typer, Textual)"
       - label: "Databases & Vector Stores"
         details: "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
       - label: "Security & Quality Assurance"
