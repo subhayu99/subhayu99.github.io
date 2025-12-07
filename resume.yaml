@@ -15,8 +15,8 @@ cv:
   sections:
     intro:
       - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
-      - "Proven track record of exceptional performance optimization—including reducing runtime from 27.5-hours to under 5 seconds, and building scalable data architectures through event-driven design, real-time data pipelines, and agentic LLM frameworks."
-      - "Delivered measurable business outcomes: data infrastructure enabling a startup's $6M Series A, GDPR-compliant extracts for Advent International investor review, enterprise compliance for a Fortune 500 healthcare client, and production AI with 95%+ accuracy."
+      - "Proven track record of exceptional performance optimization—including reducing runtime from 27.5-hours to under 5 seconds, and building scalable data architectures through event-driven design, and production Agentic LLM systems (>95% accuracy) on H100 clusters."
+      - "Delivered measurable business outcomes: data infrastructure enabling a startup's $6M Series A, GDPR-compliant extracts for Advent International investor review, enterprise compliance for a Fortune 500 healthcare client, and real-time data pipelines saving 10-15 FTEs."
     technologies:
       - label: "Core Languages & Tools"
         details: "Python, SQL, BASH, JavaScript, Git"
@@ -41,16 +41,16 @@ cv:
       start_date: "2022-06"
       summary: "Delivered end-to-end data and AI solutions for 10+ enterprise clients across healthcare, finance, logistics, and tech sectors. Responsibilities extended beyond technical delivery: conducted 100+ technical interviews, led client onboarding and scoping calls, created PoCs/demos, mentored teammates, and drove adoption of emerging technologies (DuckDB, MCP) across the organization.\\ **Client Engagements:**"
       highlights:
-        - "**SBGC Group (E-commerce Data Platform)**: Owned a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical data explosion (slashing volume 99%) and delivered an inventory dashboard worth ~$250k."
-        - "**AGY Logistics (IoT & Automation)**: Sole architect of a GDP-compliant cold chain system on GCP (BigQuery, Cloud Run). Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings. Engineered smart time-series merging and statistical analysis on a 4-layer medallion architecture to reduce false alerts by 70%."
-        - "**Johnson & Johnson (CDP & Data Governance)**: Architected scalable Treasure Data pipelines for regulated healthcare markets, processing millions of records for marketing analytics. Engineered complex transformation logic, including a 12-scenario truth table for multichannel consent and ensuring enterprise GDPR/PII compliance."
-        - "**Wade Insight (Cloud Migration)**: Led enterprise migration from ADF to Microsoft Fabric Data Factory, managing ARM template adaptation. Developed automated healthcheck processes using Azure APIs, reducing manual troubleshooting by 80%."
-        - "**Prospexs (AI Sales Tech)**: Built an AI outreach platform (Python/FastAPI/MongoDB) integrating multiple APIs (OpenAI, Perplexity, SerpAPI) to validate profiles and generate personalized communications, improving client response rates by 45%."
-        - "**QxLab (LLM Infrastructure)**: Led 4-person team for core LLM development: fine-tuned Llama/Mistral models using Axolotl on H100 clusters to achieve >95% accuracy in production agentic system, deployed with custom inference logic. Separately, created a high-throughput internal tooling to standardize and process TeraByte-scale Hugging Face datasets (SFT/DPO/RLHF), solving infrastructure bottlenecks. Later released this as an open-source project (DatasetPipeline)."
+        - "**SBGC Group (Retail Analytics)**: Took ownership of a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical legacy data explosion (slashing volume 99%) and delivered an inventory dashboard worth ~$250k."
+        - "**AGY Logistics (IoT & Automation)**: Sole architect of a GDP-compliant cold chain system on GCP (BigQuery, Cloud Run). Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings. Engineered smart time-series merging and statistical analysis on a **4-layer medallion architecture (including a 'Diamond Layer' for sub-second alerts)** to reduce false positives by 70%."
+        - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets (JP/ANZ). Engineered complex transformation logic, including a **12-scenario SQL truth table to resolve hierarchical consent conflicts** and a custom Python engine to overcome SFMC platform limitations, ensuring strict GDPR/PII compliance."
+        - "**Wade Insight (Cloud Migration)**: Led enterprise migration from ADF to Microsoft Fabric Data Factory, managing ARM template adaptation. Enhanced the SaaS platform with advanced `continue_on_failure` orchestration and automated health-check processes, reducing manual troubleshooting by 80%."
+        - "**Prospexs (GenAI Product Engineering)**: Built an AI outreach platform (Python/FastAPI/MongoDB) featuring a **complex 4-entity personalization engine** (Sender/Receiver × Human/Company). Integrated OpenAI/Perplexity APIs to generate bilingual, context-aware communications, improving response rates by 45%."
+        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on H100 clusters to achieve \\>95% accuracy in production agentic system. Separately, architected a Terabyte-scale **cascading deduplication pipeline (MinHash LSH + FAISS)** to standardize datasets (SFT/DPO/RLHF), solving critical bottlenecks. Later released as the open-source project (DatasetPipeline)."
         - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line legacy SQL procedure (iterative cursors) into vectorized logic (DuckDB/Pandas), processing 80M+ records across 150 clients. Reduced runtime from 27.5h to \\<5s (\\>99.9% gain). Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
         # - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
-        - "**SlideNinja (GenAI/RAG)**: Developed a GenAI RAG platform for a McKinsey partner, leveraging LangChain and SerpAPI to generate presentations from minimal input during the early GenAI boom."
-        - "**LoopKitchen (Real-time Data Ingestion)**: Built core data architecture (GCP/BigQuery/FastAPI) enabling a $6M Series A. Migrated fragile legacy scrapers to robust official API integrations (UberEats/DoorDash/Grubhub) for millions of orders and engineered an automated dispute resolution system to recover lost revenue."
+        - "**SlideNinja (GenAI RAG Architecture)**: Developed a GenAI RAG platform **(LangChain/ChromaDB)** for a McKinsey partner during the early GenAI boom, featuring a 'Self-Healing' AI orchestration layer and proprietary 'Geometric Layout Analysis' to map unstructured content into rigid corporate PowerPoint templates."
+        - "**LoopKitchen (Real-time Data Ingestion)**: Built core data architecture (GCP/BigQuery/FastAPI) enabling a $6M Series A. Migrated fragile legacy scrapers to robust official API integrations (UberEats/DoorDash/Grubhub) for millions of orders and engineered an automated dispute resolution system to directly recover lost revenue."
 
     - company: "FiftyFive Technologies"
       position: "Software Engineer Intern"
@@ -75,27 +75,33 @@ cv:
           - "**Linux Foundation Scholarship Recipient:** Merit selection for LFS201 Linux System Administration. [Credly Profile](https://www.credly.com/users/subhayu99/badges)"
     professional_projects:
       # Website-only projects (show_on_resume: false)
-      - name: "Artefact - Multi-Client Data Platform Support & Enhancement"
+      - name: "SBGC Group - Multi-Region Retail Data Platform"
         date: "Jul 2025 – Present"
         show_on_resume: false
         highlights:
-          - "Provided ongoing technical support and enhancements for Azure-based data platforms (PDM and Initio), implementing currency conversion pipelines with ADF and resolving critical Databricks compute provisioning issues affecting production workflows."
-          - "Built end-to-end stock reconciliation dashboard integrating SAP ByDesign API and warehouse data sources, designing medallion architecture pipelines (Bronze→Silver→Gold) with Power BI visualizations for inventory management."
-          - "Executed data privacy compliance projects including PII-protected data extraction and delivery for legal audits, while maintaining data quality through systematic investigation and resolution of discrepancies across multiple data sources."
+          - "Took ownership of a multi-region Azure/Databricks Medallion architecture integrating SAP, Shopify, Klaviyo, and GA4. Unblocked Advent International due diligence by reverse-engineering Shopify's 'Net Sales' logic to exclude specific shipping refunds, reducing US revenue variance from ~10% to \\<0.22%."
+          - "Resolved a critical 7-day infrastructure crisis where Azure VM capacity constraints halted production. Diagnosed cluster provisioning failures via logs and reconfigured Databricks node types (Standard_D4ads_v5) to restore all pipelines."
+          - "Root-caused a critical data explosion bug (Cartesian join) that ballooned dataset size to 94M rows. Optimized the pipeline logic to slash volume by 99% (to 839k rows), significantly reducing compute costs."
+          - "Executed a comprehensive Data Privacy compliance project (GDPR), implementing consent tracking across Shopify/SAP/Klaviyo and building PII-hashing strategies for investor data extracts."
+          - "Built a cross-system 'Order Fulfillment Dashboard' integrating data from Shopify (Sales), SAP (ERP), and PDR (Logistics) to replace manual Excel reporting and track order SLAs in real-time."
       - name: "AGY Logistics - Reefer Temperature Monitoring System"
         date: "Jun 2025 – Sep 2025"
         show_on_resume: false
         highlights:
-          - "Built real-time monitoring system for refrigerated cargo trailers, integrating Ditat and Samsara APIs to track temperature compliance and prevent cold chain violations across multi-stop routes."
-          - "Designed scalable data pipelines on GCP using Cloud Functions and BigQuery with medallion architecture, implementing alert logic for temperature deviations, dry loads, and driver setpoint mismatches."
-          - "Reduced false positive alerts by 70% through intelligent filtering that accounts for loading/unloading states and trip transitions, while migrating workflows from Make.com to N8N for improved cost efficiency and control."
-      - name: "Johnson & Johnson - Healthcare Data Platform"
+          - "Architected a GDP-compliant cold chain monitoring system on GCP using a Medallion Architecture (Bronze/Silver/Gold/Diamond). The 'Diamond Layer' pre-aggregated alert candidates, enabling the Alerting Engine to dispatch notifications with sub-second latency."
+          - "Engineered 'Smart Merge' logic using SQL window functions (`LAST_VALUE`) to unify asynchronous data streams (sporadic TMS updates vs. high-frequency IoT telemetry) into a continuous, context-aware timeline."
+          - "Designed an internal 'Phone Book' architecture to decouple sensor mapping from external TMS errors, ensuring data integrity even when manual entry errors occurred in the source system."
+          - "Slashed cloud compute costs by deprecating expensive BQML (Machine Learning) models in favor of optimized SQL-based statistical analysis (rolling windows/standard deviations), reducing false positive alerts by 70%."
+      - name: "Johnson & Johnson - Healthcare Data Platform (CDP)"
         date: "Feb 2025 – Jun 2025"
         show_on_resume: false
         highlights:
-          - "Architected and maintained scalable data pipelines (Bronze-Silver-Gold layers) in Treasure Data using SQL, processing millions of records for JP and ANZ Healthcare Professionals' marketing analytics."
-          - "Engineered complex data transformation logic including a 12-scenario truth table for multichannel consent processing, integrating data across platforms (CDP, S3, Treasure Data, SFMC, GA4) using Python and APIs."
-          - "Ensured enterprise-grade data quality and pipeline reliability by implementing robust consistency checks and automated data processing workflows for regulated healthcare environments."
+          - "Architected a region-wide Customer Data Platform (CDP) for APAC (ANZ/JP) on Treasure Data, using a Medallion Architecture (Bronze/Silver/Gold) to unify Veeva CRM, SFMC, and GA4 data."
+          - "Built a custom Python **SFMC Activation Engine** to overcome platform limitations (standard connectors cast all types to Text). Implemented smart schema inference and parallel processing (`ThreadPoolExecutor`) to push typed data (Booleans/Dates) to Salesforce Marketing Cloud via SOAP/REST APIs."
+          - "Engineered the 'Golden Record' consent logic using a deterministic **12-scenario SQL Truth Table** to resolve conflicts between Global vs. Channel-specific opt-ins. Implemented **Test-Driven Development (TDD) in SQL** by creating a mock-data test suite to mathematically prove logic correctness for legal compliance."
+          - "Solved a Big Data transformation challenge by writing complex SQL (`UNNEST`/`CROSS JOIN`) to flatten deeply nested, semi-structured **Google Analytics 4 (GA4)** JSON event logs into relational behavioral metrics for segmentation."
+          - "Developed a **'Segmentation-as-Code'** CLI tool using Python/Typer. This allowed the team to manage complex Audience Studio configurations via version-controlled YAML templates, replacing error-prone GUI manual work."
+          - "Implemented an **Automated Data Integrity Framework** that runs pre-ETL validation checks against defined schema contracts and business rules (e.g., 'Null % thresholds'), preventing silent data failures."
       - name: "Wade Insight - Cloud-Native Data Orchestration Platform"
         date: "Nov 2024 – Feb 2025"
         show_on_resume: false
@@ -103,47 +109,65 @@ cv:
           - "Enhanced core pipeline orchestration features for WADE's Azure SaaS platform, implementing comprehensive continue_on_failure mechanisms with SQL dependency handling and advanced job execution tracking."
           - "Led migration of enterprise data pipelines from Azure Data Factory to Microsoft Fabric Data Factory, managing ARM template adaptation and deployment for clients processing millions of records."
           - "Developed automated healthcheck processes leveraging Azure APIs to monitor running pipelines, reducing manual troubleshooting overhead by 80% and enabling faster insight delivery."
-      - name: "Prospexs - AI-Powered Outreach Platform"
+      - name: "Prospexs - GenAI Outreach Platform"
         date: "Jul 2024 – Oct 2024"
         show_on_resume: false
         highlights:
-          - "Built an AI-powered outreach platform using Python/FastAPI and MongoDB, reducing manual prospecting effort by 60% through intelligent automation."
-          - "Integrated multiple APIs (OpenAI, Perplexity, LinkedIn) to validate profiles and generate personalized communications, improving client response rates by 45%."
-          - "Developed email generation system with dynamic tone adjustment capabilities, enabling scalable personalized outreach for B2B sales teams."
-      - name: "QxLab - State-of-the-Art Agent-Based LLM System"
+          - "Built the backend for an AI-powered outreach platform using Python/FastAPI and MongoDB, reducing manual prospecting efforts by 60% through intelligent automation."
+          - "Developed a 'Website Analysis' module using scraping and prompt engineering to extract USPs and generate detailed business profiles automatically from raw company URLs."
+          - "Engineered a complex 4-entity personalization engine that cross-analyzes distinct profiles (Sender Human/Company vs. Receiver Human/Company) to generate hyper-personalized, context-aware emails."
+          - "Implemented bilingual generation capabilities (English/Swedish) with dynamic tone adjustment, integrating OpenAI/Perplexity/LinkedIn APIs to validate profiles and improve client response rates by 45%."
+          - "Designed a fully automated pipeline using Cloud Scheduler for real-time data processing and model orchestration."
+      - name: "QxLab - Agentic AI Infrastructure & LLMOps"
         date: "Jan 2024 – Jun 2024"
         show_on_resume: false
         highlights:
-          - "Built a production-ready agent-based LLM system using fine-tuned Mistral7B and Llama 13B models for real-time API data processing, achieving over 95% accuracy with custom schema management for tool orchestration."
-          - "Developed advanced CLI tool with Typer for Large Language Model (LLM) fine-tuning and dataset manipulation, processing millions of data points and 10B+ tokens in minutes through optimized pipelines."
-          - "Orchestrated FastAPI deployment on Docker for GPU-accelerated model inference with multi-threading capabilities, enabling scalable AI model serving infrastructure."
+          - "Led a 4-person team fine-tuning Llama/Mistral models on H100 clusters to achieve **\\>95% accuracy** in a production-ready 'Mixture of Experts' agentic framework (Router/Planner/Extractor)."
+          - "Architected the system's **DAG-based execution engine** (`StepRunner`) with dynamic state injection (Regex-based variable substitution) to handle complex, multi-step reasoning tasks."
+          - "Solved a critical data engineering bottleneck where disparate, ad-hoc scripts failed to scale for Terabyte-sized datasets. Consolidated the entire data lifecycle into a **unified, configuration-driven (YAML) pipeline engine** that enforced reproducibility across the team."
+          - "Engineered advanced data processors within this engine for **semantic deduplication** (using embeddings), **automated quality analysis**, and seamless format conversions (Text/SFT/DPO/RLHF and more). This internal infrastructure was later modularized and open-sourced as **DatasetPipeline**."
+          - "Solved the 'Context Window Limit' for tool usage by implementing a **'RAG for Tools'** system, using vector search to dynamically retrieve and inject relevant Python function definitions at runtime."
+          - "Built a 'Probabilistic-to-Deterministic' bridge using **Pydantic V2** to enforce strict schema validation on LLM outputs, acting as a firewall against hallucinations."
       - name: "CV Advisors - High-Performance Financial Data Processing"
         date: "Jan 2024 – Jan 2024"
         show_on_resume: false
         highlights:
-          - "Developed a Python/Pandas/DuckDB proof-of-concept for financial data processing pipeline, reducing runtime of a 1900+ line SQL procedure from 27.5 hours to under 5 seconds."
-          - "Demonstrated Python's capability for high-performance data processing on 80M+ rows across 150 clients, enabling batch execution and significant operational efficiency improvements."
+          - "Executed a high-stakes performance engineering PoC to replace a legacy 1900+ line SQL stored procedure that suffered from 'Row-By-Agonizing-Row' (RBAR) processing."
+          - "Identified the critical bottleneck: nested `WHILE` loops and a scalar UDF (`dbo.ufn_CalcPnL`) that prevented SQL parallelism. Re-architected the solution to eliminate these blocking factors entirely."
+          - "Designed a hybrid compute engine using **DuckDB for high-speed set aggregations** and **Pandas for vectorized window operations** (Cumulative Sums/Shifts), utilizing the best tool for each mathematical operation."
+          - "Reduced runtime from 27.5 hours to under 5 seconds (~20,000x faster) for 80M+ records across 150 clients, shattering the client's 5-minute target via pure in-memory computation."
+          - "Engineered a **future-proof architecture** capable of scaling beyond RAM limits via memory-optimized categorical typing (reducing footprint by ~4.5x) and DuckDB’s out-of-core processing capabilities."
+          - "Ensured **100% numerical accuracy to 8 decimal places** against the legacy production system, validating the financial integrity of the new pipeline before delivery."
+          - "Implemented complex business logic for 'Phantom Accounts' (aggregating child entities) and 'Subtype History', transforming a monolithic SQL script into modular, testable Object-Oriented Python."
+          - "Built a smart local Parquet caching layer to eliminate network I/O latency during development and re-runs, significantly accelerating the debugging cycle."
       - name: "LoopKitchen (now Loop) - Food Delivery Intelligence Platform"
         date: "Sep 2022 – Jun 2023"
         show_on_resume: false
         highlights:
-          - "Built core data infrastructure from scratch for a food delivery analytics startup using comprehensive GCP stack: FastAPI/SQLModel APIs on Cloud Run/Functions, BigQuery for data warehousing, Firestore for metadata, orchestrated via GCP Composer and Workflows."
+          - "Built core data architecture from scratch for a food delivery analytics startup using a comprehensive GCP stack: FastAPI/SQLModel on Cloud Run, BigQuery for warehousing, Firestore for metadata tracking and orchestrated via GCP Workflows."
           - "Developed multi-platform data ingestion pipelines scraping and processing millions of orders from UberEats, DoorDash, and Grubhub APIs, enabling real-time performance analytics for restaurant brands and franchises."
-          - "Created custom Streamlit monitoring dashboard providing real-time visibility into complex orchestration workflows with granular tracking (brand→region→chain→store→order level), essential for debugging long-running processes across multiple third-party platforms."
+          - "Engineered an automated dispute resolution system that allowed restaurants to automatically submit claims for bad orders, directly recovering lost revenue."
+          - "Created a custom Streamlit monitoring dashboard providing real-time visibility into orchestration workflows with granular tracking (Brand→Region→Chain→Store→Order), essential for debugging distributed systems."
+          - "Implemented sophisticated orchestration via GCP Workflows and established CI/CD for BigQuery routines, ensuring version-controlled and reproducible data infrastructure."
           - "Contributed as core team member (10-person startup) working directly with technical leadership, helping build the foundation for a platform that secured $6M Series A funding and now serves major restaurant chains like Dave's Hot Chicken and Freddy's."
-
       - name: "Logical Contract - AI-Powered Contract Generator"
         date: "Oct 2023 — Dec 2023"
         show_on_resume: false
         highlights:
-          - "Implemented an AI-powered system to generate tailored employment agreements for startups."
-          - "Developed a legal chatbot that catered to legal inquiries, offering tailored responses based on user data."
-      - name: "SlideNinja - AI-Powered Presentation Generator"
+          - "Implemented an AI-powered system to generate tailored employment agreements for startups based on dynamic user inputs."
+          - "Developed a RAG-based legal chatbot that catered to legal inquiries, offering tailored responses based on verified legal context."
+      - name: "SlideNinja - Enterprise AI Presentation Platform"
         date: "Jul 2023 — Oct 2023"
         show_on_resume: false
         highlights:
-          - "Created a RAG-based AI platform (using GPT-3.5, Langchain, ChromaDB, Python, SerpApi) to generate presentations by providing just the title, description, slide count and optionally custom documents."
-          - "Developed backend APIs for managing user authentication, presentation generation, and file uploads."
+          - "Architected an enterprise-grade GenAI platform using a microservices-ready architecture, containerized via Docker and deployed on Google Cloud Run for serverless auto-scaling."
+          - "Engineered a proprietary 'Geometric Layout Analysis' engine that calculates bounding boxes and shape overlaps to intelligently map AI-generated content into rigid corporate templates, overcoming the limitations of standard placeholder logic."
+          - "Implemented a 'Smart Template' parser that reads configuration data directly from a hidden slide within the PPTX file, allowing dynamic template updates without code changes."
+          - "Built a 'Self-Healing' AI orchestration layer with a recursive rectification loop: if the LLM generates malformed JSON, the system automatically feeds the error trace back to the model for correction, ensuring robust production reliability."
+          - "Designed a high-concurrency backend using FastAPI (AsyncIO) and ThreadPoolExecutor to 'fan-out' slide generation requests, reducing deck creation time by ~80% via Map-Reduce parallelism."
+          - "Solved serverless state issues by building a stateless template synchronization engine that uses MD5 hashing to sync local ephemeral storage with Google Cloud Storage on startup."
+          - "Developed low-level XML manipulation routines to handle complex typography features (dynamic text fitting, custom bullet styling, contrast-aware font coloring) not supported by standard libraries."
+          - "Integrated a secure RBAC system with MongoDB Atlas for user state and request logging, implementing a custom `@cache_it` decorator to minimize API costs through intelligent prompt caching."
       - name: "Eningo - Automated Cable & Utility Mapping Platform"
         date: "Apr 2022 — Aug 2022"
         show_on_resume: false
@@ -263,7 +287,7 @@ design:
     #                   Use this if applying to traditional banks, law firms, or PhD research roles.
     # EB Garamond: The "Classy" choice. Old-style serif. Looks like a book. High prestige, low "tech" vibe.
     font_family: Inter
-    font_size: 9.2pt
+    font_size: 9.5pt
     alignment: justified
     date_and_location_column_alignment: right
     leading: "0.65em"
