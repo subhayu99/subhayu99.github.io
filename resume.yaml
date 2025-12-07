@@ -237,13 +237,38 @@ design:
     links: "#124d86"
     last_updated_date_and_page_numbering: "grey"
   text:
-    font_family: Lato
+    # --- FONTS ---
+    # ----- TOP TIER (Safe & Modern) -----
+    # Inter: The "Silicon Valley Standard." Tall x-height makes it ultra-readable at small sizes (9pt). 
+    #        Perfect for dense, keyword-heavy technical resumes. Clean, invisible, and professional.
+    # Roboto: "Engineered & Geometric." Has straight-sided curves that feel mechanical and precise. 
+    #         Excellent for data/infrastructure roles where you want to signal "structure" and "order."
+    # Open Sans: The "Neutral Choice." Extremely legible, open shapes. It has zero "personality," 
+    #            which is good if you want the recruiter to focus 100% on the content. Safest bet.
+
+    # ----- SPACE SAVERS (If you need to fit more text) -----
+    # Source Sans 3: Designed for UIs and coding. Slightly condensed width. 
+    #                Use this if your resume is spilling onto a new page by just 2-3 lines.
+    # Noto Sans: Similar to Open Sans but with better support for special characters and a slightly 
+    #            tighter vertical rhythm. Good for maximizing vertical space.
+
+    # ----- PERSONALITY (If the resume feels too "cold") -----
+    # Lato: "Humanist Sans." Semi-rounded details give it a friendly, approachable vibe. 
+    #       Use this if you are applying to startups or culture-focused roles to sound less "corporate."
+    # Raleway: (Use for HEADERS ONLY). Elegant and artistic. Too wide/distracting for body text, 
+    #          but makes your Name/Title look very high-end.
+
+    # ----- ACADEMIC / TRADITIONAL (Use for Research/Senior Management) -----
+    # Libertinus Serif: A modern take on Times New Roman. Looks very "Senior" and "Official."
+    #                   Use this if applying to traditional banks, law firms, or PhD research roles.
+    # EB Garamond: The "Classy" choice. Old-style serif. Looks like a book. High prestige, low "tech" vibe.
+    font_family: Inter
     font_size: 9.2pt
     alignment: justified
     date_and_location_column_alignment: right
     leading: "0.65em"
   header:
-    name_font_family: Lato
+    name_font_family: Inter
     name_font_size: 16pt
     name_bold: true
     small_caps_for_name: false
@@ -251,14 +276,14 @@ design:
     vertical_space_between_name_and_connections: 0.4cm
     vertical_space_between_connections_and_first_section: 0.4cm
     horizontal_space_between_connections: 0.25cm
-    connections_font_family: Lato
+    connections_font_family: Inter
     separator_between_connections: '|'
     use_icons_for_connections: false
     make_connections_links: true
     alignment: center
   section_titles:
     type: with-full-line
-    font_family: Lato
+    font_family: Inter
     font_size: 1.2em
     bold: true
     small_caps: true
