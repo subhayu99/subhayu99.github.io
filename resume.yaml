@@ -18,22 +18,12 @@ cv:
       - "Proven track record of exceptional performance optimization—including reducing runtime from 27.5-hours to under 5 seconds, and building scalable data architectures through event-driven design, and production Agentic LLM systems (>95% accuracy) on H100 clusters."
       - "Delivered measurable business outcomes: data infrastructure enabling a startup's $6M Series A, GDPR-compliant extracts for Advent International investor review, enterprise compliance for a Fortune 500 healthcare client, and real-time data pipelines saving 10-15 FTEs."
     technologies:
-      - label: "Core Languages & Tools"
-        details: "Python, SQL, BASH, JavaScript, Git"
-      - label: "Data Engineering & Orchestration"
-        details: "ETL/ELT/ETLT Pipelines, Data Modeling, Data Warehousing, Data Lakes, PySpark, Pandas, NumPy, DuckDB, DBT, Airflow, GCP Workflows, Kafka, RabbitMQ, Databricks, Microsoft Fabric, Azure Data Factory (ADF), Treasure Data"
-      - label: "AI & LLM Engineering"
-        details: "OpenAI, Gemini, LangChain, Agentic Architecture (MCP, A2A), Retrieval Augmented Generation (RAG), Axolotl, LLM Fine-tuning (SFT, DPO, RLHF), Prompt Engineering, Semantic Deduplication, TensorFlow, Keras, SerpAPI"
-      - label: "Cloud & DevOps"
-        details: "AWS, Azure, GCP, S3, Docker, Kubernetes, Terraform, Pulumi, ARM Templates, CI/CD Pipelines, Jenkins, Azure DevOps, NGINX, Linux, Cloud Cost Optimization"
-      - label: "Application & API Development"
-        details: "FastAPI, Django, DRF, Flask, REST APIs, Streamlit, CLI Tools (Typer, Textual)"
-      - label: "Databases & Vector Stores"
-        details: "PostgreSQL, MongoDB, BigQuery, MS SQL Server, MySQL, Neo4j, Chroma, FAISS"
-      - label: "Security & Quality Assurance"
-        details: "Zero-Trust Architecture, Cryptography (E2EE, AES-GCM, RSA), IAM, OAuth2/JWT, SSO/SAML, RBAC, Secret Management, PII Data Handling, Pytest, Unittest, Pydantic, Pandera, Great Expectations"
-      - label: "Specialized & Visualization"
-        details: "System Design, Solution Architecture, CDPs, SFMC, Web Scraping, Looker Studio, Power BI, Matplotlib, Plotly, GeoPandas, PostGIS, Realtime Monitoring Systems, Automations, Agile (Scrum/Kanban), Code Reviews, Technical Consultation"
+      - label: "Data Engineering"
+        details: "SQL, Databricks, BigQuery, MS Fabric, PySpark, DuckDB, DBT, Airflow, Kafka, ADF, Delta Lake, Pandas, Presto/Trino"
+      - label: "AI & LLM Ops"
+        details: "OpenAI, Gemini, LangChain, RAG, Agentic AI (MCP, A2A), Fine-tuning (SFT/DPO), Vector DBs (Chroma/FAISS), Neo4j"
+      - label: "Backend, DevOps & Viz"
+        details: "Python, BASH, Git, FastAPI, PostgreSQL, MongoDB, AWS, Azure, GCP, Docker, K8s, Terraform, CI/CD, Power BI"
     experience:
     - company: "FiftyFive Technologies"
       position: "Data Engineer"
@@ -41,16 +31,16 @@ cv:
       start_date: "2022-06"
       summary: "Delivered end-to-end data and AI solutions for 10+ enterprise clients across healthcare, finance, logistics, and tech sectors. Responsibilities extended beyond technical delivery: conducted 100+ technical interviews, led client onboarding and scoping calls, created PoCs/demos, mentored teammates, and drove adoption of emerging technologies (DuckDB, MCP) across the organization.\\ **Client Engagements:**"
       highlights:
-        - "**SBGC Group (Retail Analytics)**: Took ownership of a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4 to feed Hightouch CDP. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical legacy data explosion (slashing volume by 99%) and delivered an inventory dashboard worth ~$250k."
+        - "**SBGC Group (Retail Data Platform)**: Took ownership of a multi-region Azure/Databricks platform integrating SAP/Shopify/Klaviyo/GA4. Unblocked Advent International due diligence by reverse-engineering Shopify's logic to cut revenue variance from ~10% to \\<0.22%. Root-caused a critical legacy data explosion (slashing volume by 99%) and delivered an inventory dashboard worth ~$250k."
         - "**AGY Logistics (IoT & Automation)**: Sole architect of a GDP-compliant cold chain system on GCP (BigQuery, Cloud Run). Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings. Engineered smart time-series merging and statistical analysis on a 4-layer medallion architecture (including a 'Diamond Layer' for sub-second alerts) to reduce false positives by 70%."
-        - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets (JP/ANZ). Engineered complex transformation logic, including a 12-scenario SQL truth table to resolve hierarchical consent conflicts and a custom Python engine to overcome SFMC platform limitations, ensuring strict GDPR/PII compliance."
-        - "**Wade Insight (Cloud Migration)**: Led enterprise migration from ADF to Microsoft Fabric Data Factory, managing ARM template adaptation. Enhanced the SaaS platform with advanced continue-on-failure orchestration and automated health-check processes, reducing manual troubleshooting by 80%."
-        - "**Prospexs (GenAI Product Engineering)**: Built an AI outreach platform (Python/FastAPI/MongoDB) featuring a complex 4-entity personalization engine (Sender/Receiver × Human/Company). Integrated OpenAI/Perplexity APIs to generate bilingual, context-aware communications, improving response rates by 45%."
-        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on H100 clusters to achieve \\>95% accuracy in production agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF), solving critical bottlenecks. Later released as the open-source project (DatasetPipeline)."
+        - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets (JP/ANZ). Engineered complex transformation logic, including a 12-scenario SQL truth table (validated via TDD) to resolve hierarchical consent conflicts and a custom Python engine to overcome SFMC platform limitations, ensuring strict GDPR/PII compliance."
+        - "**Wade Insight (Cloud Migration)**: Led enterprise migration from Azure Data Factory to Microsoft Fabric Data Factory, managing ARM template adaptation. Enhanced the SaaS platform with advanced continue-on-failure orchestration and automated health-check processes, reducing manual troubleshooting by 80%."
+        - "**Prospexs (GenAI Product Engineering)**: Built an AI outreach platform (Python/FastAPI/MongoDB) backed by a 700M+ contact database. Engineered a complex 4-entity personalization engine (Sender/Receiver × Human/Company) using OpenAI/Perplexity to generate bilingual, context-aware communications, improving response rates by 45%."
+        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on H100 clusters to achieve \\>95% accuracy in a production DAG-based agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF), solving critical bottlenecks. Later open-sourced as DatasetPipeline."
         - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line legacy SQL procedure (iterative cursors) into vectorized logic (DuckDB/Pandas), processing 80M+ records across 150 clients. Reduced runtime from 27.5h to \\<5s (\\>99.9% gain). Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
         # - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
         - "**SlideNinja (GenAI RAG Architecture)**: Developed a GenAI RAG platform (LangChain/ChromaDB) for a McKinsey partner during the early GenAI boom, featuring a 'Self-Healing' AI orchestration layer and proprietary 'Geometric Layout Analysis' to map unstructured content into rigid corporate PowerPoint templates."
-        - "**LoopKitchen (Real-time Data Ingestion)**: Built core data architecture (GCP/BigQuery/FastAPI) enabling a $6M Series A. Migrated fragile legacy scrapers to robust official API integrations (UberEats/DoorDash/Grubhub) for millions of orders and engineered an automated dispute resolution system to directly recover lost revenue."
+        - "**LoopKitchen (Real-time Data Ingestion)**: Built core data architecture (GCP/BigQuery/FastAPI/GCP Workflows) enabling a $6M Series A. Migrated fragile legacy scrapers to robust official API integrations (UberEats/DoorDash/Grubhub) for millions of orders and engineered an automated dispute resolution system to directly recover lost revenue."
 
     - company: "FiftyFive Technologies"
       position: "Software Engineer Intern"
@@ -91,6 +81,7 @@ cv:
           - "Architected a GDP-compliant cold chain monitoring system on GCP using a Medallion Architecture (Bronze/Silver/Gold/Diamond). The 'Diamond Layer' pre-aggregated alert candidates, enabling the Alerting Engine to dispatch notifications with sub-second latency."
           - "Engineered 'Smart Merge' logic using SQL window functions (`LAST_VALUE`) to unify asynchronous data streams (sporadic TMS updates vs. high-frequency IoT telemetry) into a continuous, context-aware timeline."
           - "Designed an internal 'Phone Book' architecture to decouple sensor mapping from external TMS errors, ensuring data integrity even when manual entry errors occurred in the source system."
+          - "Automated complex manual workflows previously requiring 10-15 US-based operations staff, resulting in massive OpEx savings."
           - "Slashed cloud compute costs by deprecating expensive BQML (Machine Learning) models in favor of optimized SQL-based statistical analysis (rolling windows/standard deviations), reducing false positive alerts by 70%."
       - name: "Johnson & Johnson - Healthcare Data Platform (CDP)"
         date: "Feb 2025 – Jun 2025"
@@ -247,10 +238,10 @@ design:
   theme: engineeringresumes
   page:
     size: a4
-    top_margin: 1cm
-    bottom_margin: 1cm
-    left_margin: 1cm
-    right_margin: 1cm
+    top_margin: 1.05cm
+    bottom_margin: 1.05cm
+    left_margin: 1.05cm
+    right_margin: 1.05cm
     show_page_numbering: false
     show_last_updated_date: false
   colors:
@@ -287,7 +278,7 @@ design:
     #                   Use this if applying to traditional banks, law firms, or PhD research roles.
     # EB Garamond: The "Classy" choice. Old-style serif. Looks like a book. High prestige, low "tech" vibe.
     font_family: Inter
-    font_size: 9.5pt
+    font_size: 9.6pt
     alignment: justified
     date_and_location_column_alignment: right
     leading: "0.65em"
@@ -308,7 +299,7 @@ design:
   section_titles:
     type: with-full-line
     font_family: Inter
-    font_size: 1.2em
+    font_size: 1.3em
     bold: true
     small_caps: true
     vertical_space_above: 0.4cm
@@ -317,7 +308,7 @@ design:
     date_and_location_width: 4cm
     left_and_right_margin: 0cm
     horizontal_space_between_columns: 0.1cm
-    vertical_space_between_entries: 0.8em
+    vertical_space_between_entries: 1em
     allow_page_break_in_sections: true
     allow_page_break_in_entries: true
     short_second_row: false
@@ -325,9 +316,9 @@ design:
   highlights:
     bullet: •
     nested_bullet: ◦
-    top_margin: 0.2cm
+    top_margin: 0.22cm
     left_margin: 0.3cm
-    vertical_space_between_highlights: 0.2cm
+    vertical_space_between_highlights: 0.22cm
     horizontal_space_between_bullet_and_highlight: 0.4em
     summary_left_margin: 0.2cm
   entry_types:
