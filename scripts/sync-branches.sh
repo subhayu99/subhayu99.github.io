@@ -228,7 +228,7 @@ print_info "Finding commits to sync..."
 
 # Build git log command with optional limit
 if [[ -n "$LIMIT_COMMITS" ]]; then
-  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" -n "$LIMIT_COMMITS" | tac)
+  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" -n "$LIMIT_COMMITS" | tail -r)
 else
   COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" --reverse)
 fi
