@@ -29,10 +29,7 @@ cv:
       position: "Data Engineer"
       location: "Bengaluru, KA (On-site)"
       start_date: "2026-01"
-      summary: "Platform engineer on Loop's core data team, owning ingestion, onboarding, and observability for the food-delivery analytics platform serving major restaurant chains."
-      highlights:
-        - "**Ingestion Ops Platform**: Built a self-service ops platform from scratch with audit trails and automated pre-checks, **eliminating engineer dependency** for re-ingestion workflows and significantly reducing ops debug toil."
-        - "**Observability & Reliability**: Designed module-level freshness scorecards and SLA tracking dashboards, enabling **proactive detection** of data quality drops across providers. Owned on-call for ingestion incidents, coordinating large-scale recovery campaigns across **~28k data points**."
+      summary: "Platform engineer on Loop's core data team, owning ingestion, onboarding, and observability for the food-delivery analytics platform. Built a self-service ops platform from scratch with audit trails and automated pre-checks, **eliminating engineer dependency** for re-ingestion workflows. Designed module-level freshness scorecards and SLA dashboards, enabling **proactive detection** of data quality drops. Owned on-call for ingestion incidents, coordinating recovery campaigns across **~28k data points**."
 
     - company: "FiftyFive Technologies"
       position: "Data Engineer"
@@ -338,7 +335,7 @@ design:
     date_and_location_width: 4cm
     left_and_right_margin: 0cm
     horizontal_space_between_columns: 0.1cm
-    vertical_space_between_entries: 1em
+    vertical_space_between_entries: 1.2em
     allow_page_break_in_sections: true
     allow_page_break_in_entries: true
     short_second_row: false
