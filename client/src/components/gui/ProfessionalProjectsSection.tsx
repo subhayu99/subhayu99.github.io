@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from 'react';
+import { useRef, useState, useMemo, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { PortfolioData, Project } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
@@ -86,7 +86,16 @@ export default function ProfessionalProjectsSection({ data }: ProfessionalProjec
 
   const [activeYear, setActiveYear] = useState('All');
   const [showAll, setShowAll] = useState(false);
-  const INITIAL_COUNT = 6;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const INITIAL_COUNT = isMobile ? 3 : 6;
 
   const years = useMemo(() => {
     const yrs = [...new Set(projects.map(p => extractYear(p.date)))].filter(Boolean).sort().reverse();

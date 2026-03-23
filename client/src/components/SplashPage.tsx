@@ -236,8 +236,8 @@ export default function SplashPage() {
           onMouseLeave={() => setHovered(null)}
           className={`px-8 sm:px-10 py-3 text-sm sm:text-base font-mono tracking-wider transition-all duration-300 ${
             selected === 'terminal'
-              ? 'bg-gui-accent text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              ? 'bg-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.4)]'
+              : 'text-zinc-400 hover:text-green-400 hover:bg-zinc-900'
           }`}
         >
           TUI
@@ -250,7 +250,7 @@ export default function SplashPage() {
           className={`px-8 sm:px-10 py-3 text-sm sm:text-base font-mono tracking-wider transition-all duration-300 ${
             selected === 'gui'
               ? 'bg-gui-accent text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]'
-              : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+              : 'text-zinc-400 hover:text-gui-accent hover:bg-zinc-900'
           }`}
         >
           GUI
