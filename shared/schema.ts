@@ -37,6 +37,7 @@ export const projectSchema = z.object({
   date: z.string(),
   highlights: z.array(z.string()).default([]), // Made optional with default
   show_on_resume: z.boolean().optional().default(true),
+  pypi_package: z.string().optional(),
 }).passthrough(); // Allow custom fields like github_repo, live_url, tech_stack, etc.
 
 export const publicationSchema = z.object({

@@ -67,6 +67,19 @@ export default {
         "terminal-white": "var(--terminal-white)",
         "terminal-red": "var(--terminal-red)",
         "terminal-yellow": "var(--terminal-yellow)",
+        gui: {
+          bg: "var(--gui-bg)",
+          surface: "var(--gui-surface)",
+          border: "var(--gui-border)",
+          text: "var(--gui-text)",
+          "text-muted": "var(--gui-text-muted)",
+          accent: "var(--gui-accent)",
+          "accent-hover": "var(--gui-accent-hover)",
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Bebas Neue', 'Impact', 'Arial Narrow', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {

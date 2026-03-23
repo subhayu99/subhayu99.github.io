@@ -1,7 +1,7 @@
 import { defineConfig, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, writeFileSync } from "fs";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { themes } from "./client/src/lib/themes";
 
@@ -63,12 +63,35 @@ const siteMetadataPlugin = (): Plugin => {
   };
 };
 
+const buildVersionPlugin = (): Plugin => {
+  return {
+    name: 'build-version',
+    writeBundle() {
+      const version = {
+        version: Date.now().toString(36),
+        buildTime: new Date().toISOString(),
+      };
+      const outDir = path.resolve(import.meta.dirname, 'dist/public');
+      writeFileSync(
+        path.resolve(outDir, 'build-version.json'),
+        JSON.stringify(version)
+      );
+      // Also write to client/public so dev server serves it
+      writeFileSync(
+        path.resolve(import.meta.dirname, 'client/public/build-version.json'),
+        JSON.stringify(version)
+      );
+    },
+  };
+};
+
 export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
     themeInjectorPlugin(),
     siteMetadataPlugin(),
+    buildVersionPlugin(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [

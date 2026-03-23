@@ -31,6 +31,24 @@
   --terminal-red: hsl(0, 100%, 50%);
   --terminal-yellow: hsl(60, 100%, 50%);
   --glow-color-rgb: 0, 255, 0;
+
+  /* GUI Portfolio variables */
+  --gui-bg: #000000;
+  --gui-surface: #0a0a0a;
+  --gui-border: rgba(255, 255, 255, 0.08);
+  --gui-text: #e4e4e7;
+  --gui-text-muted: #a1a1aa;
+  --gui-accent: #f59e0b;
+  --gui-accent-hover: #d97706;
+}
+
+/* Hide scrollbar for horizontal carousel */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .dark {
@@ -61,7 +79,7 @@
   }
 
   body {
-    @apply font-mono antialiased bg-terminal-black text-terminal-green overflow-hidden;
+    @apply font-mono antialiased bg-terminal-black text-terminal-green;
     font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace;
     font-size: 16px;
     line-height: 1.5;

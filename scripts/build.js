@@ -55,6 +55,19 @@ try {
   console.warn('   Continuing with build...\n');
 }
 
+// Fetch PyPI download stats
+console.log('📊 Fetching PyPI download statistics...\n');
+try {
+  execSync('node scripts/fetch-pypi-stats.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+  console.log('\n✅ PyPI stats fetched\n');
+} catch (error) {
+  console.warn('⚠️  Could not fetch PyPI stats (network issue or rate limit)');
+  console.warn('   Building without live stats...\n');
+}
+
 // Run vite build
 console.log('🏗️  Building application...\n');
 execSync('vite build', {
