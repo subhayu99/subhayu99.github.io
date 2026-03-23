@@ -17,18 +17,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const PYPISTATS_BASE = 'https://pypistats.org/api/packages';
 const PEPY_BASE = 'https://pepy.tech/projects';
-const DELAY_MS = 2500; // Stay well under pypistats.org rate limits
+const DELAY_MS = 3000; // Base delay between requests
+const MAX_RETRIES = 3;
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-async function fetchJSON(url) {
-  const res = await fetch(url);
-  if (!res.ok) {
+async function fetchJSON(url, retries = MAX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const res = await fetch(url);
+    if (res.ok) return res.json();
+    if (res.status === 429 && attempt < retries) {
+      const backoff = DELAY_MS * attempt * 2; // exponential: 6s, 12s, 18s
+      console.log(`      ↻ Rate limited, retrying in ${(backoff / 1000).toFixed(0)}s (attempt ${attempt}/${retries})`);
+      await sleep(backoff);
+      continue;
+    }
     throw new Error(`${res.status} ${res.statusText} for ${url}`);
   }
-  return res.json();
 }
 
 /**
