@@ -15,7 +15,7 @@ cv:
   sections:
     intro:
       - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
-      - "Proven track record of exceptional performance optimization (reducing a financial procedure **from 27.5h to under 5s**), building production **Agentic LLM systems (>95% accuracy) on H100 clusters**, and authoring **open-source tools with 40,000+ PyPI downloads**."
+      - "Proven track record of exceptional performance optimization (reducing a financial procedure **from 27.5h to under 5s**), building production **Agentic LLM systems (>95% accuracy) on H100 clusters**, and authoring **open-source tools with 43,000+ PyPI downloads**."
       - "Delivered measurable business outcomes: data infrastructure enabling a startup's **$6M Series A**, unblocking **investor audits for Advent International**, ensuring enterprise compliance for a Fortune 500 client, and automating workflows to save **10-15 FTEs**."
     technologies:
       - label: "Data Engineering"
@@ -43,7 +43,7 @@ cv:
         - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets (JP/ANZ). Engineered complex transformation logic, including a 12-scenario SQL truth table (validated via TDD) to resolve hierarchical consent conflicts and a custom Python engine to overcome SFMC platform limitations, ensuring strict **GDPR/PII compliance**."
         - "**Wade Insight (Cloud Migration)**: Led enterprise migration from Azure Data Factory to **Microsoft Fabric Data Factory**, managing ARM template adaptation. Enhanced the SaaS platform with advanced continue-on-failure orchestration and automated health-check processes, reducing manual troubleshooting by 80%."
         - "**Prospexs (GenAI Product Engineering)**: Built an AI outreach platform (Python/FastAPI/MongoDB) backed by a **700M+ contact database**. Engineered a complex 4-entity personalization engine (Sender/Receiver × Human/Company) using OpenAI/Perplexity to generate bilingual, context-aware communications, **improving response rates by 45%**."
-        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on **H100 clusters** to achieve **\\>95% accuracy** in a production DAG-based agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF). Later open-sourced as **DatasetPipeline (9.3k+ downloads)**."
+        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on **H100 clusters** to achieve **\\>95% accuracy** in a production DAG-based agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF). Later open-sourced as **DatasetPipeline (9.7k+ downloads)**."
         - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line MSSQL procedure (iterative cursors) into vectorized logic (**DuckDB**/Pandas), processing 80M+ records across 150 clients. **Reduced runtime from 27.5h to \\<5s (\\>99.9% gain)**. Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
         # - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
         - "**SlideNinja (GenAI RAG Architecture)**: Developed a GenAI RAG platform (LangChain/ChromaDB) for a **McKinsey partner** during the early GenAI boom, featuring a 'Self-Healing' AI orchestration layer and proprietary 'Geometric Layout Analysis' to map unstructured content into rigid corporate PowerPoint templates."
@@ -195,7 +195,7 @@ cv:
         highlights:
           - "Created a **zero-setup SQL tool** to quickly analyze data files (CSV, Parquet, Markdown, HTML) via CLI or Python, streamlining repetitive data quality checks without DB overhead."
           - "Built a powerful interactive shell with syntax highlighting and history for data exploration, alongside a standard query mode for piping results into other terminal tools."
-          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**4.7k+ downloads**) with full [documentation](https://subhayu99.github.io/sqlstream)."
+          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**5.2k+ downloads**) with full [documentation](https://subhayu99.github.io/sqlstream)."
 
       - name: "Smart Commit"
         date: "May 2025"
@@ -203,7 +203,7 @@ cv:
         highlights:
           - "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity."
           - "Intelligently adapts to different projects by analyzing the existing tech stack, commit history, and file changes, ensuring contextually relevant messages."
-          - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) (**5.9k+ downloads**) and [GitHub](https://github.com/subhayu99/smart-commit) with **Model Context Protocol (MCP)** integration."
+          - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) (**6.1k+ downloads**) and [GitHub](https://github.com/subhayu99/smart-commit) with **Model Context Protocol (MCP)** integration."
 
       - name: "DocumentAccessPOC"
         date: "Jan 2025"
@@ -220,7 +220,7 @@ cv:
         highlights:
           - "Developed a **production-ready CLI tool** for transforming messy datasets into ML-ready formats; supports **SFT, DPO, semantic deduplication**, and quality analysis."
           - "Features smart role mapping, auto-formatting for OpenAI-style training, and reproducible workflows via YAML/JSON configuration for enterprise ML pipelines."
-          - "Published on [PyPI](https://pypi.org/project/datasetpipeline) (**9.3k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
+          - "Published on [PyPI](https://pypi.org/project/datasetpipeline) (**9.7k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
 
       - name: "creatree"
         date: "Feb 2025"
@@ -228,7 +228,7 @@ cv:
         highlights:
           - "Developed a Python CLI tool and library for automating directory structure creation from tree-like strings, solving repetitive project scaffolding."
           - "Designed for maximum flexibility with both a Python library for programmatic integration and a CLI supporting stdin/pipes."
-          - "Published on [PyPI](https://pypi.org/project/creatree) (**5.1k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/creatree)."
+          - "Published on [PyPI](https://pypi.org/project/creatree) (**5.3k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/creatree)."
 
       - name: "BetterPassphrase"
         date: "Jan 2024"
@@ -236,14 +236,14 @@ cv:
         highlights:
           - "Built a Python CLI tool/library for generating secure, memorable passphrases using grammatically correct phrases with customizable word counts."
           - "Implemented probabilistic security analysis with entropy calculations and parts-of-speech parsing to balance memorability with cryptographic strength."
-          - "Published on [PyPI](https://pypi.org/project/BetterPassphrase) (**9.4k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) supporting batch generation."
+          - "Published on [PyPI](https://pypi.org/project/BetterPassphrase) (**10.2k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) supporting batch generation."
       - name: "jsondbin"
         date: "Mar 2024"
         show_on_resume: false
         highlights:
           - "Built a Python package providing a unified interface for managing JSON data through jsonbin.io, simplifying CRUD operations on collections and documents."
           - "Supports schema attachment, batch document retrieval, and graceful error handling for seamless integration into data workflows."
-          - "Published on [PyPI](https://pypi.org/project/jsondbin) (**6.3k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/jsondbin)."
+          - "Published on [PyPI](https://pypi.org/project/jsondbin) (**6.5k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/jsondbin)."
       - name: "FINADICT - Financial Prediction App"
         date: "Sep 2021"
         show_on_resume: false
