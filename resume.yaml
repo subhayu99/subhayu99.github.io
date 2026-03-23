@@ -82,7 +82,7 @@ cv:
           - "Owned on-call for ingestion and onboarding incidents (PagerDuty), coordinating large-scale recovery campaigns (~28k slugs across modules) and resolving proxy, authentication, and credential issues."
           - "Contributed to platform infrastructure initiatives including ingestion proxy design, staging environment setup (Terraform, Cloud Run, Cloud SQL), and local development tooling."
       - name: "SBGC Group - Multi-Region Retail Data Platform"
-        date: "Jul 2025 – Present"
+        date: "Jan 2026 – Present"
         show_on_resume: false
         highlights:
           - "Took ownership of a multi-region Azure/Databricks Medallion architecture integrating SAP, Shopify, Klaviyo, and GA4. Unblocked Advent International due diligence by reverse-engineering Shopify's 'Net Sales' logic to exclude specific shipping refunds, reducing US revenue variance from ~10% to \\<0.22%."
