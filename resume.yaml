@@ -191,6 +191,7 @@ cv:
       # Resume + Website projects
       - name: "SQLStream"
         date: "Nov 2025"
+        pypi_package: "sqlstream"
         show_on_resume: true
         highlights:
           - "Created a **zero-setup SQL tool** to quickly analyze data files (CSV, Parquet, Markdown, HTML) via CLI or Python, streamlining repetitive data quality checks without DB overhead."
@@ -199,6 +200,7 @@ cv:
 
       - name: "Smart Commit"
         date: "May 2025"
+        pypi_package: "smart-commit-ai"
         show_on_resume: true
         highlights:
           - "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity."
@@ -216,6 +218,7 @@ cv:
       # Website-only personal projects
       - name: "DatasetPipeline"
         date: "May 2025"
+        pypi_package: "datasetpipeline"
         show_on_resume: false  # <--- FALSE because it's already in QxLab Experience
         highlights:
           - "Developed a **production-ready CLI tool** for transforming messy datasets into ML-ready formats; supports **SFT, DPO, semantic deduplication**, and quality analysis."
@@ -224,6 +227,7 @@ cv:
 
       - name: "creatree"
         date: "Feb 2025"
+        pypi_package: "creatree"
         show_on_resume: false
         highlights:
           - "Developed a Python CLI tool and library for automating directory structure creation from tree-like strings, solving repetitive project scaffolding."
@@ -232,6 +236,7 @@ cv:
 
       - name: "BetterPassphrase"
         date: "Jan 2024"
+        pypi_package: "betterpassphrase"
         show_on_resume: false
         highlights:
           - "Built a Python CLI tool/library for generating secure, memorable passphrases using grammatically correct phrases with customizable word counts."
@@ -239,6 +244,7 @@ cv:
           - "Published on [PyPI](https://pypi.org/project/BetterPassphrase) (**10.2k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) supporting batch generation."
       - name: "jsondbin"
         date: "Mar 2024"
+        pypi_package: "jsondbin"
         show_on_resume: false
         highlights:
           - "Built a Python package providing a unified interface for managing JSON data through jsonbin.io, simplifying CRUD operations on collections and documents."
