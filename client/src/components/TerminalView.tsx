@@ -20,7 +20,7 @@ function TerminalView() {
       <motion.button
         onClick={() => switchTo('gui')}
         className="fixed bottom-5 right-5 z-50 w-10 h-10 rounded-lg bg-zinc-900/80 border border-zinc-700
-                   flex items-center justify-center text-zinc-400 hover:text-gui-accent hover:border-gui-accent
+                   flex items-center justify-center text-terminal-green/60 hover:text-terminal-green hover:border-terminal-green hover:bg-terminal-green/10
                    transition-colors duration-200 backdrop-blur-sm group"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}

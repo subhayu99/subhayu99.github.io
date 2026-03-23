@@ -42,6 +42,15 @@
   --gui-accent-hover: #d97706;
 }
 
+/* Hide page scrollbar — amber dot serves as progress indicator */
+html::-webkit-scrollbar {
+  display: none;
+}
+html {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Hide scrollbar for horizontal carousel */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

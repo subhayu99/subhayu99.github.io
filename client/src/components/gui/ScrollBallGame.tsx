@@ -57,11 +57,9 @@ function computePathFromDOM(): PathData | null {
       const rect = cat.getBoundingClientRect();
       const catPageY = rect.top + window.scrollY;
       if (i % 2 === 0) {
-        // Right side of the pills
         const rightEdge = (rect.right / vw) * 100;
         add(catPageY + rect.height / 2, Math.min(93, rightEdge + 6));
       } else {
-        // Left side
         const leftEdge = (rect.left / vw) * 100;
         add(catPageY + rect.height / 2, Math.max(6, leftEdge - 4));
       }
@@ -78,11 +76,9 @@ function computePathFromDOM(): PathData | null {
         const card = cards[i] as HTMLElement;
         const rect = card.getBoundingClientRect();
         const cardPageY = rect.top + window.scrollY;
-        // Near the timeline line (left edge of the card container)
         const timelineX = Math.max(5, (rect.left / vw) * 100 - 2);
         add(cardPageY + rect.height * 0.4, timelineX);
 
-        // Between this card and the next: swing to right whitespace
         if (i < cards.length - 1) {
           const nextRect = (cards[i + 1] as HTMLElement).getBoundingClientRect();
           const gapPageY = (rect.bottom + nextRect.top) / 2 + window.scrollY;
@@ -102,7 +98,6 @@ function computePathFromDOM(): PathData | null {
       const gridPageY = rect.top + window.scrollY;
       const left = (rect.left / vw) * 100;
       const width = (rect.width / vw) * 100;
-      // Weave between the 3 columns
       add(gridPageY + rect.height * 0.2, left + width * 0.34);
       add(gridPageY + rect.height * 0.5, left + width * 0.67);
       add(gridPageY + rect.height * 0.8, left + width * 0.34);
@@ -145,14 +140,10 @@ function computePathFromDOM(): PathData | null {
 
   if (pts.length < 3) return null;
 
-  // Sort by page position
   pts.sort((a, b) => a.pageY - b.pageY);
 
-  // Convert pageY to scroll progress (0–1)
-  const maxScroll = docH - window.innerHeight;
   const progress = pts.map(p => Math.max(0, Math.min(1, p.pageY / docH)));
   const x = pts.map(p => p.x);
-  // Ball Y in viewport: linear from 5% to 95% based on progress
   const y = progress.map(p => 5 + p * 90);
 
   return { progress, x, y };
@@ -180,18 +171,65 @@ function getPositionAt(path: PathData, progress: number) {
   };
 }
 
-export default function ScrollBallGame() {
+// ============================================================
+// Mobile progress indicator — straight line on right edge
+// ============================================================
+function MobileBall() {
+  const { scrollYProgress } = useScroll();
+  const [visible, setVisible] = useState(false);
+
+  const rawY = useTransform(scrollYProgress, [0, 1], [6, 94]);
+  const springY = useSpring(rawY, { stiffness: 60, damping: 16, mass: 0.5 });
+  const top = useTransform(springY, v => `${v}vh`);
+
+  useMotionValueEvent(scrollYProgress, 'change', (v) => {
+    setVisible(v > 0.02 && v < 0.99);
+  });
+
+  return (
+    <AnimatePresence>
+      {visible && (
+        <>
+          {/* Track line */}
+          <div className="fixed right-2 top-[6vh] bottom-[6vh] w-px bg-gui-accent/10 z-[2] pointer-events-none" />
+
+          {/* Ball */}
+          <motion.div
+            className="fixed right-[5px] z-[3] pointer-events-none"
+            style={{ top }}
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0 }}
+          >
+            <div
+              className="w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2"
+              style={{
+                background: 'radial-gradient(circle, rgba(245,158,11,0.9) 0%, rgba(245,158,11,0.3) 70%, transparent 100%)',
+                boxShadow: '0 0 10px rgba(245,158,11,0.3)',
+              }}
+            />
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// ============================================================
+// Desktop ball with full path, trails, particles
+// ============================================================
+function DesktopBall() {
   const { scrollYProgress } = useScroll();
   const [path, setPath] = useState<PathData>(FALLBACK_PATH);
   const [visible, setVisible] = useState(false);
-  const [isMobile, setIsMobile] = useState(true);
+  const [isScrolling, setIsScrolling] = useState(false);
   const [passedCPs, setPassedCPs] = useState<Set<number>>(new Set());
   const [particles, setParticles] = useState<Particle[]>([]);
   const [score, setScore] = useState(0);
   const [pulse, setPulse] = useState(false);
   const pathRef = useRef(path);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  // Dynamically compute checkpoints: evenly spaced across the computed path
   const checkpoints = path.progress.length > 4
     ? [0.2, 0.4, 0.6, 0.8].map(frac => {
         const idx = Math.round(frac * (path.progress.length - 1));
@@ -211,23 +249,14 @@ export default function ScrollBallGame() {
         setScore(0);
       }
     };
-    // Wait for content to render
     const t1 = setTimeout(compute, 600);
-    const t2 = setTimeout(compute, 2000); // retry after data loads
+    const t2 = setTimeout(compute, 2000);
     window.addEventListener('resize', compute);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       window.removeEventListener('resize', compute);
     };
-  }, []);
-
-  // Detect mobile
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 1024);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
   }, []);
 
   // Ball position from path
@@ -269,9 +298,14 @@ export default function ScrollBallGame() {
     }, 800);
   }, []);
 
-  // Watch scroll for visibility + checkpoints
+  // Watch scroll for visibility + checkpoints + idle detection
   useMotionValueEvent(scrollYProgress, 'change', (v) => {
     setVisible(v > 0.02 && v < 0.99);
+    setIsScrolling(true);
+
+    // Reset idle timer on each scroll
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => setIsScrolling(false), 800);
 
     checkpoints.forEach(cp => {
       if (v >= cp - 0.008 && v <= cp + 0.015 && !passedCPs.has(cp)) {
@@ -282,8 +316,6 @@ export default function ScrollBallGame() {
       }
     });
   });
-
-  if (isMobile) return null;
 
   return (
     <>
@@ -337,10 +369,20 @@ export default function ScrollBallGame() {
                   ? '0 0 30px rgba(245,158,11,0.6), 0 0 60px rgba(245,158,11,0.2)'
                   : '0 0 16px rgba(245,158,11,0.3), 0 0 4px rgba(245,158,11,0.5)',
               }}
-              animate={{ scale: pulse ? [1, 1.8, 1] : [1, 1.1, 1] }}
-              transition={{
-                scale: { duration: pulse ? 0.3 : 2.5, repeat: pulse ? 0 : Infinity, ease: 'easeInOut' },
-              }}
+              animate={
+                pulse
+                  ? { scale: [1, 1.8, 1] }
+                  : isScrolling
+                    ? { scale: [1, 1.1, 1] }
+                    : { y: [0, -6, 0], scale: [1, 1.15, 1] }
+              }
+              transition={
+                pulse
+                  ? { scale: { duration: 0.3 } }
+                  : isScrolling
+                    ? { scale: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }
+                    : { y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } }
+              }
             />
           </motion.div>
         )}
@@ -387,4 +429,20 @@ export default function ScrollBallGame() {
       ))}
     </>
   );
+}
+
+// ============================================================
+// Main export — picks desktop or mobile variant
+// ============================================================
+export default function ScrollBallGame() {
+  const [isMobile, setIsMobile] = useState(true);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  return isMobile ? <MobileBall /> : <DesktopBall />;
 }
