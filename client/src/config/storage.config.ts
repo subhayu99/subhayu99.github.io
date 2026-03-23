@@ -23,6 +23,11 @@ export const storageConfig = {
      * Key for storing user preferences
      */
     preferences: 'terminal-preferences',
+
+    /**
+     * Key for storing the selected view mode (terminal or gui)
+     */
+    viewMode: 'portfolio-view-mode',
   },
 
   /**

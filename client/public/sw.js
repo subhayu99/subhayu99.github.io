@@ -1,171 +1,157 @@
-const CACHE_NAME = 'terminal-portfolio-v1';
-const STATIC_CACHE = 'terminal-portfolio-static-v1';
-const DYNAMIC_CACHE = 'terminal-portfolio-dynamic-v1';
+// Cache version — updated on each build via build-version.json check
+// When a new build is deployed, the SW fetches build-version.json,
+// detects a version change, and invalidates all old caches.
+let CACHE_VERSION = 'v1';
+const CACHE_PREFIX = 'portfolio-';
 
-// Assets to cache immediately
-const STATIC_ASSETS = [
+function cacheName(type) {
+  return `${CACHE_PREFIX}${type}-${CACHE_VERSION}`;
+}
+
+// Assets to pre-cache on install
+const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/data/resume.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-apple-touch.png'
 ];
 
-// Install event - cache static assets
+// Install — pre-cache core assets
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installing...');
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      console.log('Caching static assets');
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(cacheName('static')).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  // Force the service worker to become active immediately
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate — purge ALL old caches (any cache that doesn't match current version)
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activating...');
+  const currentCaches = [cacheName('static'), cacheName('dynamic')];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
+    caches.keys().then((names) =>
+      Promise.all(
+        names.map((name) => {
+          if (!currentCaches.includes(name)) {
+            return caches.delete(name);
           }
         })
-      );
-    })
+      )
+    )
   );
-  // Take control of all clients immediately
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch — network-first for data & navigation, stale-while-revalidate for assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Handle data requests - network first, cache fallback
-  if (url.pathname.startsWith('/data/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Cache successful data responses
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Fallback to cached version if network fails
-          return caches.match(request).then((cachedResponse) => {
-            return cachedResponse || new Response(
-              JSON.stringify({ error: 'Offline - cached data not available' }),
-              { 
-                status: 503,
-                statusText: 'Service Unavailable',
-                headers: { 'Content-Type': 'application/json' }
-              }
-            );
-          });
-        })
-    );
+  // Skip non-GET and cross-origin
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+
+  // build-version.json — always network, never cache
+  if (url.pathname.endsWith('build-version.json')) {
+    event.respondWith(fetch(request));
     return;
   }
 
-  // Handle static assets - cache first, network fallback
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
+  // Data requests — network first, cache fallback
+  if (url.pathname.startsWith('/data/')) {
+    event.respondWith(networkFirst(request, 'dynamic'));
+    return;
+  }
+
+  // Navigation — network first so new index.html is picked up
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request, 'static'));
+    return;
+  }
+
+  // Hashed assets (Vite adds content hashes) — cache first, they're immutable
+  if (url.pathname.match(/\/assets\/.*\.[a-f0-9]{8}\./)) {
+    event.respondWith(cacheFirst(request, 'static'));
+    return;
+  }
+
+  // Everything else — stale-while-revalidate
+  event.respondWith(staleWhileRevalidate(request, 'dynamic'));
+});
+
+async function networkFirst(request, type) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName(type));
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached || offlineResponse(request);
+  }
+}
+
+async function cacheFirst(request, type) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName(type));
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return offlineResponse(request);
+  }
+}
+
+async function staleWhileRevalidate(request, type) {
+  const cached = await caches.match(request);
+
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        caches.open(cacheName(type)).then((cache) => cache.put(request, response.clone()));
       }
-
-      return fetch(request).then((response) => {
-        // Don't cache non-successful responses
-        if (!response.ok) {
-          return response;
-        }
-
-        // Cache the response for future use
-        const responseClone = response.clone();
-        caches.open(DYNAMIC_CACHE).then((cache) => {
-          cache.put(request, responseClone);
-        });
-
-        return response;
-      }).catch(() => {
-        // Provide offline fallback for navigation requests
-        if (request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-        
-        // For other requests, return a basic offline response
-        return new Response('Offline', {
-          status: 503,
-          statusText: 'Service Unavailable'
-        });
-      });
+      return response;
     })
-  );
-});
+    .catch(() => null);
 
-// Handle background sync for offline actions
-self.addEventListener('sync', (event) => {
-  console.log('Background sync triggered:', event.tag);
-  
-  if (event.tag === 'portfolio-data-sync') {
-    event.waitUntil(
-      fetch('/data/resume.json')
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          }
-        })
-        .then((data) => {
-          // Update cache with fresh data
-          caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put('/data/resume.json', new Response(JSON.stringify(data)));
-          });
-        })
-        .catch((error) => {
-          console.log('Background sync failed:', error);
-        })
-    );
+  return cached || (await fetchPromise) || offlineResponse(request);
+}
+
+function offlineResponse(request) {
+  if (request.mode === 'navigate') {
+    return caches.match('/index.html');
+  }
+  return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+}
+
+// Periodically check for new builds
+self.addEventListener('message', (event) => {
+  if (event.data === 'CHECK_VERSION') {
+    checkForUpdate();
   }
 });
 
-// Handle push notifications (for future enhancement)
-self.addEventListener('push', (event) => {
-  console.log('Push notification received:', event);
-  
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body || 'New update available!',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
-      data: data.url || '/'
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title || 'Terminal Portfolio', options)
-    );
+async function checkForUpdate() {
+  try {
+    const response = await fetch('/build-version.json?t=' + Date.now());
+    if (!response.ok) return;
+    const data = await response.json();
+    if (data.version && data.version !== CACHE_VERSION) {
+      CACHE_VERSION = data.version;
+      // Notify all clients to reload
+      const clients = await self.clients.matchAll();
+      clients.forEach((client) => {
+        client.postMessage({ type: 'NEW_VERSION', version: data.version });
+      });
+    }
+  } catch {
+    // Silently fail — will check again next time
   }
-});
-
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  event.waitUntil(
-    self.clients.openWindow(event.notification.data || '/')
-  );
-});
+}

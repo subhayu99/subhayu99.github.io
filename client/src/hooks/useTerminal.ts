@@ -16,6 +16,7 @@ export interface TerminalLine {
 
 export interface UseTerminalProps {
   portfolioData: PortfolioData | null;
+  onSwitchToGUI?: () => void;
 }
 
 function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
@@ -357,6 +358,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   // TOOLS Commands (always available)
   { name: 'search', description: 'Search through my portfolio content', category: 'tools' },
   { name: 'theme', description: 'Change terminal color theme', category: 'tools' },
+  { name: 'gui', description: 'Switch to the GUI portfolio view', category: 'tools' },
   { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
 
   // TERMINAL Commands (always available)
@@ -366,7 +368,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'cat', description: 'Display file contents', category: 'terminal' },
 ];
 
-export function useTerminal({ portfolioData }: UseTerminalProps) {
+export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -2537,6 +2539,14 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
       case 'neofetch':
         showNeofetch();
         break;
+      case 'gui':
+        if (onSwitchToGUI) {
+          addLine('Switching to GUI view...', 'text-terminal-yellow');
+          setTimeout(() => onSwitchToGUI(), 500);
+        } else {
+          addLine('GUI view is not available.', 'text-terminal-red');
+        }
+        break;
       case 'replicate':
       case 'clone':
       case 'fork':
@@ -2558,7 +2568,7 @@ export function useTerminal({ portfolioData }: UseTerminalProps) {
         addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
         addLine(`Type \`<a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a>\` or click on a command above to get started.`, 'text-terminal-yellow');
     }
-  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData]);
+  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;

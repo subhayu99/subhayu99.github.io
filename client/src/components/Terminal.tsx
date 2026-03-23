@@ -7,7 +7,11 @@ import { enhanceContent, getLinkUrl } from '../lib/linkRenderer';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { getPromptString, uiText, apiConfig } from '../config';
 
-function Terminal() {
+interface TerminalProps {
+  onSwitchToGUI?: () => void;
+}
+
+function Terminal({ onSwitchToGUI }: TerminalProps) {
   const [hasTyped, setHasTyped] = useState(false);
   const [input, setInput] = useState('');
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -36,7 +40,7 @@ function Terminal() {
     getAllCommands,
     clearTerminal,
     showWelcomeMessage,
-  } = useTerminal({ portfolioData: portfolioData || null });
+  } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
 
   // Get current suggestions
   const suggestions = getCommandSuggestions(input);

@@ -65,7 +65,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>
@@ -145,11 +145,35 @@
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then((registration) => {
-              console.log('PWA: Service worker registered successfully', registration.scope);
+              console.log('PWA: Service worker registered', registration.scope);
+              // Check for updates every 60s and on focus
+              setInterval(() => registration.update(), 60000);
+              document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) registration.update();
+              });
+              // Ask SW to check build version
+              if (registration.active) {
+                registration.active.postMessage('CHECK_VERSION');
+              }
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'activated') {
+                    newWorker.postMessage('CHECK_VERSION');
+                  }
+                });
+              });
             })
             .catch((error) => {
               console.log('PWA: Service worker registration failed', error);
             });
+        });
+        // Listen for new version message from SW
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'NEW_VERSION') {
+            console.log('New version detected, reloading...');
+            window.location.reload();
+          }
         });
       }
     </script>

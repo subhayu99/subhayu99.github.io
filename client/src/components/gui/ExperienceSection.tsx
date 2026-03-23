@@ -1,0 +1,28 @@
+import type { PortfolioData } from '../../../../shared/schema';
+import SectionWrapper from './SectionWrapper';
+import ExperienceCard from './ExperienceCard';
+
+interface ExperienceSectionProps {
+  data: PortfolioData;
+}
+
+export default function ExperienceSection({ data }: ExperienceSectionProps) {
+  const experience = data.cv.sections.experience;
+  if (!experience?.length) return null;
+
+  return (
+    <SectionWrapper id="experience" watermark="EXPERIENCE" animation="fade-right">
+      {/* Label */}
+      <div className="flex items-center gap-4 mb-10">
+        <span className="text-gui-accent font-mono text-sm">// experience</span>
+        <div className="flex-1 h-px bg-gui-accent/30" />
+      </div>
+
+      <div className="max-w-3xl relative">
+        {experience.map((exp, i) => (
+          <ExperienceCard key={`${exp.company}-${exp.start_date}`} experience={exp} index={i} total={experience.length} />
+        ))}
+      </div>
+    </SectionWrapper>
+  );
+}

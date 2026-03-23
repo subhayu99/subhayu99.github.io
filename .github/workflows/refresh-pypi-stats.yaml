@@ -1,0 +1,31 @@
+# Refresh PyPI download statistics weekly
+#
+# Triggers the deploy workflow which runs fetch-pypi-stats.js
+# during build, pulling fresh data from pepy.tech and pypistats.org.
+
+name: Refresh PyPI Stats
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    # Only run on the personal branch (actual portfolio)
+    if: github.repository == 'subhayu99/subhayu99.github.io'
+
+    steps:
+    - name: Trigger deploy workflow
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'deploy.yaml',
+            ref: 'personal',
+          });
+          console.log('Triggered deploy workflow on personal branch');
