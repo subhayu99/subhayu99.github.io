@@ -5,7 +5,7 @@ import type { PortfolioData } from '../../../../shared/schema';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import SocialIcon from './SocialIcon';
 
-const NAV_SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
+const NAV_SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
 const SOCIAL_CODES: Record<string, string> = {
   LinkedIn: 'IN',
@@ -26,6 +26,7 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
   const { switchTo } = useViewMode();
   const [visible, setVisible] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hasLogo, setHasLogo] = useState(true);
 
   const cv = data?.cv;
   const monogram = cv?.name
@@ -41,8 +42,15 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
   }, []);
 
   const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     setMobileOpen(false);
+    // Delay scroll so the menu close animation settles first
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const navHeight = 56; // h-14 = 3.5rem = 56px
+      const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }, 350);
   };
 
   return (
@@ -68,9 +76,11 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
 
             {/* Center: monogram + dot indicators (desktop) */}
             <div className="hidden sm:flex items-center gap-4">
-              {monogram && (
+              {hasLogo ? (
+                <img src="/logo.png" alt={monogram || 'Logo'} className="h-6 w-6 mr-4 object-contain" onError={() => setHasLogo(false)} />
+              ) : monogram ? (
                 <span className="text-white font-display text-lg tracking-wider mr-4">{monogram}</span>
-              )}
+              ) : null}
               {NAV_SECTIONS.map((section) => (
                 <button
                   key={section}
@@ -89,6 +99,13 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
                 </button>
               ))}
             </div>
+
+            {/* Mobile center logo/monogram */}
+            {hasLogo ? (
+              <img src="/logo.png" alt={monogram || 'Logo'} className="sm:hidden h-6 w-6 object-contain" onError={() => setHasLogo(false)} />
+            ) : monogram ? (
+              <span className="sm:hidden text-white font-display text-lg tracking-wider">{monogram}</span>
+            ) : null}
 
             {/* Mobile hamburger */}
             <button

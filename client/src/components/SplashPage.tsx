@@ -108,6 +108,7 @@ export default function SplashPage() {
   const { switchTo } = useViewMode();
   const [selected, setSelected] = useState<'terminal' | 'gui' | null>(null);
   const [hovered, setHovered] = useState<'terminal' | 'gui' | null>(null);
+  const [hasLogo, setHasLogo] = useState(true);
 
   const { data: portfolioData } = useQuery({
     queryKey: ['portfolio-data'],
@@ -191,6 +192,19 @@ export default function SplashPage() {
           </div>
         )}
       </motion.div>
+
+      {/* Logo — only shown when logo.png exists (personal branch) */}
+      {hasLogo && (
+        <motion.img
+          src="/logo.png"
+          alt="Logo"
+          className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain mb-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          onError={() => setHasLogo(false)}
+        />
+      )}
 
       {/* Name */}
       <motion.h1

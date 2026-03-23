@@ -95,6 +95,7 @@ PERSONAL_FILES=(
   "client/public/manifest\.json"
   "client/public/resume\.md"
   "client/public/resume\.pdf"
+  "client/public/logo\.png"
 )
 
 # Parse arguments

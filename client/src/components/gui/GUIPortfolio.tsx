@@ -17,7 +17,7 @@ import ContactSection from './ContactSection';
 import FloatingTerminalButton from './FloatingTerminalButton';
 import ScrollBallGame from './ScrollBallGame';
 
-const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
+const SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');
@@ -82,7 +82,7 @@ export default function GUIPortfolio() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
+      className="min-h-screen bg-black text-gui-text font-sans"
     >
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
