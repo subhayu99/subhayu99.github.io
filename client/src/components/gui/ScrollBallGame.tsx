@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { accentRgba } from '../../config/gui-theme.config';
 
 interface PathData {
   progress: number[];
@@ -204,8 +205,8 @@ function MobileBall() {
             <div
               className="w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2"
               style={{
-                background: 'radial-gradient(circle, rgba(245,158,11,0.9) 0%, rgba(245,158,11,0.3) 70%, transparent 100%)',
-                boxShadow: '0 0 10px rgba(245,158,11,0.3)',
+                background: `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.3)} 70%, transparent 100%)`,
+                boxShadow: `0 0 10px ${accentRgba(0.3)}`,
               }}
             />
           </motion.div>
@@ -364,10 +365,10 @@ function DesktopBall() {
               style={{
                 width: 14,
                 height: 14,
-                background: 'radial-gradient(circle, rgba(245,158,11,0.9) 0%, rgba(245,158,11,0.4) 60%, transparent 100%)',
+                background: `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.4)} 60%, transparent 100%)`,
                 boxShadow: pulse
-                  ? '0 0 30px rgba(245,158,11,0.6), 0 0 60px rgba(245,158,11,0.2)'
-                  : '0 0 16px rgba(245,158,11,0.3), 0 0 4px rgba(245,158,11,0.5)',
+                  ? `0 0 30px ${accentRgba(0.6)}, 0 0 60px ${accentRgba(0.2)}`
+                  : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
               }}
               animate={
                 pulse

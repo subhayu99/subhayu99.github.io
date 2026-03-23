@@ -32,14 +32,15 @@
   --terminal-yellow: hsl(60, 100%, 50%);
   --glow-color-rgb: 0, 255, 0;
 
-  /* GUI Portfolio variables */
+  /* GUI Portfolio variables — update gui-theme.config.ts to change theme */
   --gui-bg: #000000;
   --gui-surface: #0a0a0a;
   --gui-border: rgba(255, 255, 255, 0.08);
   --gui-text: #e4e4e7;
   --gui-text-muted: #a1a1aa;
-  --gui-accent: #f59e0b;
-  --gui-accent-hover: #d97706;
+  --gui-accent: #00ff00;
+  --gui-accent-hover: #00c800;
+  --gui-accent-rgb: 0, 255, 0;
 }
 
 /* Hide page scrollbar — amber dot serves as progress indicator */

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { loadPortfolioData } from '../../lib/portfolioDataLoader';
 import { loadPyPIStats, type PyPIStatsData } from '../../lib/pypiStats';
 import { apiConfig } from '../../config';
+import { guiTheme, accentHex, accentHoverHex, accentRgbCss } from '../../config/gui-theme.config';
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
 import AboutSection from './AboutSection';
@@ -22,6 +23,19 @@ const SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'educatio
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Apply GUI theme CSS variables from config (single source of truth)
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--gui-bg', guiTheme.bg);
+    root.setProperty('--gui-surface', guiTheme.surface);
+    root.setProperty('--gui-border', guiTheme.border);
+    root.setProperty('--gui-text', guiTheme.text);
+    root.setProperty('--gui-text-muted', guiTheme.textMuted);
+    root.setProperty('--gui-accent', accentHex);
+    root.setProperty('--gui-accent-hover', accentHoverHex);
+    root.setProperty('--gui-accent-rgb', accentRgbCss);
+  }, []);
 
   const { data: portfolioData, isLoading, error } = useQuery({
     queryKey: ['portfolio-data'],

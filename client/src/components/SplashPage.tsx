@@ -108,7 +108,6 @@ export default function SplashPage() {
   const { switchTo } = useViewMode();
   const [selected, setSelected] = useState<'terminal' | 'gui' | null>(null);
   const [hovered, setHovered] = useState<'terminal' | 'gui' | null>(null);
-  const [hasLogo, setHasLogo] = useState(true);
 
   const { data: portfolioData } = useQuery({
     queryKey: ['portfolio-data'],
@@ -193,19 +192,6 @@ export default function SplashPage() {
         )}
       </motion.div>
 
-      {/* Logo — only shown when logo.png exists (personal branch) */}
-      {hasLogo && (
-        <motion.img
-          src="/logo.png"
-          alt="Logo"
-          className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain mb-6"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.05 }}
-          onError={() => setHasLogo(false)}
-        />
-      )}
-
       {/* Name */}
       <motion.h1
         className="font-display text-white text-5xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight text-center leading-none mb-6"
@@ -263,7 +249,7 @@ export default function SplashPage() {
           onMouseLeave={() => setHovered(null)}
           className={`px-8 sm:px-10 py-3 text-sm sm:text-base font-mono tracking-wider transition-all duration-300 ${
             selected === 'gui'
-              ? 'bg-gui-accent text-black shadow-[0_0_20px_rgba(245,158,11,0.4)]'
+              ? 'bg-gui-accent text-black shadow-[0_0_20px_rgba(var(--gui-accent-rgb),0.4)]'
               : 'text-zinc-400 hover:text-gui-accent hover:bg-zinc-900'
           }`}
         >
