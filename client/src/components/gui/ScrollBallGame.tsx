@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { accentRgba } from '../../config/gui-theme.config';
 
 interface PathData {
@@ -228,8 +228,11 @@ function DesktopBall() {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [score, setScore] = useState(0);
   const [pulse, setPulse] = useState(false);
+  const [magnetized, setMagnetized] = useState(false);
   const pathRef = useRef(path);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const mouseRef = useRef({ x: -9999, y: -9999 }); // mouse in vw/vh units
+  const magnetOffsetRef = useRef({ x: 0, y: 0 }); // magnetic pull offset
 
   const checkpoints = path.progress.length > 4
     ? [0.2, 0.4, 0.6, 0.8].map(frac => {
@@ -239,6 +242,25 @@ function DesktopBall() {
     : [0.25, 0.5, 0.75];
 
   useEffect(() => { pathRef.current = path; }, [path]);
+
+  // Track mouse position in vw/vh units for magnetic pull
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      mouseRef.current = {
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100,
+      };
+    };
+    const handleLeave = () => {
+      mouseRef.current = { x: -9999, y: -9999 };
+    };
+    window.addEventListener('mousemove', handleMove, { passive: true });
+    document.addEventListener('mouseleave', handleLeave);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseleave', handleLeave);
+    };
+  }, []);
 
   // Compute path from DOM after mount
   useEffect(() => {
@@ -264,19 +286,67 @@ function DesktopBall() {
   const rawX = useTransform(scrollYProgress, path.progress, path.x);
   const rawY = useTransform(scrollYProgress, path.progress, path.y);
 
-  // Spring physics
+  // Spring physics for scroll-driven position
   const springX = useSpring(rawX, { stiffness: 50, damping: 14, mass: 0.6 });
   const springY = useSpring(rawY, { stiffness: 50, damping: 14, mass: 0.6 });
 
-  // Trailing springs
+  // Final rendered position — driven by RAF loop (scroll + magnetic offset)
+  const finalX = useMotionValue(0);
+  const finalY = useMotionValue(0);
+
+  // Magnetic pull RAF loop — runs every frame, works during scroll and idle
+  const MAGNET_RADIUS = 20; // vw/vh units
+  const MAGNET_STRENGTH = 0.75;
+
+  useEffect(() => {
+    let rafId: number;
+    const tick = () => {
+      const ballX = springX.get();
+      const ballY = springY.get();
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+      const dx = mx - ballX;
+      const dy = my - ballY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < MAGNET_RADIUS && dist > 0.3) {
+        const factor = MAGNET_STRENGTH * Math.pow(1 - dist / MAGNET_RADIUS, 1.5);
+        const targetX = dx * factor;
+        const targetY = dy * factor;
+        magnetOffsetRef.current = {
+          x: magnetOffsetRef.current.x + (targetX - magnetOffsetRef.current.x) * 0.15,
+          y: magnetOffsetRef.current.y + (targetY - magnetOffsetRef.current.y) * 0.15,
+        };
+        if (!magnetized) setMagnetized(true);
+      } else {
+        magnetOffsetRef.current = {
+          x: magnetOffsetRef.current.x * 0.88,
+          y: magnetOffsetRef.current.y * 0.88,
+        };
+        if (magnetized && Math.abs(magnetOffsetRef.current.x) < 0.05 && Math.abs(magnetOffsetRef.current.y) < 0.05) {
+          setMagnetized(false);
+        }
+      }
+
+      finalX.set(ballX + magnetOffsetRef.current.x);
+      finalY.set(ballY + magnetOffsetRef.current.y);
+
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Trailing springs (stay on scroll path, not affected by magnet)
   const trail1X = useSpring(rawX, { stiffness: 30, damping: 14, mass: 1.0 });
   const trail1Y = useSpring(rawY, { stiffness: 30, damping: 14, mass: 1.0 });
   const trail2X = useSpring(rawX, { stiffness: 18, damping: 14, mass: 1.4 });
   const trail2Y = useSpring(rawY, { stiffness: 18, damping: 14, mass: 1.4 });
 
-  // CSS values
-  const left = useTransform(springX, v => `${v}vw`);
-  const top = useTransform(springY, v => `${v}vh`);
+  // CSS values — main ball uses finalX/Y (scroll + magnet), trails on original path
+  const left = useTransform(finalX, v => `${v}vw`);
+  const top = useTransform(finalY, v => `${v}vh`);
   const t1Left = useTransform(trail1X, v => `${v}vw`);
   const t1Top = useTransform(trail1Y, v => `${v}vh`);
   const t2Left = useTransform(trail2X, v => `${v}vw`);
@@ -368,7 +438,9 @@ function DesktopBall() {
                 background: `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.4)} 60%, transparent 100%)`,
                 boxShadow: pulse
                   ? `0 0 30px ${accentRgba(0.6)}, 0 0 60px ${accentRgba(0.2)}`
-                  : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
+                  : magnetized
+                    ? `0 0 24px ${accentRgba(0.6)}, 0 0 48px ${accentRgba(0.25)}, 0 0 8px ${accentRgba(0.7)}`
+                    : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
               }}
               animate={
                 pulse
