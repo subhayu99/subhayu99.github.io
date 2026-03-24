@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import type { PyPIStatsData } from '../../lib/pypiStats';
@@ -68,9 +68,25 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
   const firstName = nameParts[0];
   const restName = nameParts.slice(1).join(' ');
 
+  // Parallax mouse tracking for hero name
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    let rafId: number;
+    const handleMove = (e: MouseEvent) => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const cx = (e.clientX / window.innerWidth - 0.5) * 2;  // -1 to 1
+        const cy = (e.clientY / window.innerHeight - 0.5) * 2;
+        setMouse({ x: cx, y: cy });
+      });
+    };
+    window.addEventListener('mousemove', handleMove, { passive: true });
+    return () => { cancelAnimationFrame(rafId); window.removeEventListener('mousemove', handleMove); };
+  }, []);
+
   const stats = deriveStats(data, pypiStats);
 
-  const role = cv.sections.experience?.[0]?.position?.toUpperCase() ?? '';
+  const role = (cv.tagline ?? cv.sections.experience?.[0]?.position ?? '').toUpperCase();
 
   const socialNetworks = cv.social_networks ?? [];
 
@@ -108,8 +124,18 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
         <h1 className="font-display text-white leading-[0.85] tracking-tight">
-          <span className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem]">{firstName}</span>
-          <span className="block text-5xl sm:text-6xl md:text-[7rem] lg:text-[8rem] sm:ml-[10%] md:ml-[15%]">{restName}</span>
+          <span
+            className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] transition-transform duration-150 ease-out will-change-transform"
+            style={{ transform: `translate(${mouse.x * 12}px, ${mouse.y * 6}px)` }}
+          >
+            {firstName}
+          </span>
+          <span
+            className="block text-5xl sm:text-6xl md:text-[7rem] lg:text-[8rem] sm:ml-[10%] md:ml-[15%] transition-transform duration-300 ease-out will-change-transform"
+            style={{ transform: `translate(${mouse.x * -8}px, ${mouse.y * -4}px)` }}
+          >
+            {restName}
+          </span>
         </h1>
       </motion.div>
 
@@ -153,7 +179,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
             href={cv.resume_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 bg-gui-accent text-black font-mono text-sm hover:bg-gui-accent-hover transition-colors"
+            className="px-6 py-3 bg-gui-accent text-black font-mono text-sm border border-gui-accent hover:bg-transparent hover:text-gui-accent transition-all duration-200"
           >
             Download Resume
           </a>
@@ -161,7 +187,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         {cv.email && (
           <a
             href={`mailto:${cv.email}`}
-            className="px-6 py-3 border border-white/20 text-white font-mono text-sm hover:border-white/50 transition-colors"
+            className="px-6 py-3 border border-white/20 text-white font-mono text-sm hover:border-gui-accent hover:text-gui-accent hover:bg-gui-accent/5 transition-all duration-200"
           >
             Get In Touch
           </a>

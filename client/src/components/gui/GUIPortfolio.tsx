@@ -16,6 +16,7 @@ import PublicationSection from './PublicationSection';
 import ContactSection from './ContactSection';
 import FloatingTerminalButton from './FloatingTerminalButton';
 import ScrollBallGame from './ScrollBallGame';
+import MouseSpotlight from './MouseSpotlight';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -84,6 +85,7 @@ export default function GUIPortfolio() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
     >
+      <MouseSpotlight />
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
       <AboutSection data={portfolioData} />

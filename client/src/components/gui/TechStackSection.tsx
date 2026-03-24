@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
+import SkillConstellation from './SkillConstellation';
 
 interface TechStackSectionProps {
   data: PortfolioData;
@@ -49,9 +50,25 @@ function TechCategory({ label, details, index }: { label: string; details: strin
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SkillGraphData = any;
+
 export default function TechStackSection({ data }: TechStackSectionProps) {
   const technologies = data.cv.sections.technologies;
+  const [graphData, setGraphData] = useState<SkillGraphData | null>(null);
+  const [viewMode, setViewMode] = useState<'constellation' | 'pills'>('constellation');
+
+  // Try loading skill-graph.json (personal-only asset)
+  useEffect(() => {
+    fetch('/data/skill-graph.json')
+      .then((r) => { if (!r.ok) throw new Error('not found'); return r.json(); })
+      .then((d) => setGraphData(d))
+      .catch(() => setGraphData(null));
+  }, []);
+
   if (!technologies?.length) return null;
+
+  const hasConstellation = !!graphData;
 
   return (
     <SectionWrapper id="skills" watermark="SKILLS" animation="split-open">
@@ -59,13 +76,33 @@ export default function TechStackSection({ data }: TechStackSectionProps) {
       <div className="flex items-center gap-4 mb-10">
         <span className="text-gui-accent font-mono text-sm">// tech stack</span>
         <div className="flex-1 h-px bg-gui-accent/30" />
+        {hasConstellation && (
+          <div className="flex gap-1 text-[10px] font-mono">
+            <button
+              onClick={() => setViewMode('constellation')}
+              className={`px-2 py-1 border transition-colors ${viewMode === 'constellation' ? 'border-gui-accent/50 text-gui-accent' : 'border-white/10 text-zinc-500 hover:text-zinc-300'}`}
+            >
+              graph
+            </button>
+            <button
+              onClick={() => setViewMode('pills')}
+              className={`px-2 py-1 border transition-colors ${viewMode === 'pills' ? 'border-gui-accent/50 text-gui-accent' : 'border-white/10 text-zinc-500 hover:text-zinc-300'}`}
+            >
+              list
+            </button>
+          </div>
+        )}
       </div>
 
-      <div className="space-y-8 max-w-4xl">
-        {technologies.map((tech, i) => (
-          <TechCategory key={tech.label} label={tech.label} details={tech.details} index={i} />
-        ))}
-      </div>
+      {hasConstellation && viewMode === 'constellation' ? (
+        <SkillConstellation data={graphData} />
+      ) : (
+        <div className="space-y-8 max-w-4xl">
+          {technologies.map((tech, i) => (
+            <TechCategory key={tech.label} label={tech.label} details={tech.details} index={i} />
+          ))}
+        </div>
+      )}
     </SectionWrapper>
   );
 }

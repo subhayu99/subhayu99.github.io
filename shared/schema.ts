@@ -64,6 +64,7 @@ export const portfolioSchema = z.object({
   cv: z.object({
     name: z.string(),
     resume_url: z.string().optional(),
+    tagline: z.string().optional(),
     location: z.string().optional(),
     email: z.string().optional(),
     phone: z.string().optional(),
