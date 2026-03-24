@@ -96,6 +96,7 @@ PERSONAL_FILES=(
   "client/public/resume\.md"
   "client/public/resume\.pdf"
   "client/public/logo\.png"
+  "client/public/data/skill-graph\.json"
 )
 
 # Parse arguments

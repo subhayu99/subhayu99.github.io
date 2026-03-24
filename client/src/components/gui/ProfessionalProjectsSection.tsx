@@ -145,7 +145,7 @@ export default function ProfessionalProjectsSection({ data }: ProfessionalProjec
         <div className="flex justify-center mt-8">
           <button
             onClick={() => setShowAll(!showAll)}
-            className="px-5 py-2 text-xs font-mono border border-white/10 text-gui-text-muted hover:text-gui-accent hover:border-gui-accent/40 transition-colors duration-200 rounded-sm flex items-center gap-2"
+            className="px-6 py-2.5 text-sm font-mono border border-gui-accent/30 text-gui-accent hover:bg-gui-accent/10 hover:border-gui-accent/60 transition-all duration-200 rounded-sm flex items-center gap-2"
           >
             <span className="inline-block transition-transform duration-200" style={{ transform: showAll ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
             {showAll ? 'Show less' : `Show all ${yearFiltered.length} projects`}

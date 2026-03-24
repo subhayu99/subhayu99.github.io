@@ -61,7 +61,9 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
           animate={{ y: 0 }}
           exit={{ y: -80 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="fixed top-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-b border-white/5"
+          className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b border-white/5 ${
+            mobileOpen ? 'bg-black/30' : 'bg-black/80'
+          } transition-colors duration-200`}
         >
           <div className="flex items-center justify-between px-6 sm:px-12 h-14">
             {/* Terminal toggle */}
@@ -85,10 +87,12 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
                 <button
                   key={section}
                   onClick={() => scrollToSection(section)}
-                  className="group flex flex-col items-center gap-1"
-                  title={section}
+                  className="group relative flex flex-col items-center gap-1"
                   aria-label={`Navigate to ${section}`}
                 >
+                  <span className="absolute -bottom-5 text-[9px] font-mono uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-zinc-400 whitespace-nowrap">
+                    {section}
+                  </span>
                   <div
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${
                       activeSection === section
@@ -135,14 +139,14 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
             </div>
           </div>
 
-          {/* Mobile menu */}
+          {/* Mobile menu — glass overlay */}
           <AnimatePresence>
             {mobileOpen && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="sm:hidden overflow-hidden border-t border-white/5"
+                className="sm:hidden overflow-hidden border-t border-white/10"
               >
                 <div className="px-6 py-4 flex flex-col gap-3">
                   {NAV_SECTIONS.map((section) => (

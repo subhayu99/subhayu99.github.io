@@ -62,6 +62,7 @@ fields:
   # Fields to remove from resume YAML (not needed by rendercv)
   removeFromResume:
     - "resume_url"
+    - "tagline"
     - "show_on_resume"
 
 # Build configuration
