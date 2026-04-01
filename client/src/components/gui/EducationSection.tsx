@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
+import ScrambleText from './ScrambleText';
 
 interface EducationSectionProps {
   data: PortfolioData;
@@ -47,7 +48,7 @@ export default function EducationSection({ data }: EducationSectionProps) {
     <SectionWrapper id="education" watermark="EDUCATION" animation="blur-rise">
       {/* Label */}
       <div className="flex items-center gap-4 mb-10">
-        <span className="text-gui-accent font-mono text-sm">// education</span>
+        <ScrambleText text="// education" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
       </div>
 
@@ -98,6 +99,7 @@ export default function EducationSection({ data }: EducationSectionProps) {
             </motion.div>
           );
         })}
+        <span className="secret-text block mt-4 font-mono">// still curious? try typing "snake" anywhere on the page</span>
       </div>
     </SectionWrapper>
   );

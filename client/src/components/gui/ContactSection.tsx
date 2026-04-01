@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import SocialIcon from './SocialIcon';
+import ScrambleText from './ScrambleText';
 
 interface ContactSectionProps {
   data: PortfolioData;
@@ -27,7 +28,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.7 }}
       >
-        LET'S<br />CONNECT
+        <ScrambleText text="LET'S CONNECT" className="inline" />
       </motion.h2>
 
       {cv.location && (
@@ -95,6 +96,8 @@ export default function ContactSection({ data }: ContactSectionProps) {
           ))}
         </motion.div>
       )}
+
+      <span className="secret-text block mt-6 font-mono">// hire me before someone else does ;)</span>
 
       <motion.p
         className="absolute bottom-6 text-zinc-700 text-xs font-mono"

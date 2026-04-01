@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
 import SkillConstellation from './SkillConstellation';
+import ScrambleText from './ScrambleText';
 
 interface TechStackSectionProps {
   data: PortfolioData;
@@ -74,7 +75,7 @@ export default function TechStackSection({ data }: TechStackSectionProps) {
     <SectionWrapper id="skills" watermark="SKILLS" animation="split-open">
       {/* Label */}
       <div className="flex items-center gap-4 mb-10">
-        <span className="text-gui-accent font-mono text-sm">// tech stack</span>
+        <ScrambleText text="// tech stack" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
         {hasConstellation && (
           <div className="flex gap-1 text-[10px] font-mono">

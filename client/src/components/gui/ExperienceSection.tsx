@@ -1,6 +1,7 @@
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
 import ExperienceCard from './ExperienceCard';
+import ScrambleText from './ScrambleText';
 
 interface ExperienceSectionProps {
   data: PortfolioData;
@@ -14,7 +15,7 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
     <SectionWrapper id="experience" watermark="EXPERIENCE" animation="fade-right">
       {/* Label */}
       <div className="flex items-center gap-4 mb-10">
-        <span className="text-gui-accent font-mono text-sm">// experience</span>
+        <ScrambleText text="// experience" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
       </div>
 
