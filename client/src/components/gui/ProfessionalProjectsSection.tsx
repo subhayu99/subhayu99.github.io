@@ -3,6 +3,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { PortfolioData, Project } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
 import { renderGuiMarkdown, extractMetric } from '../../lib/guiMarkdown';
+import ScrambleText from './ScrambleText';
 
 interface ProfessionalProjectsSectionProps {
   data: PortfolioData;
@@ -116,7 +117,7 @@ export default function ProfessionalProjectsSection({ data }: ProfessionalProjec
     <SectionWrapper id="work" watermark="WORK" animation="scale-up">
       {/* Label */}
       <div className="flex items-center gap-4 mb-6">
-        <span className="text-gui-accent font-mono text-sm">// professional projects</span>
+        <ScrambleText text="// professional projects" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
       </div>
 

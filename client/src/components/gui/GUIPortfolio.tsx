@@ -17,6 +17,12 @@ import ContactSection from './ContactSection';
 import FloatingTerminalButton from './FloatingTerminalButton';
 import ScrollBallGame from './ScrollBallGame';
 import MouseSpotlight from './MouseSpotlight';
+import WireframeGrid from './WireframeGrid';
+import MatrixRain from './MatrixRain';
+import CursorTrail from './CursorTrail';
+import KonamiEasterEgg from './KonamiEasterEgg';
+import SnakeGame from './SnakeGame';
+import FilmGrain from './FilmGrain';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -85,7 +91,13 @@ export default function GUIPortfolio() {
       transition={{ duration: 0.5 }}
       className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
     >
+      <WireframeGrid />
+      <MatrixRain />
       <MouseSpotlight />
+      <CursorTrail />
+      <FilmGrain />
+      <KonamiEasterEgg />
+      <SnakeGame />
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
       <AboutSection data={portfolioData} />

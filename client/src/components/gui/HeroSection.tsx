@@ -6,6 +6,7 @@ import { useViewMode } from '../../hooks/useViewMode';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import StatCard from './StatCard';
 import SocialIcon from './SocialIcon';
+import ScrambleText from './ScrambleText';
 
 interface HeroSectionProps {
   data: PortfolioData;
@@ -125,14 +126,20 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
       >
         <h1 className="font-display text-white leading-[0.85] tracking-tight">
           <span
-            className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] transition-transform duration-150 ease-out will-change-transform"
-            style={{ transform: `translate(${mouse.x * 12}px, ${mouse.y * 6}px)` }}
+            className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] transition-all duration-150 ease-out will-change-transform"
+            style={{
+              transform: `translate(${mouse.x * 12}px, ${mouse.y * 6}px)`,
+              textShadow: `${mouse.x * -3}px ${mouse.y * -2}px 0 rgba(0,255,0,0.25), ${mouse.x * 3}px ${mouse.y * 2}px 0 rgba(0,100,255,0.12)`,
+            }}
           >
             {firstName}
           </span>
           <span
-            className="block text-5xl sm:text-6xl md:text-[7rem] lg:text-[8rem] sm:ml-[10%] md:ml-[15%] transition-transform duration-300 ease-out will-change-transform"
-            style={{ transform: `translate(${mouse.x * -8}px, ${mouse.y * -4}px)` }}
+            className="block text-5xl sm:text-6xl md:text-[7rem] lg:text-[8rem] sm:ml-[10%] md:ml-[15%] transition-all duration-300 ease-out will-change-transform"
+            style={{
+              transform: `translate(${mouse.x * -8}px, ${mouse.y * -4}px)`,
+              textShadow: `${mouse.x * 2}px ${mouse.y * 1.5}px 0 rgba(0,255,0,0.2), ${mouse.x * -2}px ${mouse.y * -1.5}px 0 rgba(0,100,255,0.1)`,
+            }}
           >
             {restName}
           </span>
@@ -155,7 +162,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ delay: 0.5 }}
       >
-        {role}
+        <ScrambleText text={role} delay={500} />
       </motion.p>
 
       {/* Stats grid */}
@@ -193,6 +200,8 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
           </a>
         )}
       </motion.div>
+
+      <span className="secret-text block mt-2 font-mono">// the cake is a lie. also try the konami code.</span>
 
       {/* Decorative vertical text */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center">
