@@ -20,7 +20,7 @@ interface PulseRing {
 }
 
 const GRAVITY = 120;
-const VELOCITY_THRESHOLD = 4;
+const VELOCITY_THRESHOLD = 10;
 const PARTICLE_LIFE = 0.6;
 const MAX_PARTICLES = 80;
 
