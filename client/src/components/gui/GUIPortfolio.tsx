@@ -95,7 +95,6 @@ export default function GUIPortfolio() {
       <MatrixRain />
       <MouseSpotlight />
       <CursorTrail />
-      <FilmGrain />
       <KonamiEasterEgg />
       <SnakeGame />
       <Navbar activeSection={activeSection} data={portfolioData} />
