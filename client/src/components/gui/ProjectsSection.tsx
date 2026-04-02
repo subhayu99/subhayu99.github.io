@@ -4,6 +4,7 @@ import type { PortfolioData } from '../../../../shared/schema';
 import type { PyPIStatsData } from '../../lib/pypiStats';
 import SectionWrapper from './SectionWrapper';
 import ProjectCard from './ProjectCard';
+import ScrambleText from './ScrambleText';
 
 interface ProjectsSectionProps {
   data: PortfolioData;
@@ -21,7 +22,7 @@ export default function ProjectsSection({ data, pypiStats }: ProjectsSectionProp
     <SectionWrapper id="projects" watermark="PROJECTS" animation="fade-left">
       {/* Label */}
       <div className="flex items-center gap-4 mb-10">
-        <span className="text-gui-accent font-mono text-sm">// open source</span>
+        <ScrambleText text="// open source" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
       </div>
 

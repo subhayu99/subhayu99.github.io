@@ -186,4 +186,42 @@ html {
     from { width: 0; }
     to { width: 100%; }
   }
+
+  /* Select-to-Reveal: hidden text visible only on text selection */
+  .secret-text {
+    color: transparent;
+    user-select: text;
+    font-size: 0.7em;
+    letter-spacing: 0.05em;
+  }
+  .secret-text::selection {
+    color: var(--gui-accent);
+    background: rgba(0, 255, 0, 0.15);
+  }
+  .secret-text::-moz-selection {
+    color: var(--gui-accent);
+    background: rgba(0, 255, 0, 0.15);
+  }
+
+  /* Film grain overlay */
+  .film-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.035;
+    animation: grain 0.5s steps(6) infinite;
+  }
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-2%, -3%); }
+    20% { transform: translate(3%, 1%); }
+    30% { transform: translate(-1%, 2%); }
+    40% { transform: translate(2%, -2%); }
+    50% { transform: translate(-3%, 1%); }
+    60% { transform: translate(1%, -1%); }
+    70% { transform: translate(-2%, 3%); }
+    80% { transform: translate(3%, -1%); }
+    90% { transform: translate(-1%, 2%); }
+  }
 }

@@ -3,6 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
 import { renderGuiMarkdown } from '../../lib/guiMarkdown';
+import ScrambleText from './ScrambleText';
 
 interface AboutSectionProps {
   data: PortfolioData;
@@ -24,7 +25,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <span className="text-gui-accent font-mono text-sm">// about</span>
+          <ScrambleText text="// about" className="text-gui-accent font-mono text-sm" />
           <div className="flex-1 h-px bg-gui-accent/30" />
         </motion.div>
 
@@ -38,6 +39,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
             dangerouslySetInnerHTML={{ __html: renderGuiMarkdown(paragraph) }}
           />
         ))}
+        <span className="secret-text block mt-4 font-mono">// you found a secret! try selecting more text around the page...</span>
       </div>
     </SectionWrapper>
   );

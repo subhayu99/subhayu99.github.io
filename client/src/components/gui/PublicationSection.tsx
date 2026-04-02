@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
+import ScrambleText from './ScrambleText';
 
 interface PublicationSectionProps {
   data: PortfolioData;
@@ -18,7 +19,7 @@ export default function PublicationSection({ data }: PublicationSectionProps) {
     <SectionWrapper id="publication" watermark="RESEARCH" animation="fade-right">
       {/* Label */}
       <div className="flex items-center gap-4 mb-10">
-        <span className="text-gui-accent font-mono text-sm">// publications</span>
+        <ScrambleText text="// publications" className="text-gui-accent font-mono text-sm" />
         <div className="flex-1 h-px bg-gui-accent/30" />
       </div>
 
