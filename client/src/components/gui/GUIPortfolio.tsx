@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { loadPortfolioData } from '../../lib/portfolioDataLoader';
 import { loadPyPIStats, type PyPIStatsData } from '../../lib/pypiStats';
 import { apiConfig } from '../../config';
+import { guiTheme, accentHex, accentHoverHex, accentRgbCss } from '../../config/gui-theme.config';
+import { useGestureTrigger } from '../../hooks/useGestureTrigger';
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
 import AboutSection from './AboutSection';
@@ -22,13 +24,13 @@ import MatrixRain from './MatrixRain';
 import CursorTrail from './CursorTrail';
 import KonamiEasterEgg from './KonamiEasterEgg';
 import SnakeGame from './SnakeGame';
-import FilmGrain from './FilmGrain';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
+  const { konamiActive, snakeActive, resetKonami, resetSnake } = useGestureTrigger();
 
   const { data: portfolioData, isLoading, error } = useQuery({
     queryKey: ['portfolio-data'],
@@ -95,8 +97,8 @@ export default function GUIPortfolio() {
       <MatrixRain />
       <MouseSpotlight />
       <CursorTrail />
-      <KonamiEasterEgg />
-      <SnakeGame />
+      <KonamiEasterEgg active={konamiActive} onClose={resetKonami} />
+      <SnakeGame active={snakeActive} onClose={resetSnake} />
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
       <AboutSection data={portfolioData} />

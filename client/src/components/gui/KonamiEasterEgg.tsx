@@ -1,73 +1,38 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrambleText from './ScrambleText';
+import ParticleSandbox from './ParticleSandbox';
 
-const KONAMI_SEQUENCE = [
-  'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
-  'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
-  'b', 'a',
-];
+interface KonamiEasterEggProps {
+  active: boolean;
+  onClose: () => void;
+}
 
-const STATS = [
-  { label: 'FRAMEWORK', value: 'React 18 + TypeScript' },
-  { label: 'BUILD TOOL', value: 'Vite 5' },
-  { label: 'ANIMATION', value: 'Framer Motion + Canvas' },
-  { label: 'STYLING', value: 'Tailwind CSS' },
-  { label: 'EASTER EGGS', value: '3 hidden' },
-  { label: 'CLEARANCE', value: 'LEVEL 5 — TOP SECRET' },
-];
-
-export default function KonamiEasterEgg() {
-  const [active, setActive] = useState(false);
+export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProps) {
   const [shatter, setShatter] = useState(false);
-  const bufferRef = useRef<string[]>([]);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      // Don't trigger if an input/textarea is focused
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (active) return;
-
-      bufferRef.current.push(e.key);
-      if (bufferRef.current.length > KONAMI_SEQUENCE.length) {
-        bufferRef.current.shift();
-      }
-
-      const match = KONAMI_SEQUENCE.every((k, i) => bufferRef.current[i] === k);
-      if (match) {
-        setActive(true);
-        bufferRef.current = [];
-      }
-    };
-
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [active]);
-
-  // Auto-dismiss after 12s
-  useEffect(() => {
-    if (active && !shatter) {
-      timerRef.current = setTimeout(() => close(), 12000);
-      return () => clearTimeout(timerRef.current);
-    }
-  }, [active, shatter]);
+  const [gravityOn, setGravityOn] = useState(false);
+  const [explodeTrigger, setExplodeTrigger] = useState(0);
 
   const close = useCallback(() => {
-    setActive(false);
     setShatter(false);
-  }, []);
+    setGravityOn(false);
+    onClose();
+  }, [onClose]);
 
   const triggerShatter = useCallback(() => {
     setShatter(true);
     setTimeout(() => close(), 1200);
   }, [close]);
 
+  const handleExplode = useCallback(() => {
+    setExplodeTrigger((n) => n + 1);
+  }, []);
+
   return (
     <AnimatePresence>
       {active && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -128,57 +93,60 @@ export default function KonamiEasterEgg() {
           {/* Content */}
           {!shatter && (
             <motion.div
-              className="relative z-10 max-w-lg w-full mx-6"
+              className="relative z-10 w-full max-w-2xl mx-4 flex flex-col items-center"
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
               {/* ACCESS GRANTED header */}
-              <div className="text-center mb-8">
-                <h2 className="font-display text-green-400 text-5xl sm:text-6xl tracking-wider mb-2">
+              <div className="text-center mb-4">
+                <h2 className="font-display text-green-400 text-4xl sm:text-6xl tracking-wider mb-2">
                   <ScrambleText text="ACCESS GRANTED" />
                 </h2>
                 <div className="h-px bg-green-500/40 mx-auto w-3/4" />
               </div>
 
-              {/* Security badge */}
+              {/* Particle sandbox */}
               <motion.div
-                className="border border-green-500/30 bg-green-500/5 p-6 mb-6 font-mono text-sm"
+                className="relative w-full border border-green-500/30 bg-black overflow-hidden"
+                style={{ height: 'min(50vh, 400px)' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.6 }}
               >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-green-400 text-xs tracking-widest">CLASSIFIED — PORTFOLIO INTERNALS</span>
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {STATS.map((stat, i) => (
-                    <motion.div
-                      key={stat.label}
-                      className="flex justify-between items-center border-b border-white/5 pb-2"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1 + i * 0.1 }}
-                    >
-                      <span className="text-zinc-500 text-xs">{stat.label}</span>
-                      <span className="text-green-400">{stat.value}</span>
-                    </motion.div>
-                  ))}
-                </div>
+                <ParticleSandbox gravityOn={gravityOn} explodeTrigger={explodeTrigger} />
+                <p className="absolute bottom-2 left-0 right-0 text-center text-green-500/30 text-xs font-mono pointer-events-none select-none">
+                  TAP TO ATTRACT · RELEASE TO REPULSE
+                </p>
               </motion.div>
 
-              {/* Self-destruct button */}
+              {/* Controls */}
               <motion.div
-                className="flex justify-center gap-4"
+                className="flex flex-wrap justify-center gap-3 mt-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1.6 }}
+                transition={{ delay: 1 }}
               >
                 <button
+                  onClick={() => setGravityOn((g) => !g)}
+                  className={`px-4 py-2 border font-mono text-xs transition-all duration-200 ${
+                    gravityOn
+                      ? 'border-green-500/60 text-green-400 bg-green-500/10'
+                      : 'border-white/20 text-zinc-400 hover:border-green-500/40 hover:text-green-400'
+                  }`}
+                >
+                  {gravityOn ? '▼ GRAVITY ON' : '○ GRAVITY OFF'}
+                </button>
+                <button
+                  onClick={handleExplode}
+                  className="px-4 py-2 border border-green-500/40 text-green-400 font-mono text-xs
+                             hover:bg-green-500/10 transition-all duration-200"
+                >
+                  ✦ EXPLODE
+                </button>
+                <button
                   onClick={triggerShatter}
-                  className="px-6 py-3 border-2 border-red-500/60 text-red-400 font-mono text-sm
+                  className="px-4 py-2 border-2 border-red-500/60 text-red-400 font-mono text-xs
                              hover:bg-red-500/20 hover:border-red-400 transition-all duration-200
                              animate-pulse"
                 >
@@ -186,7 +154,7 @@ export default function KonamiEasterEgg() {
                 </button>
                 <button
                   onClick={close}
-                  className="px-6 py-3 border border-white/20 text-zinc-400 font-mono text-sm
+                  className="px-4 py-2 border border-white/20 text-zinc-400 font-mono text-xs
                              hover:border-green-500/40 hover:text-green-400 transition-all duration-200"
                 >
                   DISMISS [ESC]
