@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <title>Terminal Portfolio</title>
+    <meta name="description" content="Interactive terminal-style portfolio showcasing professional experience and projects">
+
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+
+    <script>
+      (function() {
+        const themes = {"matrix":{"name":"Matrix Green","--terminal-green":"hsl(120, 100%, 50%)","--terminal-bright-green":"hsl(120, 100%, 60%)","--border":"hsl(120, 100%, 20%)","--ring":"hsl(120, 100%, 50%)","--foreground":"hsl(120, 100%, 50%)","--primary":"hsl(120, 100%, 50%)","--accent":"hsl(120, 100%, 20%)","--input":"hsl(120, 100%, 20%)","--glow-color-rgb":"0, 255, 0"},"blue":{"name":"Cyberpunk Blue","--terminal-green":"hsl(195, 100%, 50%)","--terminal-bright-green":"hsl(195, 100%, 60%)","--border":"hsl(195, 100%, 20%)","--ring":"hsl(195, 100%, 50%)","--foreground":"hsl(195, 100%, 50%)","--primary":"hsl(195, 100%, 50%)","--accent":"hsl(195, 100%, 20%)","--input":"hsl(195, 100%, 20%)","--glow-color-rgb":"0, 191, 255"},"purple":{"name":"Hacker Purple","--terminal-green":"hsl(260, 60%, 65%)","--terminal-bright-green":"hsl(260, 60%, 75%)","--border":"hsl(260, 60%, 25%)","--ring":"hsl(260, 60%, 65%)","--foreground":"hsl(260, 60%, 65%)","--primary":"hsl(260, 60%, 65%)","--accent":"hsl(260, 60%, 25%)","--input":"hsl(260, 60%, 25%)","--glow-color-rgb":"147, 112, 219"},"amber":{"name":"Vintage Amber","--terminal-green":"hsl(39, 100%, 50%)","--terminal-bright-green":"hsl(39, 100%, 60%)","--border":"hsl(39, 100%, 20%)","--ring":"hsl(39, 100%, 50%)","--foreground":"hsl(39, 100%, 50%)","--primary":"hsl(39, 100%, 50%)","--accent":"hsl(39, 100%, 20%)","--input":"hsl(39, 100%, 20%)","--glow-color-rgb":"255, 165, 0"},"red":{"name":"Red Alert","--terminal-green":"hsl(0, 100%, 50%)","--terminal-bright-green":"hsl(0, 100%, 60%)","--border":"hsl(0, 100%, 20%)","--ring":"hsl(0, 100%, 50%)","--foreground":"hsl(0, 100%, 50%)","--primary":"hsl(0, 100%, 50%)","--accent":"hsl(0, 100%, 20%)","--input":"hsl(0, 100%, 20%)","--glow-color-rgb":"255, 0, 0"}};
+        // The line above will be replaced by Vite with: const themes = { ... };
+
+        try {
+          const savedTheme = localStorage.getItem('terminal-theme');
+          if (savedTheme && themes[savedTheme]) {
+            const themeConfig = themes[savedTheme];
+            Object.keys(themeConfig).forEach(key => {
+              if (key !== 'name') {
+                document.documentElement.style.setProperty(key, themeConfig[key]);
+              }
+            });
+          }
+        } catch (e) {
+          console.error('Failed to apply saved theme:', e);
+        }
+      })();
+    </script>
+
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="background-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Terminal Portfolio">
+    <meta name="application-name" content="Terminal Portfolio">
+    <meta name="msapplication-TileColor" content="#000000">
+    <meta name="msapplication-tap-highlight" content="no">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/svg+xml" href="/pr-preview/pr-9/icons/terminal-icon.svg">
+    <link rel="apple-touch-icon" sizes="57x57" href="/pr-preview/pr-9/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/pr-preview/pr-9/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/pr-preview/pr-9/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/pr-preview/pr-9/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/pr-preview/pr-9/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/pr-preview/pr-9/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/pr-preview/pr-9/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/pr-preview/pr-9/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/pr-preview/pr-9/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/pr-preview/pr-9/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/pr-preview/pr-9/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/pr-preview/pr-9/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/pr-preview/pr-9/icons/favicon-16x16.png">
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/pr-preview/pr-9/assets/index-Dx9H0nWM.js"></script>
+    <link rel="modulepreload" crossorigin href="/pr-preview/pr-9/assets/react-vendor-CX2mysxk.js">
+    <link rel="modulepreload" crossorigin href="/pr-preview/pr-9/assets/react-query-D4Axeqmq.js">
+    <link rel="modulepreload" crossorigin href="/pr-preview/pr-9/assets/ui-components-DJUXoMSF.js">
+    <link rel="modulepreload" crossorigin href="/pr-preview/pr-9/assets/utils-g8ck1dJX.js">
+    <link rel="stylesheet" crossorigin href="/pr-preview/pr-9/assets/index-CtNF2Qq9.css">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      let allExpanded = false;
+      const collapsibleIdJoiner = '-collapsible-';
+      const expandAllBtnId = 'expand-all-btn';
+      
+      window.toggleCollapsible = function(id) {
+        const content = document.getElementById(id);
+        const icon = document.getElementById(id + '-icon');
+        
+        if (content.classList.contains('hidden')) {
+          content.classList.remove('hidden');
+          icon.textContent = '▼';
+        } else {
+          content.classList.add('hidden');
+          icon.textContent = '▶';
+        }
+        
+        // Update the expand all button state
+        updateExpandAllButton();
+      };
+      
+      window.toggleAllCollapsibles = function(type) {
+        const expandAllBtn = document.getElementById(expandAllBtnId);
+        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
+        
+        if (allExpanded) {
+          // Collapse all
+          elements.forEach(element => {
+            const elementId = element.id;
+            const icon = document.getElementById(elementId + '-icon');
+            element.classList.add('hidden');
+            icon.textContent = '▶';
+          });
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        } else {
+          // Expand all
+          elements.forEach(element => {
+            const elementId = element.id;
+            const icon = document.getElementById(elementId + '-icon');
+            element.classList.remove('hidden');
+            icon.textContent = '▼';
+          });
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        }
+      };
+
+      function updateExpandAllButton(type) {
+        const expandAllBtn = document.getElementById(expandAllBtnId);
+        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
+        let expandedCount = 0;
+        
+        elements.forEach(element => {
+          if (!element.classList.contains('hidden')) {
+            expandedCount++;
+          }
+        });
+        
+        if (expandedCount === elements.length) {
+          allExpanded = true;
+          expandAllBtn.textContent = 'Collapse All';
+        } else {
+          allExpanded = false;
+          expandAllBtn.textContent = 'Expand All';
+        }
+      }
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('PWA: Service worker registered', registration.scope);
+              // Check for updates every 60s and on focus
+              setInterval(() => registration.update(), 60000);
+              document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) registration.update();
+              });
+              // Ask SW to check build version
+              if (registration.active) {
+                registration.active.postMessage('CHECK_VERSION');
+              }
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'activated') {
+                    newWorker.postMessage('CHECK_VERSION');
+                  }
+                });
+              });
+            })
+            .catch((error) => {
+              console.log('PWA: Service worker registration failed', error);
+            });
+        });
+        // Listen for new version message from SW
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'NEW_VERSION') {
+            console.log('New version detected, reloading...');
+            window.location.reload();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
