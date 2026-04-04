@@ -4,19 +4,21 @@ import { guiTheme } from '../../config/gui-theme.config';
 
 const GRID_SIZE = 20;
 const TICK_MS = 120;
-const TRIGGER_WORD = 'snake';
+const SWIPE_THRESHOLD = 30;
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 type Point = { x: number; y: number };
 
-export default function SnakeGame() {
-  const [active, setActive] = useState(false);
+interface SnakeGameProps {
+  active: boolean;
+  onClose: () => void;
+}
+
+export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const bufferRef = useRef('');
 
-  // Direction refs to avoid stale closures in game loop
   const dirRef = useRef<Direction>('RIGHT');
   const nextDirRef = useRef<Direction>('RIGHT');
   const snakeRef = useRef<Point[]>([]);
@@ -24,30 +26,14 @@ export default function SnakeGame() {
   const scoreRef = useRef(0);
   const gameOverRef = useRef(false);
   const tickRef = useRef<ReturnType<typeof setInterval>>();
-
-  // Listen for "snake" typed anywhere
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (active) return;
-
-      bufferRef.current += e.key.toLowerCase();
-      if (bufferRef.current.length > 10) bufferRef.current = bufferRef.current.slice(-10);
-      if (bufferRef.current.endsWith(TRIGGER_WORD)) {
-        setActive(true);
-        bufferRef.current = '';
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [active]);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const close = useCallback(() => {
-    setActive(false);
     setScore(0);
     setGameOver(false);
     if (tickRef.current) clearInterval(tickRef.current);
-  }, []);
+    onClose();
+  }, [onClose]);
 
   const placeFood = useCallback((snake: Point[], cols: number, rows: number): Point => {
     let food: Point;
@@ -57,13 +43,21 @@ export default function SnakeGame() {
     return food;
   }, []);
 
+  const applyDirection = useCallback((newDir: Direction) => {
+    const dir = dirRef.current;
+    if (newDir === 'UP' && dir !== 'DOWN') nextDirRef.current = 'UP';
+    if (newDir === 'DOWN' && dir !== 'UP') nextDirRef.current = 'DOWN';
+    if (newDir === 'LEFT' && dir !== 'RIGHT') nextDirRef.current = 'LEFT';
+    if (newDir === 'RIGHT' && dir !== 'LEFT') nextDirRef.current = 'RIGHT';
+  }, []);
+
   const startGame = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.7, 600);
+    const size = Math.min(window.innerWidth * 0.85, window.innerHeight * 0.65, 600);
     const dpr = window.devicePixelRatio || 1;
     canvas.width = size * dpr;
     canvas.height = size * dpr;
@@ -76,7 +70,6 @@ export default function SnakeGame() {
     const rows = GRID_SIZE;
     const [r, g, b] = guiTheme.accentRgb;
 
-    // Init snake
     const startSnake: Point[] = [
       { x: 5, y: Math.floor(rows / 2) },
       { x: 4, y: Math.floor(rows / 2) },
@@ -94,8 +87,6 @@ export default function SnakeGame() {
     function drawGrid() {
       ctx!.fillStyle = '#000';
       ctx!.fillRect(0, 0, size, size);
-
-      // Faint grid lines
       ctx!.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.05)`;
       ctx!.lineWidth = 0.5;
       for (let i = 0; i <= cols; i++) {
@@ -118,19 +109,13 @@ export default function SnakeGame() {
         const seg = snake[i];
         const alpha = 1 - (i / snake.length) * 0.5;
         if (i === 0) {
-          // Head glow
           ctx!.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
           ctx!.shadowBlur = 8;
         } else {
           ctx!.shadowBlur = 0;
         }
         ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        ctx!.fillRect(
-          seg.x * cellSize + 1,
-          seg.y * cellSize + 1,
-          cellSize - 2,
-          cellSize - 2,
-        );
+        ctx!.fillRect(seg.x * cellSize + 1, seg.y * cellSize + 1, cellSize - 2, cellSize - 2);
       }
       ctx!.shadowBlur = 0;
     }
@@ -141,21 +126,14 @@ export default function SnakeGame() {
       const cy = food.y * cellSize + cellSize / 2;
       const pulse = Math.sin(Date.now() / 200) * 0.15 + 0.85;
 
-      // Glow
       const grad = ctx!.createRadialGradient(cx, cy, 0, cx, cy, cellSize);
       grad.addColorStop(0, `rgba(255, 50, 50, ${0.3 * pulse})`);
       grad.addColorStop(1, 'transparent');
       ctx!.fillStyle = grad;
       ctx!.fillRect(food.x * cellSize - cellSize / 2, food.y * cellSize - cellSize / 2, cellSize * 2, cellSize * 2);
 
-      // Food body
       ctx!.fillStyle = `rgba(255, 80, 80, ${pulse})`;
-      ctx!.fillRect(
-        food.x * cellSize + 3,
-        food.y * cellSize + 3,
-        cellSize - 6,
-        cellSize - 6,
-      );
+      ctx!.fillRect(food.x * cellSize + 3, food.y * cellSize + 3, cellSize - 6, cellSize - 6);
     }
 
     function tick() {
@@ -172,14 +150,12 @@ export default function SnakeGame() {
         case 'RIGHT': head.x++; break;
       }
 
-      // Wall collision
       if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
         gameOverRef.current = true;
         setGameOver(true);
         return;
       }
 
-      // Self collision
       if (snake.some(s => s.x === head.x && s.y === head.y)) {
         gameOverRef.current = true;
         setGameOver(true);
@@ -188,7 +164,6 @@ export default function SnakeGame() {
 
       snake.unshift(head);
 
-      // Eat food
       if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
         scoreRef.current += 10;
         setScore(scoreRef.current);
@@ -205,18 +180,16 @@ export default function SnakeGame() {
       drawSnake();
     }
 
-    // Game loop
     if (tickRef.current) clearInterval(tickRef.current);
     tickRef.current = setInterval(() => {
       tick();
       render();
     }, TICK_MS);
 
-    // Initial render
     render();
   }, [active, placeFood]);
 
-  // Direction keys
+  // Keyboard controls
   useEffect(() => {
     if (!active) return;
 
@@ -228,24 +201,81 @@ export default function SnakeGame() {
         return;
       }
 
-      const dir = dirRef.current;
       switch (e.key) {
-        case 'ArrowUp': if (dir !== 'DOWN') nextDirRef.current = 'UP'; break;
-        case 'ArrowDown': if (dir !== 'UP') nextDirRef.current = 'DOWN'; break;
-        case 'ArrowLeft': if (dir !== 'RIGHT') nextDirRef.current = 'LEFT'; break;
-        case 'ArrowRight': if (dir !== 'LEFT') nextDirRef.current = 'RIGHT'; break;
+        case 'ArrowUp': applyDirection('UP'); break;
+        case 'ArrowDown': applyDirection('DOWN'); break;
+        case 'ArrowLeft': applyDirection('LEFT'); break;
+        case 'ArrowRight': applyDirection('RIGHT'); break;
       }
       e.preventDefault();
     };
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [active, close, startGame]);
+  }, [active, close, startGame, applyDirection]);
+
+  // Swipe controls on canvas
+  useEffect(() => {
+    if (!active) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      touchStartRef.current = { x: t.clientX, y: t.clientY };
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault(); // Prevent page scroll while playing
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      if (!touchStartRef.current) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchStartRef.current.x;
+      const dy = t.clientY - touchStartRef.current.y;
+      touchStartRef.current = null;
+
+      const ax = Math.abs(dx);
+      const ay = Math.abs(dy);
+
+      if (Math.max(ax, ay) < SWIPE_THRESHOLD) {
+        // Tap — on game over, restart
+        if (gameOverRef.current) startGame();
+        return;
+      }
+
+      if (gameOverRef.current) return;
+
+      if (ax > ay) {
+        applyDirection(dx > 0 ? 'RIGHT' : 'LEFT');
+      } else {
+        applyDirection(dy > 0 ? 'DOWN' : 'UP');
+      }
+    };
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove', onTouchMove);
+      canvas.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [active, startGame, applyDirection]);
 
   // Start game when activated
   useEffect(() => {
     if (active) startGame();
+    return () => {
+      if (tickRef.current) clearInterval(tickRef.current);
+    };
   }, [active, startGame]);
+
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   return (
     <AnimatePresence>
@@ -258,14 +288,14 @@ export default function SnakeGame() {
           transition={{ duration: 0.3 }}
         >
           {/* Header */}
-          <div className="flex items-center gap-8 mb-4 font-mono text-sm">
+          <div className="flex items-center gap-6 sm:gap-8 mb-4 font-mono text-sm">
             <span className="text-green-400">SNAKE</span>
             <span className="text-white">SCORE: {score}</span>
             <button
               onClick={close}
               className="text-zinc-500 hover:text-red-400 transition-colors"
             >
-              [ESC] CLOSE
+              CLOSE
             </button>
           </div>
 
@@ -287,20 +317,22 @@ export default function SnakeGame() {
                     onClick={startGame}
                     className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
                   >
-                    [ENTER] RETRY
+                    {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
                   </button>
                   <button
                     onClick={close}
                     className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white transition-colors"
                   >
-                    [ESC] QUIT
+                    QUIT
                   </button>
                 </div>
               </motion.div>
             )}
           </div>
 
-          <p className="text-zinc-600 font-mono text-xs mt-4">Arrow keys to move</p>
+          <p className="text-zinc-600 font-mono text-xs mt-4">
+            {isTouchDevice ? 'Swipe to move · Tap to retry' : 'Arrow keys to move'}
+          </p>
         </motion.div>
       )}
     </AnimatePresence>
