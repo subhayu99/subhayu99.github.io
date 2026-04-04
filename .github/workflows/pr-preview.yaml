@@ -1,19 +1,15 @@
 # ====================================================================
 # PR Preview Deployment
 # ====================================================================
-# Deploys a live preview site for every pull request so reviewers can
-# test changes before merging.
+# Deploys a live preview of every PR to GitHub Pages so reviewers
+# can test changes before merging.
 #
-# SETUP REQUIRED:
-#   1. Install surge CLI locally:  npm install -g surge
-#   2. Create an account:          surge login
-#   3. Get your token:             surge token
-#   4. Add repository secret:      Settings > Secrets > SURGE_TOKEN
+# NO SETUP REQUIRED - uses GitHub Pages via the gh-pages branch.
 #
-# Each PR gets its own unique URL:
-#   https://subhayu99-github-io-pr-<number>.surge.sh
+# Each PR gets its own URL:
+#   https://subhayu99.github.io/pr-preview/pr-<number>/
 #
-# The preview is automatically torn down when the PR is closed/merged.
+# Previews are automatically cleaned up when PRs are closed/merged.
 # ====================================================================
 
 name: PR Preview
@@ -23,38 +19,44 @@ on:
     types: [opened, synchronize, reopened, closed]
     branches: [main, personal]
 
-permissions:
-  contents: read
-  pull-requests: write
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  deploy-preview:
-    name: "Deploy Preview"
-    if: github.event.action != 'closed'
+  preview:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js 20
+        if: github.event.action != 'closed'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Setup Python 3.11
+        if: github.event.action != 'closed'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install RenderCV
+        if: github.event.action != 'closed'
         run: pip install "rendercv[full]"
 
       - name: Install npm dependencies
+        if: github.event.action != 'closed'
         run: npm ci
 
       - name: Setup template files (if needed)
+        if: github.event.action != 'closed'
         run: |
           if [ ! -f "resume.yaml" ]; then
             echo "No resume.yaml found - using example resume"
@@ -69,107 +71,22 @@ jobs:
             cp client/public/data/neofetch-small.txt.example client/public/data/neofetch-small.txt
           fi
 
-      - name: Build application
+      - name: Build preview
+        if: github.event.action != 'closed'
         run: npm run build
         env:
-          VITE_BASE_PATH: "/"
+          VITE_BASE_PATH: "/pr-preview/pr-${{ github.event.pull_request.number }}/"
 
-      - name: Deploy preview to Surge
-        id: deploy
+      - name: Prepare dist for GitHub Pages
+        if: github.event.action != 'closed'
         run: |
-          PREVIEW_URL="https://subhayu99-github-io-pr-${{ github.event.number }}.surge.sh"
-          npx surge ./dist/public "${PREVIEW_URL}" --token ${{ secrets.SURGE_TOKEN }}
-          echo "url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+          # SPA fallback - GitHub Pages serves 404.html for unknown paths
+          cp dist/public/index.html dist/public/404.html
 
-      - name: Comment on PR with preview URL
-        uses: actions/github-script@v7
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
         with:
-          script: |
-            const previewUrl = '${{ steps.deploy.outputs.url }}';
-            const body = `### Preview Deployment
-
-            | Status | URL |
-            |--------|-----|
-            | :white_check_mark: Deployed | [${previewUrl}](${previewUrl}) |
-
-            Built from commit ${{ github.event.pull_request.head.sha }}.
-            _This preview will be removed when the PR is closed._`;
-
-            // Check for existing preview comment to update
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('### Preview Deployment')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
-
-  cleanup-preview:
-    name: "Cleanup Preview"
-    if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Teardown Surge preview
-        run: |
-          PREVIEW_URL="https://subhayu99-github-io-pr-${{ github.event.number }}.surge.sh"
-          npx surge teardown "${PREVIEW_URL}" --token ${{ secrets.SURGE_TOKEN }}
-
-      - name: Comment cleanup notice
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const merged = ${{ github.event.pull_request.merged }};
-            const status = merged ? 'merged' : 'closed';
-
-            const body = `### Preview Deployment
-
-            | Status | URL |
-            |--------|-----|
-            | :no_entry_sign: Removed | PR was ${status} |
-
-            _Preview has been torn down._`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('### Preview Deployment')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+          source-dir: dist/public/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
