@@ -178,6 +178,7 @@ function getPositionAt(path: PathData, progress: number) {
 function MobileBall() {
   const { scrollYProgress } = useScroll();
   const [visible, setVisible] = useState(false);
+  const [rainPhase, setRainPhase] = useState<'inactive' | 'warning' | 'active'>('inactive');
 
   const rawY = useTransform(scrollYProgress, [0, 1], [6, 94]);
   const springY = useSpring(rawY, { stiffness: 60, damping: 16, mass: 0.5 });
@@ -187,6 +188,18 @@ function MobileBall() {
     setVisible(v > 0.02 && v < 0.99);
   });
 
+  // Listen for matrix rain phases
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const phase = (e as CustomEvent).detail?.phase;
+      if (phase) setRainPhase(phase);
+    };
+    window.addEventListener('matrix-rain', handler);
+    return () => window.removeEventListener('matrix-rain', handler);
+  }, []);
+
+  const ballHidden = rainPhase === 'active';
+
   return (
     <AnimatePresence>
       {visible && (
@@ -194,19 +207,30 @@ function MobileBall() {
           {/* Track line */}
           <div className="fixed right-2 top-[6vh] bottom-[6vh] w-px bg-gui-accent/10 z-[2] pointer-events-none" />
 
-          {/* Ball */}
+          {/* Ball — warning glow then explode */}
           <motion.div
             className="fixed right-[5px] z-[3] pointer-events-none"
             style={{ top }}
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
+            animate={ballHidden
+              ? { opacity: [0.6, 0.3, 0], scale: [1, 60, 100] }
+              : { opacity: 1, scale: 1 }
+            }
+            transition={ballHidden
+              ? { duration: 1.2, ease: 'easeOut', times: [0, 0.4, 1] }
+              : { duration: 0.5 }
+            }
           >
             <div
               className="w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2"
               style={{
-                background: `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.3)} 70%, transparent 100%)`,
-                boxShadow: `0 0 10px ${accentRgba(0.3)}`,
+                background: rainPhase === 'warning'
+                  ? `radial-gradient(circle, rgba(0,255,100,0.9) 0%, ${accentRgba(0.6)} 50%, transparent 100%)`
+                  : `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.3)} 70%, transparent 100%)`,
+                boxShadow: rainPhase === 'warning'
+                  ? `0 0 30px rgba(0,255,100,0.6), 0 0 60px rgba(0,255,100,0.3)`
+                  : `0 0 10px ${accentRgba(0.3)}`,
+                transition: 'background 0.5s, box-shadow 0.5s',
               }}
             />
           </motion.div>
@@ -228,6 +252,17 @@ function DesktopBall() {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [score, setScore] = useState(0);
   const [pulse, setPulse] = useState(false);
+  const [rainPhase, setRainPhase] = useState<'inactive' | 'warning' | 'active'>('inactive');
+
+  // Listen for matrix rain phases
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const phase = (e as CustomEvent).detail?.phase;
+      if (phase) setRainPhase(phase);
+    };
+    window.addEventListener('matrix-rain', handler);
+    return () => window.removeEventListener('matrix-rain', handler);
+  }, []);
   const [magnetized, setMagnetized] = useState(false);
   const pathRef = useRef(path);
   const scrollTimerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -427,32 +462,50 @@ function DesktopBall() {
             className="fixed z-[3] pointer-events-none"
             style={{ left, top }}
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={rainPhase === 'active'
+              ? { opacity: [0.6, 0.3, 0], scale: [1, 60, 100] } // soft explosion — dims as it expands
+              : { opacity: 1, scale: 1 }
+            }
             exit={{ opacity: 0, scale: 0 }}
+            transition={rainPhase === 'active'
+              ? { duration: 1.2, ease: 'easeOut', times: [0, 0.4, 1] }
+              : { duration: 0.5 }
+            }
           >
             <motion.div
               className="rounded-full -translate-x-1/2 -translate-y-1/2"
               style={{
                 width: 14,
                 height: 14,
-                background: `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.4)} 60%, transparent 100%)`,
-                boxShadow: pulse
-                  ? `0 0 30px ${accentRgba(0.6)}, 0 0 60px ${accentRgba(0.2)}`
-                  : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
+                transition: 'background 0.5s, box-shadow 0.5s',
+                background: rainPhase === 'warning'
+                  ? `radial-gradient(circle, rgba(0,255,100,0.9) 0%, ${accentRgba(0.5)} 50%, transparent 100%)`
+                  : `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.4)} 60%, transparent 100%)`,
+                boxShadow: rainPhase === 'warning'
+                  ? `0 0 40px rgba(0,255,100,0.7), 0 0 80px rgba(0,255,100,0.3)`
+                  : pulse
+                    ? `0 0 30px ${accentRgba(0.6)}, 0 0 60px ${accentRgba(0.2)}`
+                    : magnetized
+                      ? `0 0 24px ${accentRgba(0.6)}, 0 0 48px ${accentRgba(0.25)}, 0 0 8px ${accentRgba(0.7)}`
+                      : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
               }}
               animate={
-                pulse
-                  ? { scale: [1, 1.8, 1] }
-                  : isScrolling
-                    ? { scale: [1, 1.1, 1] }
-                    : { y: [0, -6, 0], scale: [1, 1.15, 1] }
+                rainPhase === 'warning'
+                  ? { scale: [1, 1.5, 1] } // pulsing glow warning
+                  : pulse
+                    ? { scale: [1, 1.8, 1] }
+                    : isScrolling
+                      ? { scale: [1, 1.1, 1] }
+                      : { y: [0, -6, 0], scale: [1, 1.15, 1] }
               }
               transition={
-                pulse
-                  ? { scale: { duration: 0.3 } }
-                  : isScrolling
-                    ? { scale: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }
-                    : { y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } }
+                rainPhase === 'warning'
+                  ? { scale: { duration: 0.8, repeat: Infinity, ease: 'easeInOut' } }
+                  : pulse
+                    ? { scale: { duration: 0.3 } }
+                    : isScrolling
+                      ? { scale: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }
+                      : { y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } }
               }
             />
           </motion.div>

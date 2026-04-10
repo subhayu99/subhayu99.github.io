@@ -5,6 +5,7 @@ const KATAKANA = 'アイウエオカキクケコサシスセソタチツテト�
 const DIGITS = '0123456789';
 const CHARS = (KATAKANA + DIGITS + '@#$%&').split('');
 const IDLE_MS = 8000;
+const WARN_MS = 7000; // 1s before idle — ball starts glowing
 const FADE_IN_MS = 1000;
 const FADE_OUT_MS = 500;
 const COL_WIDTH = 22;
@@ -17,8 +18,8 @@ export default function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // Skip on touch/small viewports
-    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return;
+    // Use fewer columns on small screens for performance
+    const isMobile = window.innerWidth < 768;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -27,6 +28,7 @@ export default function MatrixRain() {
 
     let w = 0;
     let h = 0;
+    let colWidth = isMobile ? COL_WIDTH * 2 : COL_WIDTH;
     let columns: { y: number; speed: number; charTimer: number; charInterval: number }[] = [];
     let isIdle = false;
     let opacity = 0;
@@ -48,7 +50,8 @@ export default function MatrixRain() {
       canvas!.style.height = `${h}px`;
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const numCols = Math.ceil(w / COL_WIDTH);
+      const colWidth = isMobile ? COL_WIDTH * 2 : COL_WIDTH; // fewer columns on mobile
+      const numCols = Math.ceil(w / colWidth);
       columns = Array.from({ length: numCols }, () => ({
         y: Math.random() * h,
         speed: 40 + Math.random() * 80,
@@ -57,10 +60,24 @@ export default function MatrixRain() {
       }));
     }
 
+    let warnTimer: ReturnType<typeof setTimeout>;
+
     function resetIdle() {
       clearTimeout(idleTimer);
-      isIdle = false;
-      idleTimer = setTimeout(() => { isIdle = true; }, IDLE_MS);
+      clearTimeout(warnTimer);
+      if (isIdle) {
+        isIdle = false;
+        window.dispatchEvent(new CustomEvent('matrix-rain', { detail: { phase: 'inactive' } }));
+      }
+      // Warning phase — ball starts glowing
+      warnTimer = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('matrix-rain', { detail: { phase: 'warning' } }));
+      }, WARN_MS);
+      // Active phase — ball explodes, rain starts
+      idleTimer = setTimeout(() => {
+        isIdle = true;
+        window.dispatchEvent(new CustomEvent('matrix-rain', { detail: { phase: 'active' } }));
+      }, IDLE_MS);
     }
 
     function draw(now: number) {
@@ -88,7 +105,7 @@ export default function MatrixRain() {
 
         col.charTimer += dt * 1000;
 
-        const colX = i * COL_WIDTH + COL_WIDTH / 2;
+        const colX = i * colWidth + colWidth / 2;
 
         // Distance from mouse — dissolve effect
         let distFade = 1;
@@ -142,6 +159,7 @@ export default function MatrixRain() {
     return () => {
       cancelAnimationFrame(rafId);
       clearTimeout(idleTimer);
+      clearTimeout(warnTimer);
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('scroll', onActivity);
