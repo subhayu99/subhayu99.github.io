@@ -37,6 +37,8 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const rafRef = useRef<number>(0);
   const lastTickRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const lastInputRef = useRef(0);
+  const [autopilot, setAutopilot] = useState(false);
   const splashCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const exitFullscreen = useCallback(() => {
@@ -82,6 +84,8 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     if (newDir === 'DOWN' && dir !== 'UP') nextDirRef.current = 'DOWN';
     if (newDir === 'LEFT' && dir !== 'RIGHT') nextDirRef.current = 'LEFT';
     if (newDir === 'RIGHT' && dir !== 'LEFT') nextDirRef.current = 'RIGHT';
+    lastInputRef.current = Date.now();
+    setAutopilot(false);
   }, []);
 
   const startGame = useCallback(() => {
@@ -119,8 +123,10 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     foodRef.current = placeFood(startSnake, cols, rows);
     scoreRef.current = 0;
     gameOverRef.current = false;
+    lastInputRef.current = Date.now();
     setScore(0);
     setGameOver(false);
+    setAutopilot(false);
 
     function drawGrid() {
       ctx!.fillStyle = '#000';
@@ -174,11 +180,42 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       ctx!.fillRect(food.x * cellSize + 3, food.y * cellSize + 3, cellSize - 6, cellSize - 6);
     }
 
+    const AUTOPILOT_MS = 6000;
+    const ALL_DIRS: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+    const OPP: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+    const DELTA: Record<Direction, Point> = { UP: { x: 0, y: -1 }, DOWN: { x: 0, y: 1 }, LEFT: { x: -1, y: 0 }, RIGHT: { x: 1, y: 0 } };
+
     function tick() {
       if (gameOverRef.current) return;
 
-      dirRef.current = nextDirRef.current;
       const snake = snakeRef.current;
+      const isIdle = lastInputRef.current > 0 && Date.now() - lastInputRef.current > AUTOPILOT_MS;
+
+      // Auto-pilot: AI steers after idle, doesn't count score
+      if (isIdle) {
+        setAutopilot(true);
+        const head = snake[0];
+        const food = foodRef.current;
+        const curDir = nextDirRef.current;
+
+        const candidates = ALL_DIRS
+          .filter(d => d !== OPP[curDir])
+          .map(d => {
+            const nx = (head.x + DELTA[d].x + cols) % cols;
+            const ny = (head.y + DELTA[d].y + rows) % rows;
+            const safe = !snake.some(s => s.x === nx && s.y === ny);
+            const dist = Math.abs(nx - food.x) + Math.abs(ny - food.y);
+            return { d, safe, dist };
+          })
+          .filter(c => c.safe)
+          .sort((a, b) => a.dist - b.dist);
+
+        if (candidates.length > 0) {
+          nextDirRef.current = Math.random() < 0.7 ? candidates[0].d : candidates[Math.floor(Math.random() * candidates.length)].d;
+        }
+      }
+
+      dirRef.current = nextDirRef.current;
       const head = { ...snake[0] };
 
       switch (dirRef.current) {
@@ -195,9 +232,19 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       else if (head.y >= rows) head.y = 0;
 
       if (snake.some(s => s.x === head.x && s.y === head.y)) {
+        if (isIdle) {
+          // Auto-pilot collision — silently reset instead of game over
+          snakeRef.current = [
+            { x: 5, y: Math.floor(rows / 2) },
+            { x: 4, y: Math.floor(rows / 2) },
+            { x: 3, y: Math.floor(rows / 2) },
+          ];
+          dirRef.current = 'RIGHT';
+          nextDirRef.current = 'RIGHT';
+          return;
+        }
         gameOverRef.current = true;
         setGameOver(true);
-        // Save high score
         if (scoreRef.current > (parseInt(localStorage.getItem(LS_KEY) || '0', 10))) {
           localStorage.setItem(LS_KEY, String(scoreRef.current));
           setHighScore(scoreRef.current);
@@ -208,8 +255,11 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       snake.unshift(head);
 
       if (head.x === foodRef.current.x && head.y === foodRef.current.y) {
-        scoreRef.current += 10;
-        setScore(scoreRef.current);
+        if (!isIdle) {
+          // Only count score during player control
+          scoreRef.current += 10;
+          setScore(scoreRef.current);
+        }
         foodRef.current = placeFood(snake, cols, rows);
       } else {
         snake.pop();
@@ -589,6 +639,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                   <span className="text-green-400">SNAKE</span>
                   <span className="text-white">SCORE: {score}</span>
                   {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
+                  {autopilot && <span className="text-yellow-400/60 animate-pulse">AUTO</span>}
                 </div>
                 <button
                   onClick={close}
