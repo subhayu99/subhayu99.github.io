@@ -6,26 +6,8 @@ const GRID_SIZE = 20;
 const TICK_MS = 100;
 const SWIPE_THRESHOLD = 30;
 
-type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT' | 'UP_LEFT' | 'UP_RIGHT' | 'DOWN_LEFT' | 'DOWN_RIGHT';
+type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 type Point = { x: number; y: number };
-
-const DIR_DELTA: Record<Direction, Point> = {
-  UP: { x: 0, y: -1 },
-  DOWN: { x: 0, y: 1 },
-  LEFT: { x: -1, y: 0 },
-  RIGHT: { x: 1, y: 0 },
-  UP_LEFT: { x: -1, y: -1 },
-  UP_RIGHT: { x: 1, y: -1 },
-  DOWN_LEFT: { x: -1, y: 1 },
-  DOWN_RIGHT: { x: 1, y: 1 },
-};
-
-// Opposite directions — can't reverse into yourself
-const OPPOSITE: Partial<Record<Direction, Direction>> = {
-  UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT',
-  UP_LEFT: 'DOWN_RIGHT', DOWN_RIGHT: 'UP_LEFT',
-  UP_RIGHT: 'DOWN_LEFT', DOWN_LEFT: 'UP_RIGHT',
-};
 
 interface SnakeGameProps {
   active: boolean;
@@ -52,6 +34,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     setScore(0);
     setGameOver(false);
     if (tickRef.current) clearInterval(tickRef.current);
+    cancelAnimationFrame(rafRef.current);
     onClose();
   }, [onClose]);
 
@@ -63,29 +46,13 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return food;
   }, []);
 
-  const [orientationLocked, setOrientationLocked] = useState(false);
-
   const applyDirection = useCallback((newDir: Direction) => {
     const dir = dirRef.current;
-    if (OPPOSITE[newDir] !== dir) {
-      nextDirRef.current = newDir;
-    }
+    if (newDir === 'UP' && dir !== 'DOWN') nextDirRef.current = 'UP';
+    if (newDir === 'DOWN' && dir !== 'UP') nextDirRef.current = 'DOWN';
+    if (newDir === 'LEFT' && dir !== 'RIGHT') nextDirRef.current = 'LEFT';
+    if (newDir === 'RIGHT' && dir !== 'LEFT') nextDirRef.current = 'RIGHT';
   }, []);
-
-  const toggleOrientationLock = useCallback(async () => {
-    try {
-      if (orientationLocked) {
-        screen.orientation?.unlock?.();
-        setOrientationLocked(false);
-      } else {
-        await (screen.orientation as any)?.lock?.('portrait');
-        setOrientationLocked(true);
-      }
-    } catch {
-      // Orientation lock not supported or requires fullscreen
-      setOrientationLocked(false);
-    }
-  }, [orientationLocked]);
 
   const startGame = useCallback(() => {
     const canvas = canvasRef.current;
@@ -178,9 +145,13 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       dirRef.current = nextDirRef.current;
       const snake = snakeRef.current;
       const head = { ...snake[0] };
-      const delta = DIR_DELTA[dirRef.current];
-      head.x += delta.x;
-      head.y += delta.y;
+
+      switch (dirRef.current) {
+        case 'UP': head.y--; break;
+        case 'DOWN': head.y++; break;
+        case 'LEFT': head.x--; break;
+        case 'RIGHT': head.x++; break;
+      }
 
       // Wrap around edges
       if (head.x < 0) head.x = cols - 1;
@@ -205,8 +176,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       }
     }
 
-    // Decouple tick (game logic) from render (visual) for smooth animation
-    // Tick runs at TICK_MS intervals, render runs at 60fps with interpolation
+    // 60fps render loop decoupled from game tick
     let prevSnakeHead: Point | null = null;
 
     function render() {
@@ -214,16 +184,18 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       drawGrid();
       drawFood();
 
-      // Smooth interpolation: lerp snake head between prev and current position
       const snake = snakeRef.current;
       if (snake.length > 0 && prevSnakeHead) {
         const elapsed = Date.now() - lastTickRef.current;
         const t = Math.min(elapsed / TICK_MS, 1);
         const head = snake[0];
-        const interpX = prevSnakeHead.x + (head.x - prevSnakeHead.x) * t;
-        const interpY = prevSnakeHead.y + (head.y - prevSnakeHead.y) * t;
 
-        // Draw body normally
+        // Skip interpolation on edge wraps (distance > 2 cells = wrapping)
+        const dx = Math.abs(head.x - prevSnakeHead.x);
+        const dy = Math.abs(head.y - prevSnakeHead.y);
+        const isWrapping = dx > 2 || dy > 2;
+
+        // Draw body
         for (let i = 1; i < snake.length; i++) {
           const seg = snake[i];
           const alpha = 1 - (i / snake.length) * 0.5;
@@ -231,11 +203,15 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
           ctx!.fillRect(seg.x * cellSize + 1, seg.y * cellSize + 1, cellSize - 2, cellSize - 2);
         }
-        // Draw head interpolated
+
+        // Draw head — interpolated unless wrapping
+        const drawX = isWrapping ? head.x : prevSnakeHead.x + (head.x - prevSnakeHead.x) * t;
+        const drawY = isWrapping ? head.y : prevSnakeHead.y + (head.y - prevSnakeHead.y) * t;
+
         ctx!.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
         ctx!.shadowBlur = 8;
         ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
-        ctx!.fillRect(interpX * cellSize + 1, interpY * cellSize + 1, cellSize - 2, cellSize - 2);
+        ctx!.fillRect(drawX * cellSize + 1, drawY * cellSize + 1, cellSize - 2, cellSize - 2);
         ctx!.shadowBlur = 0;
       } else {
         drawSnake();
@@ -282,15 +258,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [active, close, startGame, applyDirection]);
 
-  // Unlock orientation on close
-  useEffect(() => {
-    if (!active && orientationLocked) {
-      screen.orientation?.unlock?.();
-      setOrientationLocked(false);
-    }
-  }, [active, orientationLocked]);
-
-  // Gyro controls — tilt phone to steer snake (8 directions)
+  // Gyro controls — tilt phone to steer snake (4 directions)
   // Compensates for screen orientation angle so axes stay correct
   useEffect(() => {
     if (!active) return;
@@ -298,7 +266,6 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     if (!hasMotion) return;
 
     const TILT_DEADZONE = 15;
-    const DIAGONAL_ZONE = 0.6; // ratio threshold — if both axes are within 60% of each other, it's diagonal
     let lastGyroDir: Direction | null = null;
 
     const onOrientation = (e: DeviceOrientationEvent) => {
@@ -319,33 +286,22 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
         beta = -beta;
       }
 
-      // Offset beta by 45° since phone is held at an angle
       const adjustedBeta = beta - 45;
-
       const absGamma = Math.abs(gamma);
       const absBeta = Math.abs(adjustedBeta);
-      const maxTilt = Math.max(absGamma, absBeta);
 
-      if (maxTilt < TILT_DEADZONE) return; // No significant tilt
-
-      // Determine if diagonal: both axes significant and close in magnitude
-      const minTilt = Math.min(absGamma, absBeta);
-      const isDiagonal = minTilt > TILT_DEADZONE && minTilt / maxTilt > DIAGONAL_ZONE;
-
-      let dir: Direction;
-      if (isDiagonal) {
-        const lr = gamma < 0 ? 'LEFT' : 'RIGHT';
-        const ud = adjustedBeta < 0 ? 'UP' : 'DOWN';
-        dir = `${ud}_${lr}` as Direction;
-      } else if (absGamma > absBeta) {
-        dir = gamma < 0 ? 'LEFT' : 'RIGHT';
-      } else {
-        dir = adjustedBeta < 0 ? 'UP' : 'DOWN';
-      }
-
-      if (dir !== lastGyroDir) {
-        applyDirection(dir);
-        lastGyroDir = dir;
+      if (absGamma > absBeta && absGamma > TILT_DEADZONE) {
+        const dir: Direction = gamma < 0 ? 'LEFT' : 'RIGHT';
+        if (dir !== lastGyroDir) {
+          applyDirection(dir);
+          lastGyroDir = dir;
+        }
+      } else if (absBeta > absGamma && absBeta > TILT_DEADZONE) {
+        const dir: Direction = adjustedBeta < 0 ? 'UP' : 'DOWN';
+        if (dir !== lastGyroDir) {
+          applyDirection(dir);
+          lastGyroDir = dir;
+        }
       }
     };
 
@@ -366,7 +322,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      e.preventDefault(); // Prevent page scroll while playing
+      e.preventDefault();
     };
 
     const onTouchEnd = (e: TouchEvent) => {
@@ -381,7 +337,6 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       const ay = Math.abs(dy);
 
       if (Math.max(ax, ay) < SWIPE_THRESHOLD) {
-        // Tap — on game over, restart
         if (gameOverRef.current) startGame();
         return;
       }
@@ -428,21 +383,9 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           transition={{ duration: 0.3 }}
         >
           {/* Header */}
-          <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
+          <div className="flex items-center gap-6 sm:gap-8 mb-4 font-mono text-sm">
             <span className="text-green-400">SNAKE</span>
             <span className="text-white">SCORE: {score}</span>
-            {isTouchDevice && (
-              <button
-                onClick={toggleOrientationLock}
-                className={`px-2 py-1 border text-xs transition-colors ${
-                  orientationLocked
-                    ? 'border-green-500/50 text-green-400 bg-green-500/10'
-                    : 'border-white/20 text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {orientationLocked ? '🔒 LOCKED' : '🔄 LOCK'}
-              </button>
-            )}
             <button
               onClick={close}
               className="text-zinc-500 hover:text-red-400 transition-colors"
