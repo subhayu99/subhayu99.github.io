@@ -99,7 +99,7 @@ export default function EducationSection({ data }: EducationSectionProps) {
             </motion.div>
           );
         })}
-        <span className="secret-text block mt-4 font-mono">// still curious? try typing "snake" anywhere on the page</span>
+        <span className="secret-text block mt-4 font-mono">// still curious? try typing "snake" or "reflex" anywhere on the page</span>
       </div>
     </SectionWrapper>
   );
