@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { loadPortfolioData } from '../../lib/portfolioDataLoader';
 import { loadPyPIStats, type PyPIStatsData } from '../../lib/pypiStats';
 import { apiConfig } from '../../config';
-import { guiTheme, accentHex, accentHoverHex, accentRgbCss } from '../../config/gui-theme.config';
+import { guiTheme, accentHex, accentHoverHex, accentRgbCss, getSavedTheme, applyColorTheme } from '../../config/gui-theme.config';
 import { useGestureTrigger } from '../../hooks/useGestureTrigger';
 import { useIsMobile } from '../../hooks/use-mobile';
 import Navbar from './Navbar';
@@ -79,6 +79,7 @@ export default function GUIPortfolio() {
   }, []);
 
   // Apply GUI theme CSS variables from config (single source of truth)
+  // Restores previously saved color theme on mount
   useEffect(() => {
     const root = document.documentElement.style;
     root.setProperty('--gui-bg', guiTheme.bg);
@@ -89,6 +90,9 @@ export default function GUIPortfolio() {
     root.setProperty('--gui-accent', accentHex);
     root.setProperty('--gui-accent-hover', accentHoverHex);
     root.setProperty('--gui-accent-rgb', accentRgbCss);
+    // Restore saved color theme (overrides defaults above if non-default)
+    const saved = getSavedTheme();
+    if (saved.key !== 'matrix') applyColorTheme(saved);
   }, []);
 
   const { data: portfolioData, isLoading, error } = useQuery({
@@ -176,7 +180,7 @@ export default function GUIPortfolio() {
         <div className="fixed bottom-6 left-4 right-4 z-[90] flex items-center justify-between
                         bg-black/95 border border-green-500/30 px-4 py-3 font-mono text-xs
                         backdrop-blur-sm animate-in slide-in-from-bottom-4">
-          <span className="text-zinc-300">Shake your phone for surprises!</span>
+          <span className="text-zinc-300">Shake to change colors!</span>
           <div className="flex gap-2 ml-3 shrink-0">
             <button
               onClick={handleEnableMotion}

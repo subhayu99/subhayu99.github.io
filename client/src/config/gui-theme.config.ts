@@ -8,6 +8,55 @@
  * The RGB tuple is the canonical form; hex and helpers are derived from it.
  */
 
+export interface ColorTheme {
+  key: string;
+  name: string;
+  accentRgb: readonly [number, number, number];
+  accentHoverRgb: readonly [number, number, number];
+}
+
+export const colorThemes: ColorTheme[] = [
+  { key: 'matrix',  name: 'Matrix Green',   accentRgb: [0, 255, 0],     accentHoverRgb: [0, 200, 0] },
+  { key: 'blue',    name: 'Cyberpunk Blue',  accentRgb: [0, 191, 255],   accentHoverRgb: [0, 150, 200] },
+  { key: 'purple',  name: 'Hacker Purple',   accentRgb: [147, 112, 219], accentHoverRgb: [120, 90, 180] },
+  { key: 'amber',   name: 'Vintage Amber',   accentRgb: [255, 165, 0],   accentHoverRgb: [200, 130, 0] },
+  { key: 'red',     name: 'Red Alert',       accentRgb: [255, 0, 0],     accentHoverRgb: [200, 0, 0] },
+];
+
+/** Apply a color theme to the document by setting all CSS variables */
+export function applyColorTheme(theme: ColorTheme) {
+  const [r, g, b] = theme.accentRgb;
+  const [rh, gh, bh] = theme.accentHoverRgb;
+  const root = document.documentElement.style;
+
+  const hex = (n: number) => n.toString(16).padStart(2, '0');
+
+  // GUI accent variables
+  root.setProperty('--gui-accent', `#${hex(r)}${hex(g)}${hex(b)}`);
+  root.setProperty('--gui-accent-hover', `#${hex(rh)}${hex(gh)}${hex(bh)}`);
+  root.setProperty('--gui-accent-rgb', `${r}, ${g}, ${b}`);
+
+  // Terminal / glow variables
+  root.setProperty('--glow-color-rgb', `${r}, ${g}, ${b}`);
+
+  localStorage.setItem('gui-color-theme', theme.key);
+}
+
+/** Get the saved theme or default to matrix green */
+export function getSavedTheme(): ColorTheme {
+  const saved = localStorage.getItem('gui-color-theme');
+  return colorThemes.find(t => t.key === saved) || colorThemes[0];
+}
+
+/** Cycle to the next theme and apply it, returns the new theme */
+export function cycleTheme(): ColorTheme {
+  const current = getSavedTheme();
+  const idx = colorThemes.findIndex(t => t.key === current.key);
+  const next = colorThemes[(idx + 1) % colorThemes.length];
+  applyColorTheme(next);
+  return next;
+}
+
 export const guiTheme = {
   /** Core accent color as [R, G, B] — everything else derives from this */
   accentRgb: [0, 255, 0] as const,

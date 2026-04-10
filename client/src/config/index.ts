@@ -10,4 +10,5 @@ export { uiText, formatMessage } from './ui.config';
 export { apiConfig, getEndpointUrl, fetchWithTimeout } from './api.config';
 export { socialConfig, getSocialNetworkUrl } from './social.config';
 export { storageConfig, storage } from './storage.config';
-export { guiTheme, accentHex, accentHoverHex, accentRgbStr, accentRgba, accentRgbCss } from './gui-theme.config';
+export { guiTheme, accentHex, accentHoverHex, accentRgbStr, accentRgba, accentRgbCss, colorThemes, applyColorTheme, getSavedTheme, cycleTheme } from './gui-theme.config';
+export type { ColorTheme } from './gui-theme.config';
