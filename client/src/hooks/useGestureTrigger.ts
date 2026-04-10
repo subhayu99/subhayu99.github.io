@@ -9,15 +9,14 @@ const KONAMI_SEQUENCE = [
 const SNAKE_TRIGGER = 'snake';
 
 // Shake detection thresholds
-const SHAKE_THRESHOLD = 15; // m/s² — well above gravity (~9.8)
+const SHAKE_THRESHOLD = 25; // m/s² — needs a real shake, not just hand movement
 const SHAKE_COUNT_KONAMI = 3;
 const SHAKE_WINDOW_MS = 1500;
 const SHAKE_DEBOUNCE_MS = 2000;
 
 // Tilt detection thresholds
 const TILT_ANGLE = 25; // degrees left/right
-const TILT_HOLD_MS = 200; // min hold time per tilt
-const TILT_SEQUENCE: ('left' | 'right')[] = ['left', 'right', 'left', 'right'];
+const TILT_CROSSINGS_NEEDED = 4; // L-R-L-R = 4 direction changes
 const TILT_WINDOW_MS = 3000;
 
 export function useGestureTrigger(motionEnabled = false) {
@@ -71,69 +70,44 @@ export function useGestureTrigger(motionEnabled = false) {
   }, [motionEnabled, konamiActive, snakeActive]);
 
   // ── Tilt sequence detection (Snake) ──
+  // ── Tilt sequence detection (Snake) ──
+  // Tracks direction crossings: each time the phone crosses from left to right
+  // or right to left past the threshold angle, that's one crossing.
+  // L-R-L-R = 4 crossings within the time window.
   useEffect(() => {
     if (!motionEnabled || snakeActive) return;
 
-    type TiltEvent = { dir: 'left' | 'right'; time: number };
-    const tiltEvents: TiltEvent[] = [];
-    let currentTilt: 'left' | 'right' | 'neutral' = 'neutral';
-    let tiltStart = 0;
+    const crossingTimestamps: number[] = [];
+    let lastSide: 'left' | 'right' | 'none' = 'none';
 
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (konamiActive || snakeActive) return;
 
-      const gamma = e.gamma; // left-right tilt in degrees
+      const gamma = e.gamma;
       if (gamma == null) return;
 
-      const now = Date.now();
+      let currentSide: 'left' | 'right' | 'none' = 'none';
+      if (gamma < -TILT_ANGLE) currentSide = 'left';
+      else if (gamma > TILT_ANGLE) currentSide = 'right';
 
-      let newTilt: 'left' | 'right' | 'neutral' = 'neutral';
-      if (gamma < -TILT_ANGLE) newTilt = 'left';
-      else if (gamma > TILT_ANGLE) newTilt = 'right';
+      // Only count when crossing from one side to the other (not from/to neutral)
+      if (currentSide !== 'none' && lastSide !== 'none' && currentSide !== lastSide) {
+        const now = Date.now();
+        crossingTimestamps.push(now);
 
-      if (newTilt !== 'neutral' && newTilt !== currentTilt) {
-        // Started a new tilt direction
-        if (currentTilt !== 'neutral' && now - tiltStart >= TILT_HOLD_MS) {
-          // Record the previous tilt that was held long enough
-          tiltEvents.push({ dir: currentTilt, time: now });
-
-          // Prune old events outside window
-          while (tiltEvents.length > 0 && now - tiltEvents[0].time > TILT_WINDOW_MS) {
-            tiltEvents.shift();
-          }
-
-          // Check if last N events match the sequence
-          if (tiltEvents.length >= TILT_SEQUENCE.length) {
-            const recent = tiltEvents.slice(-TILT_SEQUENCE.length);
-            const matches = TILT_SEQUENCE.every((dir, i) => recent[i].dir === dir);
-            if (matches) {
-              setSnakeActive(true);
-              tiltEvents.length = 0;
-            }
-          }
+        // Prune old crossings outside window
+        while (crossingTimestamps.length > 0 && now - crossingTimestamps[0] > TILT_WINDOW_MS) {
+          crossingTimestamps.shift();
         }
-        currentTilt = newTilt;
-        tiltStart = now;
-      } else if (newTilt === 'neutral' && currentTilt !== 'neutral') {
-        // Returned to neutral — record the tilt if held long enough
-        if (now - tiltStart >= TILT_HOLD_MS) {
-          tiltEvents.push({ dir: currentTilt, time: now });
 
-          while (tiltEvents.length > 0 && now - tiltEvents[0].time > TILT_WINDOW_MS) {
-            tiltEvents.shift();
-          }
-
-          if (tiltEvents.length >= TILT_SEQUENCE.length) {
-            const recent = tiltEvents.slice(-TILT_SEQUENCE.length);
-            const matches = TILT_SEQUENCE.every((dir, i) => recent[i].dir === dir);
-            if (matches) {
-              setSnakeActive(true);
-              tiltEvents.length = 0;
-            }
-          }
+        if (crossingTimestamps.length >= TILT_CROSSINGS_NEEDED) {
+          setSnakeActive(true);
+          crossingTimestamps.length = 0;
         }
-        currentTilt = 'neutral';
-        tiltStart = 0;
+      }
+
+      if (currentSide !== 'none') {
+        lastSide = currentSide;
       }
     };
 
