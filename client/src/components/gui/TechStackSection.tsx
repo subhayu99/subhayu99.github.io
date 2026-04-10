@@ -6,6 +6,43 @@ import SkillConstellation from './SkillConstellation';
 import ScrambleText from './ScrambleText';
 import { useIsMobile } from '../../hooks/use-mobile';
 
+// ── Configurable SVG icons per skill category ──
+// All use currentColor (follows theme). Add new keys matching skill-graph.json group keys.
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  lang: ( // code brackets
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="7,4 3,10 7,16" /><polyline points="13,4 17,10 13,16" /><line x1="11" y1="5" x2="9" y2="15" />
+    </svg>
+  ),
+  data: ( // pipeline split
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="4" cy="10" r="2" /><circle cx="16" cy="5" r="2" /><circle cx="16" cy="15" r="2" />
+      <line x1="6" y1="9" x2="14" y2="5" /><line x1="6" y1="11" x2="14" y2="15" />
+    </svg>
+  ),
+  db: ( // database cylinder
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="10" cy="5" rx="7" ry="3" /><path d="M3,5 v10 c0,1.66 3.13,3 7,3 s7-1.34 7-3 V5" /><ellipse cx="10" cy="10" rx="7" ry="3" />
+    </svg>
+  ),
+  ai: ( // neural hub
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="2.5" /><circle cx="10" cy="3" r="1.5" /><circle cx="16" cy="7" r="1.5" /><circle cx="16" cy="14" r="1.5" /><circle cx="10" cy="17" r="1.5" /><circle cx="4" cy="14" r="1.5" /><circle cx="4" cy="7" r="1.5" />
+      <line x1="10" y1="7.5" x2="10" y2="4.5" /><line x1="12.2" y1="8.2" x2="14.5" y2="7" /><line x1="12.2" y1="11.8" x2="14.5" y2="14" /><line x1="10" y1="12.5" x2="10" y2="15.5" /><line x1="7.8" y1="11.8" x2="5.5" y2="14" /><line x1="7.8" y1="8.2" x2="5.5" y2="7" />
+    </svg>
+  ),
+  cloud: ( // cloud with arrows
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3,13 Q3,7 10,7 Q17,7 17,13" /><line x1="6" y1="13" x2="6" y2="17" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="13" x2="14" y2="17" />
+    </svg>
+  ),
+  app: ( // monitor
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="16" height="11" rx="1.5" /><line x1="2" y1="7" x2="18" y2="7" /><line x1="7" y1="17" x2="13" y2="17" /><line x1="10" y1="14" x2="10" y2="17" />
+    </svg>
+  ),
+};
+
 interface TechStackSectionProps {
   data: PortfolioData;
 }
@@ -116,6 +153,11 @@ export default function TechStackSection({ data }: TechStackSectionProps) {
                   transition={{ duration: 0.4, delay: gi * 0.1 }}
                 >
                   <div className="flex items-center gap-3 mb-4">
+                    {CATEGORY_ICONS[groupKey] && (
+                      <span className="w-[18px] h-[18px] shrink-0 text-gui-accent opacity-70">
+                        {CATEGORY_ICONS[groupKey]}
+                      </span>
+                    )}
                     <span className="text-gui-accent font-mono text-xs tracking-widest uppercase">
                       {group.label}
                     </span>
