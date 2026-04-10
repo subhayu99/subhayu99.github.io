@@ -37,7 +37,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const rafRef = useRef<number>(0);
   const lastTickRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const lastInputRef = useRef(Date.now());
+  const splashCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const exitFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -82,7 +82,6 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     if (newDir === 'DOWN' && dir !== 'UP') nextDirRef.current = 'DOWN';
     if (newDir === 'LEFT' && dir !== 'RIGHT') nextDirRef.current = 'LEFT';
     if (newDir === 'RIGHT' && dir !== 'LEFT') nextDirRef.current = 'RIGHT';
-    lastInputRef.current = Date.now();
   }, []);
 
   const startGame = useCallback(() => {
@@ -175,51 +174,11 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       ctx!.fillRect(food.x * cellSize + 3, food.y * cellSize + 3, cellSize - 6, cellSize - 6);
     }
 
-    const AUTOPILOT_DELAY = 2000; // ms of no input before auto-steering
-    const ALL_DIRS: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
-    const OPPOSITE_DIR: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
-
-    function wrapPos(x: number, y: number): Point {
-      return {
-        x: x < 0 ? cols - 1 : x >= cols ? 0 : x,
-        y: y < 0 ? rows - 1 : y >= rows ? 0 : y,
-      };
-    }
-
-    function deltaFor(d: Direction): Point {
-      switch (d) {
-        case 'UP': return { x: 0, y: -1 };
-        case 'DOWN': return { x: 0, y: 1 };
-        case 'LEFT': return { x: -1, y: 0 };
-        case 'RIGHT': return { x: 1, y: 0 };
-      }
-    }
-
     function tick() {
       if (gameOverRef.current) return;
 
-      const snake = snakeRef.current;
-      const currentDir = nextDirRef.current;
-
-      // Auto-pilot: if no input for 2s, pick a safe random direction
-      if (Date.now() - lastInputRef.current > AUTOPILOT_DELAY) {
-        const head = snake[0];
-        // Shuffle directions, try each — pick first that doesn't collide
-        const candidates = ALL_DIRS
-          .filter(d => d !== OPPOSITE_DIR[currentDir]) // can't reverse
-          .sort(() => Math.random() - 0.5);
-
-        for (const d of candidates) {
-          const delta = deltaFor(d);
-          const next = wrapPos(head.x + delta.x, head.y + delta.y);
-          if (!snake.some(s => s.x === next.x && s.y === next.y)) {
-            nextDirRef.current = d;
-            break;
-          }
-        }
-      }
-
       dirRef.current = nextDirRef.current;
+      const snake = snakeRef.current;
       const head = { ...snake[0] };
 
       switch (dirRef.current) {
@@ -442,6 +401,117 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     };
   }, [active, startGame, applyDirection]);
 
+  // Screensaver — self-playing snake behind the splash screen
+  useEffect(() => {
+    if (!active || started) return;
+    const canvas = splashCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const cell = Math.max(16, Math.floor(Math.min(w, h) / 30));
+    const cols = Math.floor(w / cell);
+    const rows = Math.floor(h / cell);
+    const cw = cols * cell;
+    const ch = rows * cell;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = cw * dpr;
+    canvas.height = ch * dpr;
+    canvas.style.width = `${cw}px`;
+    canvas.style.height = `${ch}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const [r, g, b] = guiTheme.accentRgb;
+    const ALL_DIRS: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+    const OPP: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+    const DELTA: Record<Direction, Point> = { UP: { x: 0, y: -1 }, DOWN: { x: 0, y: 1 }, LEFT: { x: -1, y: 0 }, RIGHT: { x: 1, y: 0 } };
+
+    let snake: Point[] = [
+      { x: 5, y: Math.floor(rows / 2) },
+      { x: 4, y: Math.floor(rows / 2) },
+      { x: 3, y: Math.floor(rows / 2) },
+    ];
+    let dir: Direction = 'RIGHT';
+    let food: Point = { x: Math.floor(cols / 2), y: Math.floor(rows / 3) };
+
+    function aiTick() {
+      const head = snake[0];
+      // Pick a safe direction, prefer toward food
+      const candidates = ALL_DIRS
+        .filter(d => d !== OPP[dir])
+        .map(d => {
+          const nx = (head.x + DELTA[d].x + cols) % cols;
+          const ny = (head.y + DELTA[d].y + rows) % rows;
+          const safe = !snake.some(s => s.x === nx && s.y === ny);
+          const dist = Math.abs(nx - food.x) + Math.abs(ny - food.y);
+          return { d, safe, dist };
+        })
+        .filter(c => c.safe)
+        .sort((a, b) => a.dist - b.dist);
+
+      if (candidates.length > 0) {
+        // 70% pick best, 30% random — so it doesn't look robotic
+        dir = Math.random() < 0.7 ? candidates[0].d : candidates[Math.floor(Math.random() * candidates.length)].d;
+      }
+
+      const newHead = {
+        x: (head.x + DELTA[dir].x + cols) % cols,
+        y: (head.y + DELTA[dir].y + rows) % rows,
+      };
+
+      if (snake.some(s => s.x === newHead.x && s.y === newHead.y)) {
+        // Reset on collision
+        snake = [
+          { x: 5, y: Math.floor(rows / 2) },
+          { x: 4, y: Math.floor(rows / 2) },
+          { x: 3, y: Math.floor(rows / 2) },
+        ];
+        dir = 'RIGHT';
+        return;
+      }
+
+      snake.unshift(newHead);
+      if (newHead.x === food.x && newHead.y === food.y) {
+        let f: Point;
+        do { f = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) }; }
+        while (snake.some(s => s.x === f.x && s.y === f.y));
+        food = f;
+      } else {
+        snake.pop();
+      }
+    }
+
+    function render() {
+      ctx!.fillStyle = '#000';
+      ctx!.fillRect(0, 0, cw, ch);
+
+      // Draw snake at low opacity — it's a background screensaver
+      for (let i = 0; i < snake.length; i++) {
+        const seg = snake[i];
+        const alpha = (1 - (i / snake.length) * 0.6) * 0.25;
+        ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        ctx!.fillRect(seg.x * cell + 1, seg.y * cell + 1, cell - 2, cell - 2);
+      }
+
+      // Food
+      const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.2;
+      ctx!.fillStyle = `rgba(255, 80, 80, ${pulse})`;
+      ctx!.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
+    }
+
+    const tickId = setInterval(aiTick, 120);
+    let rafId: number;
+    const loop = () => { render(); rafId = requestAnimationFrame(loop); };
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      clearInterval(tickId);
+      cancelAnimationFrame(rafId);
+    };
+  }, [active, started]);
+
   // Start game when player taps to play
   useEffect(() => {
     if (active && started) startGame();
@@ -476,9 +546,11 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           transition={{ duration: 0.3 }}
         >
           {!started ? (
-            // Tap-to-play splash — enters fullscreen + locks orientation + starts game
+            // Tap-to-play splash with screensaver background
+            <>
+            <canvas ref={splashCanvasRef} className="absolute inset-0 w-full h-full" />
             <motion.div
-              className="flex flex-col items-center justify-center gap-6 cursor-pointer select-none"
+              className="relative z-10 flex flex-col items-center justify-center gap-6 cursor-pointer select-none"
               onClick={enterAndStart}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -505,6 +577,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                 BACK
               </button>
             </motion.div>
+            </>
           ) : (
             <>
               {/* Canvas — fills entire screen */}
