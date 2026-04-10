@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { guiTheme } from '../../config/gui-theme.config';
 
-const GRID_SIZE = 20;
+const CELL_SIZE_TARGET = 20; // px per cell — grid adapts to screen
 const TICK_MS = 100;
 const SWIPE_THRESHOLD = 30;
 
@@ -89,17 +89,22 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.75);
+    // Use full available screen — compute grid from screen dimensions
+    const w = Math.floor(window.innerWidth * 0.95);
+    const h = Math.floor(window.innerHeight * 0.80);
+    const cellSize = Math.max(CELL_SIZE_TARGET, Math.floor(Math.min(w, h) / 25));
+    const cols = Math.floor(w / cellSize);
+    const rows = Math.floor(h / cellSize);
+    const canvasW = cols * cellSize;
+    const canvasH = rows * cellSize;
+
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
+    canvas.width = canvasW * dpr;
+    canvas.height = canvasH * dpr;
+    canvas.style.width = `${canvasW}px`;
+    canvas.style.height = `${canvasH}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const cellSize = size / GRID_SIZE;
-    const cols = GRID_SIZE;
-    const rows = GRID_SIZE;
     const [r, g, b] = guiTheme.accentRgb;
 
     const startSnake: Point[] = [
@@ -118,19 +123,19 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
 
     function drawGrid() {
       ctx!.fillStyle = '#000';
-      ctx!.fillRect(0, 0, size, size);
+      ctx!.fillRect(0, 0, canvasW, canvasH);
       ctx!.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.05)`;
       ctx!.lineWidth = 0.5;
       for (let i = 0; i <= cols; i++) {
         ctx!.beginPath();
         ctx!.moveTo(i * cellSize, 0);
-        ctx!.lineTo(i * cellSize, size);
+        ctx!.lineTo(i * cellSize, canvasH);
         ctx!.stroke();
       }
       for (let i = 0; i <= rows; i++) {
         ctx!.beginPath();
         ctx!.moveTo(0, i * cellSize);
-        ctx!.lineTo(size, i * cellSize);
+        ctx!.lineTo(canvasW, i * cellSize);
         ctx!.stroke();
       }
     }
