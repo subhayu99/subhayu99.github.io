@@ -1,30 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cycleTheme, type ColorTheme } from '../../config/gui-theme.config';
+import type { ColorTheme } from '../../config/gui-theme.config';
 
 interface Props {
-  active: boolean;
+  theme: ColorTheme | null;
   onClose: () => void;
 }
 
-export default function KonamiEasterEgg({ active, onClose }: Props) {
-  const [theme, setTheme] = useState<ColorTheme | null>(null);
-
+export default function ThemeFlash({ theme, onClose }: Props) {
   useEffect(() => {
-    if (!active) return;
-
-    const next = cycleTheme();
-    setTheme(next);
-
-    const timer = setTimeout(() => {
-      setTheme(null);
-      onClose();
-    }, 1400);
-
+    if (!theme) return;
+    const timer = setTimeout(onClose, 1400);
     return () => clearTimeout(timer);
-  }, [active, onClose]);
+  }, [theme, onClose]);
 
-  const [r, g, b] = theme?.accentRgb ?? [0, 255, 0];
+  const [r, g, b] = theme?.accentRgb ?? [0, 0, 0];
 
   return (
     <AnimatePresence>

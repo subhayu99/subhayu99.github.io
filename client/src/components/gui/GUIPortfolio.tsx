@@ -23,7 +23,7 @@ import MouseSpotlight from './MouseSpotlight';
 import WireframeGrid from './WireframeGrid';
 import MatrixRain from './MatrixRain';
 import CursorTrail from './CursorTrail';
-import KonamiEasterEgg from './KonamiEasterEgg';
+import ThemeFlash from './KonamiEasterEgg';
 import SnakeGame from './SnakeGame';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
@@ -37,7 +37,7 @@ export default function GUIPortfolio() {
     return localStorage.getItem('motionPermission') === 'granted';
   });
   const [showMotionToast, setShowMotionToast] = useState(false);
-  const { konamiActive, snakeActive, resetKonami, resetSnake } = useGestureTrigger(motionEnabled);
+  const { themeFlash, snakeActive, resetThemeFlash, resetSnake } = useGestureTrigger(motionEnabled);
 
   // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
@@ -161,7 +161,7 @@ export default function GUIPortfolio() {
       <MatrixRain />
       <MouseSpotlight />
       <CursorTrail />
-      <KonamiEasterEgg active={konamiActive} onClose={resetKonami} />
+      <ThemeFlash theme={themeFlash} onClose={resetThemeFlash} />
       <SnakeGame active={snakeActive} onClose={resetSnake} />
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
