@@ -73,7 +73,7 @@ export default {
           border: "var(--gui-border)",
           text: "var(--gui-text)",
           "text-muted": "var(--gui-text-muted)",
-          accent: "rgb(var(--gui-accent-rgb) / <alpha-value>)",
+          accent: "rgb(var(--gui-accent-ch) / <alpha-value>)",
           "accent-hover": "var(--gui-accent-hover)",
         },
       },

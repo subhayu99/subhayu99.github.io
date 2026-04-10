@@ -41,6 +41,7 @@
   --gui-accent: #00ff00;
   --gui-accent-hover: #00c800;
   --gui-accent-rgb: 0, 255, 0;
+  --gui-accent-ch: 0 255 0;
 }
 
 /* Hide page scrollbar — amber dot serves as progress indicator */

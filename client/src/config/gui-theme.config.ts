@@ -23,28 +23,58 @@ export const colorThemes: ColorTheme[] = [
   { key: 'red',     name: 'Red Alert',       accentRgb: [255, 0, 0],     accentHoverRgb: [200, 0, 0] },
 ];
 
-/** Apply a color theme to the document by setting all CSS variables */
+/** HSL string for a given hue at full saturation (terminal vars need HSL) */
+function hsl(hue: number, sat: number, light: number) {
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}
+
+/** Approximate hue from RGB */
+function rgbToHue(r: number, g: number, b: number): number {
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  if (max === min) return 0;
+  const d = max - min;
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+  else if (max === g) h = ((b - r) / d + 2) * 60;
+  else h = ((r - g) / d + 4) * 60;
+  return Math.round(h);
+}
+
+/** Apply a color theme to both GUI and terminal by setting all CSS variables */
 export function applyColorTheme(theme: ColorTheme) {
   const [r, g, b] = theme.accentRgb;
   const [rh, gh, bh] = theme.accentHoverRgb;
   const root = document.documentElement.style;
-
   const hex = (n: number) => n.toString(16).padStart(2, '0');
 
   // GUI accent variables
   root.setProperty('--gui-accent', `#${hex(r)}${hex(g)}${hex(b)}`);
   root.setProperty('--gui-accent-hover', `#${hex(rh)}${hex(gh)}${hex(bh)}`);
   root.setProperty('--gui-accent-rgb', `${r}, ${g}, ${b}`);
+  root.setProperty('--gui-accent-ch', `${r} ${g} ${b}`);
 
-  // Terminal / glow variables
+  // Terminal variables — derive HSL from the RGB accent
+  const hue = rgbToHue(r, g, b);
+  const sat = theme.key === 'purple' ? 60 : 100;
+  const light = theme.key === 'purple' ? 65 : 50;
+  root.setProperty('--terminal-green', hsl(hue, sat, light));
+  root.setProperty('--terminal-bright-green', hsl(hue, sat, light + 10));
+  root.setProperty('--border', hsl(hue, sat, 20));
+  root.setProperty('--ring', hsl(hue, sat, light));
+  root.setProperty('--foreground', hsl(hue, sat, light));
+  root.setProperty('--primary', hsl(hue, sat, light));
+  root.setProperty('--accent', hsl(hue, sat, 20));
+  root.setProperty('--input', hsl(hue, sat, 20));
   root.setProperty('--glow-color-rgb', `${r}, ${g}, ${b}`);
 
+  // Sync both localStorage keys so terminal and GUI stay in sync
   localStorage.setItem('gui-color-theme', theme.key);
+  localStorage.setItem('terminal-theme', theme.key);
 }
 
-/** Get the saved theme or default to matrix green */
+/** Get the saved theme or default to matrix green (checks both keys) */
 export function getSavedTheme(): ColorTheme {
-  const saved = localStorage.getItem('gui-color-theme');
+  const saved = localStorage.getItem('gui-color-theme') || localStorage.getItem('terminal-theme');
   return colorThemes.find(t => t.key === saved) || colorThemes[0];
 }
 
