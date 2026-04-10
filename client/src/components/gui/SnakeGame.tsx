@@ -37,6 +37,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const rafRef = useRef<number>(0);
   const lastTickRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const lastInputRef = useRef(Date.now());
 
   const exitFullscreen = useCallback(() => {
     if (document.fullscreenElement) {
@@ -81,6 +82,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     if (newDir === 'DOWN' && dir !== 'UP') nextDirRef.current = 'DOWN';
     if (newDir === 'LEFT' && dir !== 'RIGHT') nextDirRef.current = 'LEFT';
     if (newDir === 'RIGHT' && dir !== 'LEFT') nextDirRef.current = 'RIGHT';
+    lastInputRef.current = Date.now();
   }, []);
 
   const startGame = useCallback(() => {
@@ -173,11 +175,51 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       ctx!.fillRect(food.x * cellSize + 3, food.y * cellSize + 3, cellSize - 6, cellSize - 6);
     }
 
+    const AUTOPILOT_DELAY = 2000; // ms of no input before auto-steering
+    const ALL_DIRS: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+    const OPPOSITE_DIR: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+
+    function wrapPos(x: number, y: number): Point {
+      return {
+        x: x < 0 ? cols - 1 : x >= cols ? 0 : x,
+        y: y < 0 ? rows - 1 : y >= rows ? 0 : y,
+      };
+    }
+
+    function deltaFor(d: Direction): Point {
+      switch (d) {
+        case 'UP': return { x: 0, y: -1 };
+        case 'DOWN': return { x: 0, y: 1 };
+        case 'LEFT': return { x: -1, y: 0 };
+        case 'RIGHT': return { x: 1, y: 0 };
+      }
+    }
+
     function tick() {
       if (gameOverRef.current) return;
 
-      dirRef.current = nextDirRef.current;
       const snake = snakeRef.current;
+      const currentDir = nextDirRef.current;
+
+      // Auto-pilot: if no input for 2s, pick a safe random direction
+      if (Date.now() - lastInputRef.current > AUTOPILOT_DELAY) {
+        const head = snake[0];
+        // Shuffle directions, try each — pick first that doesn't collide
+        const candidates = ALL_DIRS
+          .filter(d => d !== OPPOSITE_DIR[currentDir]) // can't reverse
+          .sort(() => Math.random() - 0.5);
+
+        for (const d of candidates) {
+          const delta = deltaFor(d);
+          const next = wrapPos(head.x + delta.x, head.y + delta.y);
+          if (!snake.some(s => s.x === next.x && s.y === next.y)) {
+            nextDirRef.current = d;
+            break;
+          }
+        }
+      }
+
+      dirRef.current = nextDirRef.current;
       const head = { ...snake[0] };
 
       switch (dirRef.current) {
