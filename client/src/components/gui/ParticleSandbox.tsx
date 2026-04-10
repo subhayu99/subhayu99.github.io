@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { guiTheme } from '../../config/gui-theme.config';
+import { getAccentRgb } from '../../config/gui-theme.config';
 
 interface Particle {
   x: number;
@@ -94,7 +94,7 @@ export default function ParticleSandbox({ gravityOn, explodeTrigger }: ParticleS
       initParticles(w(), h());
     }
 
-    const [r, g, b] = guiTheme.accentRgb;
+    const [r, g, b] = getAccentRgb();
 
     // Mouse/touch handlers
     const getPos = (e: MouseEvent | Touch): { x: number; y: number } => {

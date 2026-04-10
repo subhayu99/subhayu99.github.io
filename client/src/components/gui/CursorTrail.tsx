@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { guiTheme } from '../../config/gui-theme.config';
+import { getAccentRgb } from '../../config/gui-theme.config';
 
 interface Particle {
   x: number;
@@ -43,8 +43,6 @@ export default function CursorTrail() {
     let prevY = -1;
     const particles: Particle[] = [];
     const pulses: PulseRing[] = [];
-    const [r, g, b] = guiTheme.accentRgb;
-
     function resize() {
       const dpr = window.devicePixelRatio || 1;
       w = window.innerWidth;
@@ -103,6 +101,7 @@ export default function CursorTrail() {
       rafId = requestAnimationFrame(draw);
       const dt = lastTime ? (now - lastTime) / 1000 : 0.016;
       lastTime = now;
+      const [r, g, b] = getAccentRgb();
 
       ctx!.clearRect(0, 0, w, h);
 

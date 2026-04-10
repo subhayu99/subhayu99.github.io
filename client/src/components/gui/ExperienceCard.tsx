@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { Experience } from '../../../../shared/schema';
 import { renderGuiMarkdown } from '../../lib/guiMarkdown';
-import { accentRgba } from '../../config/gui-theme.config';
+
 
 interface ExperienceCardProps {
   experience: Experience;

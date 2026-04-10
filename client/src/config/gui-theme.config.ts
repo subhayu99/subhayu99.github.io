@@ -76,24 +76,35 @@ export const guiTheme = {
   textMuted: '#a1a1aa',
 } as const;
 
-// ── Derived helpers ──────────────────────────────────────────
+// ── Derived helpers (static defaults for initial load) ───────
 
 const [r, g, b] = guiTheme.accentRgb;
 const [rh, gh, bh] = guiTheme.accentHoverRgb;
 
-/** Accent as hex string, e.g. "#f59e0b" */
 export const accentHex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-
-/** Accent-hover as hex string */
 export const accentHoverHex = `#${rh.toString(16).padStart(2, '0')}${gh.toString(16).padStart(2, '0')}${bh.toString(16).padStart(2, '0')}`;
+export const accentRgbCss = `${r}, ${g}, ${b}`;
 
-/** rgb() string for SVG attributes and CSS */
-export const accentRgbStr = `rgb(${r}, ${g}, ${b})`;
+// ── Live helpers (read current theme from CSS variables) ─────
 
-/** rgba() with configurable opacity — use in inline styles */
-export function accentRgba(opacity: number): string {
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+/** Read current accent RGB from the live CSS variable */
+export function getAccentRgb(): [number, number, number] {
+  const raw = getComputedStyle(document.documentElement).getPropertyValue('--gui-accent-rgb').trim();
+  if (raw) {
+    const parts = raw.split(',').map(s => parseInt(s.trim(), 10));
+    if (parts.length === 3 && parts.every(n => !isNaN(n))) return parts as unknown as [number, number, number];
+  }
+  return [r, g, b]; // fallback to default
 }
 
-/** Comma-separated RGB for CSS variable: "245, 158, 11" */
-export const accentRgbCss = `${r}, ${g}, ${b}`;
+/** Live rgb() string — reads current theme */
+export function accentRgbStr(): string {
+  const [cr, cg, cb] = getAccentRgb();
+  return `rgb(${cr}, ${cg}, ${cb})`;
+}
+
+/** Live rgba() with opacity — reads current theme */
+export function accentRgba(opacity: number): string {
+  const [cr, cg, cb] = getAccentRgb();
+  return `rgba(${cr}, ${cg}, ${cb}, ${opacity})`;
+}
