@@ -121,7 +121,7 @@ export default function MatrixRain() {
           const charY = col.y - j * (COL_WIDTH - 2);
           if (charY < -20 || charY > h + 20) continue;
 
-          const trailOpacity = (1 - j / trailLen) * 0.15 * opacity * distFade;
+          const trailOpacity = (1 - j / trailLen) * 0.3 * opacity * distFade;
           if (trailOpacity < 0.002) continue;
 
           ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
