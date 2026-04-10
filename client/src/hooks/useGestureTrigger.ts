@@ -1,39 +1,49 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-
-const KONAMI_SEQUENCE = [
-  'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
-  'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
-  'b', 'a',
-];
+import { cycleTheme, applyColorTheme, colorThemes, type ColorTheme } from '../config/gui-theme.config';
 
 const SNAKE_TRIGGER = 'snake';
 
 // Shake detection thresholds
-const SHAKE_THRESHOLD = 25; // m/s² — needs a real shake, not just hand movement
-const SHAKE_COUNT_KONAMI = 3;
+const SHAKE_THRESHOLD = 25;
+const SHAKE_COUNT = 3;
 const SHAKE_WINDOW_MS = 1500;
 const SHAKE_DEBOUNCE_MS = 2000;
 
+// T-key timing: how long to wait for a digit after pressing T
+const T_KEY_WINDOW_MS = 400;
 
 export function useGestureTrigger(motionEnabled = false) {
-  const [konamiActive, setKonamiActive] = useState(false);
+  const [themeFlash, setThemeFlash] = useState<ColorTheme | null>(null);
   const [snakeActive, setSnakeActive] = useState(false);
 
-  const konamiBufferRef = useRef<string[]>([]);
   const snakeBufferRef = useRef('');
+  const tTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tPendingRef = useRef(false);
 
-  const resetKonami = useCallback(() => setKonamiActive(false), []);
+  const resetThemeFlash = useCallback(() => setThemeFlash(null), []);
   const resetSnake = useCallback(() => setSnakeActive(false), []);
 
-  // ── Shake detection (Konami) ──
+  const triggerThemeCycle = useCallback(() => {
+    const next = cycleTheme();
+    setThemeFlash(next);
+  }, []);
+
+  const triggerThemeJump = useCallback((index: number) => {
+    if (index < 0 || index >= colorThemes.length) return;
+    const theme = colorThemes[index];
+    applyColorTheme(theme);
+    setThemeFlash(theme);
+  }, []);
+
+  // ── Shake detection (theme cycle) ──
   useEffect(() => {
-    if (!motionEnabled || konamiActive) return;
+    if (!motionEnabled) return;
 
     const shakeTimestamps: number[] = [];
     let lastTrigger = 0;
 
     const onMotion = (e: DeviceMotionEvent) => {
-      if (konamiActive || snakeActive) return;
+      if (snakeActive || themeFlash) return;
 
       const acc = e.accelerationIncludingGravity;
       if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
@@ -42,19 +52,15 @@ export function useGestureTrigger(motionEnabled = false) {
 
       if (magnitude > SHAKE_THRESHOLD) {
         const now = Date.now();
-
-        // Debounce after trigger
         if (now - lastTrigger < SHAKE_DEBOUNCE_MS) return;
 
         shakeTimestamps.push(now);
-
-        // Prune old timestamps outside window
         while (shakeTimestamps.length > 0 && now - shakeTimestamps[0] > SHAKE_WINDOW_MS) {
           shakeTimestamps.shift();
         }
 
-        if (shakeTimestamps.length >= SHAKE_COUNT_KONAMI) {
-          setKonamiActive(true);
+        if (shakeTimestamps.length >= SHAKE_COUNT) {
+          triggerThemeCycle();
           shakeTimestamps.length = 0;
           lastTrigger = now;
         }
@@ -63,11 +69,9 @@ export function useGestureTrigger(motionEnabled = false) {
 
     window.addEventListener('devicemotion', onMotion);
     return () => window.removeEventListener('devicemotion', onMotion);
-  }, [motionEnabled, konamiActive, snakeActive]);
+  }, [motionEnabled, snakeActive, themeFlash, triggerThemeCycle]);
 
-  // ── Tilt sequence detection (Snake) ──
   // ── Flip detection (Snake) ──
-  // Flip phone face-down (Z goes negative) then back face-up to trigger Snake.
   useEffect(() => {
     if (!motionEnabled || snakeActive) return;
 
@@ -75,29 +79,24 @@ export function useGestureTrigger(motionEnabled = false) {
     let flipTime = 0;
 
     const onMotion = (e: DeviceMotionEvent) => {
-      if (konamiActive || snakeActive) return;
+      if (snakeActive || themeFlash) return;
 
       const acc = e.accelerationIncludingGravity;
       if (!acc || acc.z == null) return;
 
       const now = Date.now();
 
-      // Phone face-down: Z axis goes strongly negative (< -7)
       if (acc.z < -7 && !wasFlipped) {
         wasFlipped = true;
         flipTime = now;
       }
 
-      // Phone flipped back face-up: Z positive (> 7), within 2s of flip
       if (wasFlipped && acc.z > 7) {
-        if (now - flipTime < 2000) {
-          setSnakeActive(true);
-        }
+        if (now - flipTime < 2000) setSnakeActive(true);
         wasFlipped = false;
         flipTime = 0;
       }
 
-      // Reset if took too long
       if (wasFlipped && now - flipTime > 2000) {
         wasFlipped = false;
         flipTime = 0;
@@ -106,40 +105,47 @@ export function useGestureTrigger(motionEnabled = false) {
 
     window.addEventListener('devicemotion', onMotion);
     return () => window.removeEventListener('devicemotion', onMotion);
-  }, [motionEnabled, konamiActive, snakeActive]);
+  }, [motionEnabled, snakeActive, themeFlash]);
 
-  // ── Keyboard: Konami code ──
+  // ── Keyboard: T (cycle) / T1-T5 (jump) / "snake" ──
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (konamiActive) return;
 
-      konamiBufferRef.current.push(e.key);
-      if (konamiBufferRef.current.length > KONAMI_SEQUENCE.length) {
-        konamiBufferRef.current.shift();
+      const key = e.key;
+
+      // T-key theme switching
+      if (key.toLowerCase() === 't' && !tPendingRef.current && !snakeActive && !themeFlash) {
+        tPendingRef.current = true;
+        tTimerRef.current = setTimeout(() => {
+          // T alone — cycle to next theme
+          tPendingRef.current = false;
+          tTimerRef.current = null;
+          triggerThemeCycle();
+        }, T_KEY_WINDOW_MS);
+        return;
       }
 
-      if (KONAMI_SEQUENCE.every((k, i) => konamiBufferRef.current[i] === k)) {
-        setKonamiActive(true);
-        konamiBufferRef.current = [];
+      // Digit after T — jump to specific theme
+      if (tPendingRef.current && key >= '1' && key <= String(colorThemes.length)) {
+        if (tTimerRef.current) { clearTimeout(tTimerRef.current); tTimerRef.current = null; }
+        tPendingRef.current = false;
+        triggerThemeJump(parseInt(key) - 1);
+        return;
       }
-    };
 
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [konamiActive]);
+      // Any other key cancels pending T
+      if (tPendingRef.current && key.toLowerCase() !== 't') {
+        if (tTimerRef.current) { clearTimeout(tTimerRef.current); tTimerRef.current = null; }
+        tPendingRef.current = false;
+      }
 
-  // ── Keyboard: type "snake" ──
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // Snake trigger
       if (snakeActive) return;
-
-      snakeBufferRef.current += e.key.toLowerCase();
+      snakeBufferRef.current += key.toLowerCase();
       if (snakeBufferRef.current.length > 10) {
         snakeBufferRef.current = snakeBufferRef.current.slice(-10);
       }
-
       if (snakeBufferRef.current.endsWith(SNAKE_TRIGGER)) {
         setSnakeActive(true);
         snakeBufferRef.current = '';
@@ -147,8 +153,11 @@ export function useGestureTrigger(motionEnabled = false) {
     };
 
     window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [snakeActive]);
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      if (tTimerRef.current) clearTimeout(tTimerRef.current);
+    };
+  }, [snakeActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
 
-  return { konamiActive, snakeActive, resetKonami, resetSnake };
+  return { themeFlash, snakeActive, resetThemeFlash, resetSnake };
 }
