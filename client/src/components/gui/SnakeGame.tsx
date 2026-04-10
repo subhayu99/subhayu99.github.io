@@ -330,10 +330,13 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { close(); return; }
 
-      if (gameOverRef.current) {
-        if (e.key === 'Enter') startGame();
-        return;
+      // Enter to start from splash or retry from game over
+      if (e.key === 'Enter') {
+        if (!started) { enterAndStart(); e.preventDefault(); return; }
+        if (gameOverRef.current) { startGame(); e.preventDefault(); return; }
       }
+
+      if (gameOverRef.current) return;
 
       switch (e.key) {
         case 'ArrowUp': applyDirection('UP'); break;
@@ -346,7 +349,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [active, close, startGame, applyDirection]);
+  }, [active, started, close, startGame, enterAndStart, applyDirection]);
 
   // Gyro controls — tilt phone to steer snake (4 directions)
   // Compensates for screen orientation angle so axes stay correct
@@ -596,38 +599,37 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           transition={{ duration: 0.3 }}
         >
           {!started ? (
-            // Tap-to-play splash with screensaver background
-            <>
-            <canvas ref={splashCanvasRef} className="absolute inset-0 w-full h-full" />
-            <motion.div
-              className="relative z-10 flex flex-col items-center justify-center gap-6 cursor-pointer select-none"
-              onClick={enterAndStart}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.4 }}
-            >
-              <h2 className="font-display text-green-400 text-5xl sm:text-7xl tracking-wider">SNAKE</h2>
-              {highScore > 0 && (
-                <p className="text-zinc-500 font-mono text-sm">HIGH SCORE: {highScore}</p>
-              )}
-              <motion.p
-                className="text-green-400/70 font-mono text-sm mt-4"
-                animate={{ opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity }}
+            // Tap-to-play splash — click anywhere or press Enter to start
+            <div className="absolute inset-0 cursor-pointer" onClick={enterAndStart}>
+              <canvas ref={splashCanvasRef} className="absolute inset-0 w-full h-full" />
+              <motion.div
+                className="relative z-10 flex flex-col items-center justify-center gap-6 select-none h-full"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4 }}
               >
-                {isTouchDevice ? 'TAP TO PLAY' : 'CLICK TO PLAY'}
-              </motion.p>
-              <p className="text-zinc-600 font-mono text-xs">
-                {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
-              </p>
-              <button
-                onClick={(e) => { e.stopPropagation(); close(); }}
-                className="mt-4 px-4 py-2 border border-white/10 text-zinc-500 font-mono text-xs hover:text-zinc-300 transition-colors"
-              >
-                BACK
-              </button>
-            </motion.div>
-            </>
+                <h2 className="font-display text-green-400 text-5xl sm:text-7xl tracking-wider">SNAKE</h2>
+                {highScore > 0 && (
+                  <p className="text-zinc-500 font-mono text-sm">HIGH SCORE: {highScore}</p>
+                )}
+                <motion.p
+                  className="text-green-400/70 font-mono text-sm mt-4"
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {isTouchDevice ? 'TAP ANYWHERE TO PLAY' : 'PRESS ENTER OR CLICK TO PLAY'}
+                </motion.p>
+                <p className="text-zinc-600 font-mono text-xs">
+                  {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
+                </p>
+                <button
+                  onClick={(e) => { e.stopPropagation(); close(); }}
+                  className="mt-4 px-4 py-2 border border-white/10 text-zinc-500 font-mono text-xs hover:text-zinc-300 transition-colors"
+                >
+                  BACK
+                </button>
+              </motion.div>
+            </div>
           ) : (
             <>
               {/* Canvas — fills entire screen */}
