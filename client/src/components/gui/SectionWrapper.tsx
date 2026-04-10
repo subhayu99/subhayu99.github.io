@@ -69,7 +69,7 @@ export default function SectionWrapper({ id, watermark, children, className = ''
       {watermark && (
         <motion.span
           style={{ y: watermarkY }}
-          className="absolute top-8 left-6 font-display text-[120px] sm:text-[200px] lg:text-[280px] leading-none text-white/[0.02] pointer-events-none select-none whitespace-nowrap"
+          className="absolute top-8 left-6 font-display text-[120px] sm:text-[200px] lg:text-[280px] leading-none text-[rgba(var(--gui-accent-rgb),0.03)] pointer-events-none select-none whitespace-nowrap"
           aria-hidden
         >
           {watermark}
