@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { guiTheme } from '../../config/gui-theme.config';
 
 const GRID_SIZE = 20;
-const TICK_MS = 120;
+const TICK_MS = 100;
 const SWIPE_THRESHOLD = 30;
 
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
@@ -26,6 +26,8 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const scoreRef = useRef(0);
   const gameOverRef = useRef(false);
   const tickRef = useRef<ReturnType<typeof setInterval>>();
+  const rafRef = useRef<number>(0);
+  const lastTickRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const close = useCallback(() => {
@@ -173,20 +175,56 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       }
     }
 
+    // Decouple tick (game logic) from render (visual) for smooth animation
+    // Tick runs at TICK_MS intervals, render runs at 60fps with interpolation
+    let prevSnakeHead: Point | null = null;
+
     function render() {
       if (!active) return;
       drawGrid();
       drawFood();
-      drawSnake();
+
+      // Smooth interpolation: lerp snake head between prev and current position
+      const snake = snakeRef.current;
+      if (snake.length > 0 && prevSnakeHead) {
+        const elapsed = Date.now() - lastTickRef.current;
+        const t = Math.min(elapsed / TICK_MS, 1);
+        const head = snake[0];
+        const interpX = prevSnakeHead.x + (head.x - prevSnakeHead.x) * t;
+        const interpY = prevSnakeHead.y + (head.y - prevSnakeHead.y) * t;
+
+        // Draw body normally
+        for (let i = 1; i < snake.length; i++) {
+          const seg = snake[i];
+          const alpha = 1 - (i / snake.length) * 0.5;
+          ctx!.shadowBlur = 0;
+          ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+          ctx!.fillRect(seg.x * cellSize + 1, seg.y * cellSize + 1, cellSize - 2, cellSize - 2);
+        }
+        // Draw head interpolated
+        ctx!.shadowColor = `rgba(${r}, ${g}, ${b}, 0.6)`;
+        ctx!.shadowBlur = 8;
+        ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
+        ctx!.fillRect(interpX * cellSize + 1, interpY * cellSize + 1, cellSize - 2, cellSize - 2);
+        ctx!.shadowBlur = 0;
+      } else {
+        drawSnake();
+      }
+
+      rafRef.current = requestAnimationFrame(render);
     }
 
     if (tickRef.current) clearInterval(tickRef.current);
+    cancelAnimationFrame(rafRef.current);
+    lastTickRef.current = Date.now();
+
     tickRef.current = setInterval(() => {
+      prevSnakeHead = snakeRef.current.length > 0 ? { ...snakeRef.current[0] } : null;
       tick();
-      render();
+      lastTickRef.current = Date.now();
     }, TICK_MS);
 
-    render();
+    rafRef.current = requestAnimationFrame(render);
   }, [active, placeFood]);
 
   // Keyboard controls
@@ -214,36 +252,56 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [active, close, startGame, applyDirection]);
 
+  // Lock screen orientation while playing
+  useEffect(() => {
+    if (!active) return;
+    const so = screen.orientation;
+    so?.lock?.('portrait').catch(() => {});
+    return () => { so?.unlock?.(); };
+  }, [active]);
+
   // Gyro controls — tilt phone to steer snake
+  // Compensates for screen orientation angle so axes stay correct
   useEffect(() => {
     if (!active) return;
     const hasMotion = localStorage.getItem('motionPermission') === 'granted';
     if (!hasMotion) return;
 
-    const TILT_DEADZONE = 15; // degrees — must tilt past this to change direction
+    const TILT_DEADZONE = 15;
     let lastGyroDir: Direction | null = null;
 
     const onOrientation = (e: DeviceOrientationEvent) => {
       if (gameOverRef.current) return;
 
-      const gamma = e.gamma; // left-right tilt (-90 to 90)
-      const beta = e.beta;   // front-back tilt (-180 to 180)
+      let gamma = e.gamma; // left-right tilt (-90 to 90)
+      let beta = e.beta;   // front-back tilt (-180 to 180)
       if (gamma == null || beta == null) return;
 
-      // Determine dominant tilt direction
+      // Compensate for screen orientation angle
+      const angle = screen.orientation?.angle ?? 0;
+      if (angle === 90) {
+        [gamma, beta] = [beta, -gamma];
+      } else if (angle === 270 || angle === -90) {
+        [gamma, beta] = [-beta, gamma];
+      } else if (angle === 180) {
+        gamma = -gamma;
+        beta = -beta;
+      }
+
+      // Offset beta by 45° since phone is held at an angle
+      const adjustedBeta = beta - 45;
+
       const absGamma = Math.abs(gamma);
-      const absBeta = Math.abs(beta - 45); // offset by 45° since phone is usually held at ~45°
+      const absBeta = Math.abs(adjustedBeta);
 
       if (absGamma > absBeta && absGamma > TILT_DEADZONE) {
-        // Left-right tilt dominates
         const dir: Direction = gamma < 0 ? 'LEFT' : 'RIGHT';
         if (dir !== lastGyroDir) {
           applyDirection(dir);
           lastGyroDir = dir;
         }
       } else if (absBeta > absGamma && absBeta > TILT_DEADZONE) {
-        // Front-back tilt dominates
-        const dir: Direction = (beta - 45) < 0 ? 'UP' : 'DOWN';
+        const dir: Direction = adjustedBeta < 0 ? 'UP' : 'DOWN';
         if (dir !== lastGyroDir) {
           applyDirection(dir);
           lastGyroDir = dir;
@@ -313,6 +371,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     if (active) startGame();
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
+      cancelAnimationFrame(rafRef.current);
     };
   }, [active, startGame]);
 
