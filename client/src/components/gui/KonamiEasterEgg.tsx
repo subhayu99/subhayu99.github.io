@@ -226,50 +226,91 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
   }, [active]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Phase: Scan ──
+  // Start typing immediately, fetch IP in parallel
   useEffect(() => {
     if (phase !== 'scanning') return;
 
     let cancelled = false;
     cancelRef.current = false;
 
+    const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    async function typeLine(displayed: string[], text: string) {
+      for (let i = 0; i <= text.length; i++) {
+        if (cancelled || cancelRef.current) return;
+        const partial = text.slice(0, i) + (i < text.length ? '█' : '');
+        setScanLines([...displayed, partial]);
+        await wait(20);
+      }
+      displayed.push(text);
+      setScanLines([...displayed]);
+    }
+
+    function pushEmpty(displayed: string[]) {
+      displayed.push('');
+      setScanLines([...displayed]);
+    }
+
+    function scrollDown() {
+      if (scanRef.current) scanRef.current.scrollTop = scanRef.current.scrollHeight;
+    }
+
     (async () => {
-      const data = await collectScanData();
+      // Start collecting data in parallel — don't block on it
+      const dataPromise = collectScanData();
+      const displayed: string[] = [];
+
+      // Type intro lines immediately (no waiting for data)
+      await wait(200);
+      if (cancelled) return;
+      await typeLine(displayed, '> INITIALIZING BREACH PROTOCOL...');
+      scrollDown();
+      await wait(400);
+      if (cancelled) return;
+      await typeLine(displayed, '> SCANNING TARGET...');
+      scrollDown();
+      await wait(300);
+      pushEmpty(displayed);
+
+      // Now wait for data (should be ready or almost ready by now)
+      const data = await dataPromise;
       if (cancelled || cancelRef.current) return;
       setScanData(data);
 
-      const lines = buildScanLines(data);
-      const displayed: string[] = [];
+      // IP section
+      if (data.ip) { await typeLine(displayed, `  IP ADDRESS:    ${data.ip}`); scrollDown(); await wait(100); }
+      if (data.city) { await typeLine(displayed, `  LOCATION:      ${data.city}, ${data.region || ''}, ${data.country || ''}`); scrollDown(); await wait(100); }
+      if (data.isp) { await typeLine(displayed, `  ISP:           ${data.isp}`); scrollDown(); await wait(100); }
+      if (cancelled) return;
 
-      for (const line of lines) {
-        if (cancelled || cancelRef.current) return;
+      pushEmpty(displayed); await wait(300);
+      await typeLine(displayed, '> PROFILING DEVICE...'); scrollDown(); await wait(300);
+      pushEmpty(displayed);
+      if (cancelled) return;
 
-        // Wait before this line
-        await new Promise(r => setTimeout(r, line.delay));
-        if (cancelled || cancelRef.current) return;
+      await typeLine(displayed, `  BROWSER:       ${data.browser} · ${data.os}`); scrollDown(); await wait(100);
+      await typeLine(displayed, `  SCREEN:        ${data.screen}`); scrollDown(); await wait(100);
+      if (data.cores) { await typeLine(displayed, `  CORES:         ${data.cores}${data.ram ? ` · RAM: ${data.ram}` : ''}`); scrollDown(); await wait(100); }
+      if (data.network) { await typeLine(displayed, `  NETWORK:       ${data.network}`); scrollDown(); await wait(100); }
+      if (data.battery) { await typeLine(displayed, `  BATTERY:       ${data.battery}`); scrollDown(); await wait(100); }
+      if (cancelled) return;
 
-        // Typewriter effect for non-empty lines
-        if (line.text) {
-          for (let i = 0; i <= line.text.length; i++) {
-            if (cancelled || cancelRef.current) return;
-            const partial = line.text.slice(0, i) + (i < line.text.length ? '█' : '');
-            setScanLines([...displayed, partial]);
-            await new Promise(r => setTimeout(r, 20));
-          }
-          displayed.push(line.text);
-          setScanLines([...displayed]);
-        } else {
-          displayed.push('');
-          setScanLines([...displayed]);
-        }
+      pushEmpty(displayed); await wait(300);
+      await typeLine(displayed, '> ANALYZING BEHAVIOR...'); scrollDown(); await wait(300);
+      pushEmpty(displayed);
+      if (cancelled) return;
 
-        // Auto-scroll
-        if (scanRef.current) {
-          scanRef.current.scrollTop = scanRef.current.scrollHeight;
-        }
-      }
+      await typeLine(displayed, `  TIMEZONE:      ${data.timezone}`); scrollDown(); await wait(100);
+      await typeLine(displayed, `  LANGUAGE:      ${data.language}`); scrollDown(); await wait(100);
+      await typeLine(displayed, `  THEME PREF:    ${data.theme}`); scrollDown(); await wait(100);
+      await typeLine(displayed, `  VISIT TIME:    ${data.visitTime}`); scrollDown(); await wait(100);
+      if (cancelled) return;
 
-      // Pause then transition to dossier
-      await new Promise(r => setTimeout(r, 1000));
+      pushEmpty(displayed); await wait(500);
+      await typeLine(displayed, '> BREACH COMPLETE.'); scrollDown(); await wait(300);
+      await typeLine(displayed, '> CLASSIFICATION: ██████████ TOP SECRET'); scrollDown();
+
+      await wait(1000);
       if (!cancelled && !cancelRef.current) {
         setPhase('dossier');
       }
