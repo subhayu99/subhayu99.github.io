@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { loadPortfolioData } from '../../lib/portfolioDataLoader';
@@ -6,6 +6,7 @@ import { loadPyPIStats, type PyPIStatsData } from '../../lib/pypiStats';
 import { apiConfig } from '../../config';
 import { guiTheme, accentHex, accentHoverHex, accentRgbCss } from '../../config/gui-theme.config';
 import { useGestureTrigger } from '../../hooks/useGestureTrigger';
+import { useIsMobile } from '../../hooks/use-mobile';
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
 import AboutSection from './AboutSection';
@@ -30,7 +31,50 @@ const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publ
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');
   const containerRef = useRef<HTMLDivElement>(null);
-  const { konamiActive, snakeActive, resetKonami, resetSnake } = useGestureTrigger();
+  const isMobile = useIsMobile();
+  const [motionEnabled, setMotionEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('motionPermission') === 'granted';
+  });
+  const [showMotionToast, setShowMotionToast] = useState(false);
+  const { konamiActive, snakeActive, resetKonami, resetSnake } = useGestureTrigger(motionEnabled);
+
+  // Show motion permission toast on first mobile visit
+  useEffect(() => {
+    if (!isMobile) return;
+    const stored = localStorage.getItem('motionPermission');
+    if (stored) return; // Already granted or denied
+    // Delay toast so it doesn't compete with page load
+    const timer = setTimeout(() => setShowMotionToast(true), 3000);
+    return () => clearTimeout(timer);
+  }, [isMobile]);
+
+  const handleEnableMotion = useCallback(async () => {
+    try {
+      // iOS 13+ requires explicit permission
+      if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+        const result = await (DeviceMotionEvent as any).requestPermission();
+        if (result === 'granted') {
+          localStorage.setItem('motionPermission', 'granted');
+          setMotionEnabled(true);
+        } else {
+          localStorage.setItem('motionPermission', 'denied');
+        }
+      } else {
+        // Android — no permission needed
+        localStorage.setItem('motionPermission', 'granted');
+        setMotionEnabled(true);
+      }
+    } catch {
+      localStorage.setItem('motionPermission', 'denied');
+    }
+    setShowMotionToast(false);
+  }, []);
+
+  const dismissMotionToast = useCallback(() => {
+    localStorage.setItem('motionPermission', 'dismissed');
+    setShowMotionToast(false);
+  }, []);
 
   const { data: portfolioData, isLoading, error } = useQuery({
     queryKey: ['portfolio-data'],
@@ -91,6 +135,7 @@ export default function GUIPortfolio() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
+      data-gui-portfolio
       className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
     >
       <WireframeGrid />
@@ -111,6 +156,30 @@ export default function GUIPortfolio() {
       <ContactSection data={portfolioData} />
       <ScrollBallGame />
       <FloatingTerminalButton />
+      {/* Motion permission toast */}
+      {showMotionToast && (
+        <div className="fixed bottom-6 left-4 right-4 z-[90] flex items-center justify-between
+                        bg-black/95 border border-green-500/30 px-4 py-3 font-mono text-xs
+                        backdrop-blur-sm animate-in slide-in-from-bottom-4">
+          <span className="text-zinc-300">Shake your phone for surprises!</span>
+          <div className="flex gap-2 ml-3 shrink-0">
+            <button
+              onClick={handleEnableMotion}
+              className="px-3 py-1.5 border border-green-500/50 text-green-400
+                         hover:bg-green-500/10 transition-colors"
+            >
+              Enable
+            </button>
+            <button
+              onClick={dismissMotionToast}
+              className="px-3 py-1.5 border border-white/10 text-zinc-500
+                         hover:text-zinc-300 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

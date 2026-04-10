@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrambleText from './ScrambleText';
 import ParticleSandbox from './ParticleSandbox';
@@ -19,6 +19,16 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
     onClose();
   }, [onClose]);
 
+  // Global ESC key listener
+  useEffect(() => {
+    if (!active) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') close();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [active, close]);
+
   const triggerShatter = useCallback(() => {
     setShatter(true);
     setTimeout(() => close(), 1200);
@@ -38,7 +48,6 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
           onClick={(e) => { if (e.target === e.currentTarget) close(); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') close(); }}
         >
           {/* CRT Scan Lines Background */}
           <div

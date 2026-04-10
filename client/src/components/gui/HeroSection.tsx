@@ -162,7 +162,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <ScrambleText text={role} delay={500} />
+        <ScrambleText text={role} delay={200} />
       </motion.p>
 
       {/* Stats grid */}

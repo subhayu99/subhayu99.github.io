@@ -1,18 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 
-/**
- * Directional stroke-segment gesture recognizer.
- * Recognizes drawn letters "K" and "S" on touch devices,
- * plus keyboard triggers (Konami code / typing "snake") on desktop.
- */
-
-type Dir = 'U' | 'D' | 'L' | 'R' | 'UR' | 'UL' | 'DR' | 'DL';
-type Point = { x: number; y: number; t: number };
-
-const MIN_PATH_LEN = 120; // px total path length
-const MAX_GESTURE_MS = 2000; // max gesture duration
-const SEGMENT_MIN_LEN = 30; // min px for a directional segment
-
 const KONAMI_SEQUENCE = [
   'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
   'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
@@ -21,170 +8,138 @@ const KONAMI_SEQUENCE = [
 
 const SNAKE_TRIGGER = 'snake';
 
-function getDirection(dx: number, dy: number): Dir {
-  const ax = Math.abs(dx);
-  const ay = Math.abs(dy);
-  const ratio = Math.min(ax, ay) / Math.max(ax, ay);
+// Shake detection thresholds
+const SHAKE_THRESHOLD = 15; // m/s² — well above gravity (~9.8)
+const SHAKE_COUNT_KONAMI = 3;
+const SHAKE_WINDOW_MS = 1500;
+const SHAKE_DEBOUNCE_MS = 2000;
 
-  // If one axis dominates (ratio < 0.4), it's a cardinal direction
-  if (ratio < 0.4) {
-    if (ax > ay) return dx > 0 ? 'R' : 'L';
-    return dy > 0 ? 'D' : 'U';
-  }
-  // Diagonal
-  if (dx > 0 && dy < 0) return 'UR';
-  if (dx > 0 && dy > 0) return 'DR';
-  if (dx < 0 && dy < 0) return 'UL';
-  return 'DL';
-}
+// Tilt detection thresholds
+const TILT_ANGLE = 25; // degrees left/right
+const TILT_HOLD_MS = 200; // min hold time per tilt
+const TILT_SEQUENCE: ('left' | 'right')[] = ['left', 'right', 'left', 'right'];
+const TILT_WINDOW_MS = 3000;
 
-function segmentize(points: Point[]): Dir[] {
-  if (points.length < 3) return [];
-
-  const segments: Dir[] = [];
-  let segStart = 0;
-
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i].x - points[segStart].x;
-    const dy = points[i].y - points[segStart].y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist < SEGMENT_MIN_LEN) continue;
-
-    const dir = getDirection(dx, dy);
-
-    // Only add if different from last segment
-    if (segments.length === 0 || segments[segments.length - 1] !== dir) {
-      segments.push(dir);
-    }
-    segStart = i;
-  }
-
-  return segments;
-}
-
-function totalPathLength(points: Point[]): number {
-  let len = 0;
-  for (let i = 1; i < points.length; i++) {
-    const dx = points[i].x - points[i - 1].x;
-    const dy = points[i].y - points[i - 1].y;
-    len += Math.sqrt(dx * dx + dy * dy);
-  }
-  return len;
-}
-
-// K: vertical down stroke, then up-right diagonal, then down-right diagonal
-// Allows some flexibility in the exact sequence
-function matchesK(segs: Dir[]): boolean {
-  if (segs.length < 3 || segs.length > 5) return false;
-
-  // Pattern: D → UR → DR  (the classic K shape)
-  // Also accept: D → U → DR (if the user draws the arm as up then down-right)
-  const patterns: Dir[][] = [
-    ['D', 'UR', 'DR'],
-    ['D', 'UR', 'R'],
-    ['D', 'UR', 'D'],
-    ['D', 'U', 'DR'],
-    ['D', 'R', 'DR'],
-  ];
-
-  return patterns.some(pattern => {
-    if (segs.length < pattern.length) return false;
-    // Check if pattern appears as subsequence at start
-    let pi = 0;
-    for (let si = 0; si < segs.length && pi < pattern.length; si++) {
-      if (segs[si] === pattern[pi]) pi++;
-    }
-    return pi === pattern.length;
-  });
-}
-
-// S: right → down-left → right (S-curve)
-function matchesS(segs: Dir[]): boolean {
-  if (segs.length < 2 || segs.length > 5) return false;
-
-  const patterns: Dir[][] = [
-    ['R', 'DL', 'R'],
-    ['R', 'D', 'R'],
-    ['R', 'DL', 'DR'],
-    ['R', 'D', 'L'],
-    ['DR', 'DL', 'DR'],
-    ['R', 'L', 'R'],
-    ['DR', 'L', 'R'],
-    ['DR', 'DL', 'R'],
-  ];
-
-  return patterns.some(pattern => {
-    if (segs.length < pattern.length) return false;
-    let pi = 0;
-    for (let si = 0; si < segs.length && pi < pattern.length; si++) {
-      if (segs[si] === pattern[pi]) pi++;
-    }
-    return pi === pattern.length;
-  });
-}
-
-export function useGestureTrigger() {
+export function useGestureTrigger(motionEnabled = false) {
   const [konamiActive, setKonamiActive] = useState(false);
   const [snakeActive, setSnakeActive] = useState(false);
 
-  const touchPointsRef = useRef<Point[]>([]);
   const konamiBufferRef = useRef<string[]>([]);
   const snakeBufferRef = useRef('');
 
   const resetKonami = useCallback(() => setKonamiActive(false), []);
   const resetSnake = useCallback(() => setSnakeActive(false), []);
 
-  // ── Touch gesture recognition ──
+  // ── Shake detection (Konami) ──
   useEffect(() => {
-    const onTouchStart = (e: TouchEvent) => {
+    if (!motionEnabled || konamiActive) return;
+
+    const shakeTimestamps: number[] = [];
+    let lastTrigger = 0;
+
+    const onMotion = (e: DeviceMotionEvent) => {
       if (konamiActive || snakeActive) return;
-      // Only single-finger gestures for letter drawing
-      if (e.touches.length !== 1) return;
-      const t = e.touches[0];
-      touchPointsRef.current = [{ x: t.clientX, y: t.clientY, t: Date.now() }];
-    };
 
-    const onTouchMove = (e: TouchEvent) => {
-      if (konamiActive || snakeActive) return;
-      if (e.touches.length !== 1) return;
-      const t = e.touches[0];
-      touchPointsRef.current.push({ x: t.clientX, y: t.clientY, t: Date.now() });
-    };
+      const acc = e.accelerationIncludingGravity;
+      if (!acc || acc.x == null || acc.y == null || acc.z == null) return;
 
-    const onTouchEnd = () => {
-      if (konamiActive || snakeActive) return;
-      const points = touchPointsRef.current;
-      if (points.length < 5) return;
+      const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
 
-      const duration = points[points.length - 1].t - points[0].t;
-      if (duration > MAX_GESTURE_MS) return;
+      if (magnitude > SHAKE_THRESHOLD) {
+        const now = Date.now();
 
-      const pathLen = totalPathLength(points);
-      if (pathLen < MIN_PATH_LEN) return;
+        // Debounce after trigger
+        if (now - lastTrigger < SHAKE_DEBOUNCE_MS) return;
 
-      const segments = segmentize(points);
-      if (segments.length < 2) return; // Must have direction changes (not a scroll)
+        shakeTimestamps.push(now);
 
-      if (matchesK(segments)) {
-        setKonamiActive(true);
-      } else if (matchesS(segments)) {
-        setSnakeActive(true);
+        // Prune old timestamps outside window
+        while (shakeTimestamps.length > 0 && now - shakeTimestamps[0] > SHAKE_WINDOW_MS) {
+          shakeTimestamps.shift();
+        }
+
+        if (shakeTimestamps.length >= SHAKE_COUNT_KONAMI) {
+          setKonamiActive(true);
+          shakeTimestamps.length = 0;
+          lastTrigger = now;
+        }
       }
-
-      touchPointsRef.current = [];
     };
 
-    document.addEventListener('touchstart', onTouchStart, { passive: true });
-    document.addEventListener('touchmove', onTouchMove, { passive: true });
-    document.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('devicemotion', onMotion);
+    return () => window.removeEventListener('devicemotion', onMotion);
+  }, [motionEnabled, konamiActive, snakeActive]);
 
-    return () => {
-      document.removeEventListener('touchstart', onTouchStart);
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
+  // ── Tilt sequence detection (Snake) ──
+  useEffect(() => {
+    if (!motionEnabled || snakeActive) return;
+
+    type TiltEvent = { dir: 'left' | 'right'; time: number };
+    const tiltEvents: TiltEvent[] = [];
+    let currentTilt: 'left' | 'right' | 'neutral' = 'neutral';
+    let tiltStart = 0;
+
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (konamiActive || snakeActive) return;
+
+      const gamma = e.gamma; // left-right tilt in degrees
+      if (gamma == null) return;
+
+      const now = Date.now();
+
+      let newTilt: 'left' | 'right' | 'neutral' = 'neutral';
+      if (gamma < -TILT_ANGLE) newTilt = 'left';
+      else if (gamma > TILT_ANGLE) newTilt = 'right';
+
+      if (newTilt !== 'neutral' && newTilt !== currentTilt) {
+        // Started a new tilt direction
+        if (currentTilt !== 'neutral' && now - tiltStart >= TILT_HOLD_MS) {
+          // Record the previous tilt that was held long enough
+          tiltEvents.push({ dir: currentTilt, time: now });
+
+          // Prune old events outside window
+          while (tiltEvents.length > 0 && now - tiltEvents[0].time > TILT_WINDOW_MS) {
+            tiltEvents.shift();
+          }
+
+          // Check if last N events match the sequence
+          if (tiltEvents.length >= TILT_SEQUENCE.length) {
+            const recent = tiltEvents.slice(-TILT_SEQUENCE.length);
+            const matches = TILT_SEQUENCE.every((dir, i) => recent[i].dir === dir);
+            if (matches) {
+              setSnakeActive(true);
+              tiltEvents.length = 0;
+            }
+          }
+        }
+        currentTilt = newTilt;
+        tiltStart = now;
+      } else if (newTilt === 'neutral' && currentTilt !== 'neutral') {
+        // Returned to neutral — record the tilt if held long enough
+        if (now - tiltStart >= TILT_HOLD_MS) {
+          tiltEvents.push({ dir: currentTilt, time: now });
+
+          while (tiltEvents.length > 0 && now - tiltEvents[0].time > TILT_WINDOW_MS) {
+            tiltEvents.shift();
+          }
+
+          if (tiltEvents.length >= TILT_SEQUENCE.length) {
+            const recent = tiltEvents.slice(-TILT_SEQUENCE.length);
+            const matches = TILT_SEQUENCE.every((dir, i) => recent[i].dir === dir);
+            if (matches) {
+              setSnakeActive(true);
+              tiltEvents.length = 0;
+            }
+          }
+        }
+        currentTilt = 'neutral';
+        tiltStart = 0;
+      }
     };
-  }, [konamiActive, snakeActive]);
+
+    window.addEventListener('deviceorientation', onOrientation);
+    return () => window.removeEventListener('deviceorientation', onOrientation);
+  }, [motionEnabled, konamiActive, snakeActive]);
 
   // ── Keyboard: Konami code ──
   useEffect(() => {
