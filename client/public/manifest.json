@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "any",
+  "orientation": "portrait",
   "categories": ["portfolio", "developer", "professional"],
   "lang": "en-US",
   "dir": "ltr",

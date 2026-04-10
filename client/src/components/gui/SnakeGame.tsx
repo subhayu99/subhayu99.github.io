@@ -18,6 +18,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dirRef = useRef<Direction>('RIGHT');
   const nextDirRef = useRef<Direction>('RIGHT');
@@ -30,13 +31,31 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const lastTickRef = useRef(0);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  const exitFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+    screen.orientation?.unlock?.();
+  }, []);
+
   const close = useCallback(() => {
     setScore(0);
     setGameOver(false);
     if (tickRef.current) clearInterval(tickRef.current);
     cancelAnimationFrame(rafRef.current);
+    exitFullscreen();
     onClose();
-  }, [onClose]);
+  }, [onClose, exitFullscreen]);
+
+  // Enter fullscreen + lock orientation when game activates
+  // Triggered by first user tap on the game container
+  const requestFullscreen = useCallback(() => {
+    const el = containerRef.current;
+    if (!el || document.fullscreenElement) return;
+    el.requestFullscreen?.().then(() => {
+      (screen.orientation as any)?.lock?.('portrait').catch(() => {});
+    }).catch(() => {});
+  }, []);
 
   const placeFood = useCallback((snake: Point[], cols: number, rows: number): Point => {
     let food: Point;
@@ -370,22 +389,43 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     };
   }, [active, startGame]);
 
+  // Exit fullscreen if user exits via browser gesture (swipe down on Android)
+  useEffect(() => {
+    const onFsChange = () => {
+      if (!document.fullscreenElement && active) {
+        // User exited fullscreen externally — that's fine, game continues
+      }
+    };
+    document.addEventListener('fullscreenchange', onFsChange);
+    return () => document.removeEventListener('fullscreenchange', onFsChange);
+  }, [active]);
+
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isFullscreen = typeof document !== 'undefined' && !!document.fullscreenElement;
 
   return (
     <AnimatePresence>
       {active && (
         <motion.div
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95"
+          ref={containerRef}
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
           {/* Header */}
-          <div className="flex items-center gap-6 sm:gap-8 mb-4 font-mono text-sm">
+          <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
             <span className="text-green-400">SNAKE</span>
             <span className="text-white">SCORE: {score}</span>
+            {isTouchDevice && !isFullscreen && (
+              <button
+                onClick={requestFullscreen}
+                className="px-2 py-1 border border-green-500/40 text-green-400 text-xs hover:bg-green-500/10 transition-colors"
+              >
+                ⛶ FULLSCREEN
+              </button>
+            )}
             <button
               onClick={close}
               className="text-zinc-500 hover:text-red-400 transition-colors"
@@ -426,7 +466,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           </div>
 
           <p className="text-zinc-600 font-mono text-xs mt-4">
-            {isTouchDevice ? 'Tilt to steer · Swipe or tap to retry' : 'Arrow keys to move'}
+            {isTouchDevice ? 'Tilt to steer · Tap FULLSCREEN to lock rotation' : 'Arrow keys to move'}
           </p>
         </motion.div>
       )}

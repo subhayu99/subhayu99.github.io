@@ -39,11 +39,11 @@ export default function GUIPortfolio() {
   const [showMotionToast, setShowMotionToast] = useState(false);
   const { konamiActive, snakeActive, resetKonami, resetSnake } = useGestureTrigger(motionEnabled);
 
-  // Show motion permission toast on first mobile visit
+  // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
     if (!isMobile) return;
     const stored = localStorage.getItem('motionPermission');
-    if (stored) return; // Already granted or denied
+    if (stored === 'granted') return; // Already working
     // Delay toast so it doesn't compete with page load
     const timer = setTimeout(() => setShowMotionToast(true), 3000);
     return () => clearTimeout(timer);
