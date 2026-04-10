@@ -351,58 +351,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [active, started, close, startGame, enterAndStart, applyDirection]);
 
-  // Gyro controls — tilt phone to steer snake (4 directions)
-  // Compensates for screen orientation angle so axes stay correct
-  useEffect(() => {
-    if (!active) return;
-    const hasMotion = localStorage.getItem('motionPermission') === 'granted';
-    if (!hasMotion) return;
-
-    const TILT_DEADZONE = 15;
-    let lastGyroDir: Direction | null = null;
-
-    const onOrientation = (e: DeviceOrientationEvent) => {
-      if (gameOverRef.current) return;
-
-      let gamma = e.gamma; // left-right tilt (-90 to 90)
-      let beta = e.beta;   // front-back tilt (-180 to 180)
-      if (gamma == null || beta == null) return;
-
-      // Compensate for screen orientation angle
-      const angle = screen.orientation?.angle ?? 0;
-      if (angle === 90) {
-        [gamma, beta] = [beta, -gamma];
-      } else if (angle === 270 || angle === -90) {
-        [gamma, beta] = [-beta, gamma];
-      } else if (angle === 180) {
-        gamma = -gamma;
-        beta = -beta;
-      }
-
-      const adjustedBeta = beta - 45;
-      const absGamma = Math.abs(gamma);
-      const absBeta = Math.abs(adjustedBeta);
-
-      if (absGamma > absBeta && absGamma > TILT_DEADZONE) {
-        const dir: Direction = gamma < 0 ? 'LEFT' : 'RIGHT';
-        if (dir !== lastGyroDir) {
-          applyDirection(dir);
-          lastGyroDir = dir;
-        }
-      } else if (absBeta > absGamma && absBeta > TILT_DEADZONE) {
-        const dir: Direction = adjustedBeta < 0 ? 'UP' : 'DOWN';
-        if (dir !== lastGyroDir) {
-          applyDirection(dir);
-          lastGyroDir = dir;
-        }
-      }
-    };
-
-    window.addEventListener('deviceorientation', onOrientation);
-    return () => window.removeEventListener('deviceorientation', onOrientation);
-  }, [active, applyDirection]);
-
-  // Swipe + tap fallback controls on canvas
+  // Swipe + tap controls on canvas
   useEffect(() => {
     if (!active) return;
     const canvas = canvasRef.current;
@@ -620,7 +569,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                   {isTouchDevice ? 'TAP ANYWHERE TO PLAY' : 'PRESS ENTER OR CLICK TO PLAY'}
                 </motion.p>
                 <p className="text-zinc-600 font-mono text-xs">
-                  {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
+                  {isTouchDevice ? 'Swipe to steer' : 'Arrow keys to move'}
                 </p>
                 <button
                   onClick={(e) => { e.stopPropagation(); close(); }}
