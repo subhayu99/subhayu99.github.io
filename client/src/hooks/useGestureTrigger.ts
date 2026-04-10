@@ -14,10 +14,6 @@ const SHAKE_COUNT_KONAMI = 3;
 const SHAKE_WINDOW_MS = 1500;
 const SHAKE_DEBOUNCE_MS = 2000;
 
-// Tilt detection thresholds
-const TILT_ANGLE = 25; // degrees left/right
-const TILT_CROSSINGS_NEEDED = 4; // L-R-L-R = 4 direction changes
-const TILT_WINDOW_MS = 3000;
 
 export function useGestureTrigger(motionEnabled = false) {
   const [konamiActive, setKonamiActive] = useState(false);
@@ -70,49 +66,46 @@ export function useGestureTrigger(motionEnabled = false) {
   }, [motionEnabled, konamiActive, snakeActive]);
 
   // ── Tilt sequence detection (Snake) ──
-  // ── Tilt sequence detection (Snake) ──
-  // Tracks direction crossings: each time the phone crosses from left to right
-  // or right to left past the threshold angle, that's one crossing.
-  // L-R-L-R = 4 crossings within the time window.
+  // ── Flip detection (Snake) ──
+  // Flip phone face-down (Z goes negative) then back face-up to trigger Snake.
   useEffect(() => {
     if (!motionEnabled || snakeActive) return;
 
-    const crossingTimestamps: number[] = [];
-    let lastSide: 'left' | 'right' | 'none' = 'none';
+    let wasFlipped = false;
+    let flipTime = 0;
 
-    const onOrientation = (e: DeviceOrientationEvent) => {
+    const onMotion = (e: DeviceMotionEvent) => {
       if (konamiActive || snakeActive) return;
 
-      const gamma = e.gamma;
-      if (gamma == null) return;
+      const acc = e.accelerationIncludingGravity;
+      if (!acc || acc.z == null) return;
 
-      let currentSide: 'left' | 'right' | 'none' = 'none';
-      if (gamma < -TILT_ANGLE) currentSide = 'left';
-      else if (gamma > TILT_ANGLE) currentSide = 'right';
+      const now = Date.now();
 
-      // Only count when crossing from one side to the other (not from/to neutral)
-      if (currentSide !== 'none' && lastSide !== 'none' && currentSide !== lastSide) {
-        const now = Date.now();
-        crossingTimestamps.push(now);
-
-        // Prune old crossings outside window
-        while (crossingTimestamps.length > 0 && now - crossingTimestamps[0] > TILT_WINDOW_MS) {
-          crossingTimestamps.shift();
-        }
-
-        if (crossingTimestamps.length >= TILT_CROSSINGS_NEEDED) {
-          setSnakeActive(true);
-          crossingTimestamps.length = 0;
-        }
+      // Phone face-down: Z axis goes strongly negative (< -7)
+      if (acc.z < -7 && !wasFlipped) {
+        wasFlipped = true;
+        flipTime = now;
       }
 
-      if (currentSide !== 'none') {
-        lastSide = currentSide;
+      // Phone flipped back face-up: Z positive (> 7), within 2s of flip
+      if (wasFlipped && acc.z > 7) {
+        if (now - flipTime < 2000) {
+          setSnakeActive(true);
+        }
+        wasFlipped = false;
+        flipTime = 0;
+      }
+
+      // Reset if took too long
+      if (wasFlipped && now - flipTime > 2000) {
+        wasFlipped = false;
+        flipTime = 0;
       }
     };
 
-    window.addEventListener('deviceorientation', onOrientation);
-    return () => window.removeEventListener('deviceorientation', onOrientation);
+    window.addEventListener('devicemotion', onMotion);
+    return () => window.removeEventListener('devicemotion', onMotion);
   }, [motionEnabled, konamiActive, snakeActive]);
 
   // ── Keyboard: Konami code ──

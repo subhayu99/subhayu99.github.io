@@ -214,7 +214,48 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [active, close, startGame, applyDirection]);
 
-  // Swipe controls on canvas
+  // Gyro controls — tilt phone to steer snake
+  useEffect(() => {
+    if (!active) return;
+    const hasMotion = localStorage.getItem('motionPermission') === 'granted';
+    if (!hasMotion) return;
+
+    const TILT_DEADZONE = 15; // degrees — must tilt past this to change direction
+    let lastGyroDir: Direction | null = null;
+
+    const onOrientation = (e: DeviceOrientationEvent) => {
+      if (gameOverRef.current) return;
+
+      const gamma = e.gamma; // left-right tilt (-90 to 90)
+      const beta = e.beta;   // front-back tilt (-180 to 180)
+      if (gamma == null || beta == null) return;
+
+      // Determine dominant tilt direction
+      const absGamma = Math.abs(gamma);
+      const absBeta = Math.abs(beta - 45); // offset by 45° since phone is usually held at ~45°
+
+      if (absGamma > absBeta && absGamma > TILT_DEADZONE) {
+        // Left-right tilt dominates
+        const dir: Direction = gamma < 0 ? 'LEFT' : 'RIGHT';
+        if (dir !== lastGyroDir) {
+          applyDirection(dir);
+          lastGyroDir = dir;
+        }
+      } else if (absBeta > absGamma && absBeta > TILT_DEADZONE) {
+        // Front-back tilt dominates
+        const dir: Direction = (beta - 45) < 0 ? 'UP' : 'DOWN';
+        if (dir !== lastGyroDir) {
+          applyDirection(dir);
+          lastGyroDir = dir;
+        }
+      }
+    };
+
+    window.addEventListener('deviceorientation', onOrientation);
+    return () => window.removeEventListener('deviceorientation', onOrientation);
+  }, [active, applyDirection]);
+
+  // Swipe + tap fallback controls on canvas
   useEffect(() => {
     if (!active) return;
     const canvas = canvasRef.current;
@@ -331,7 +372,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           </div>
 
           <p className="text-zinc-600 font-mono text-xs mt-4">
-            {isTouchDevice ? 'Swipe to move · Tap to retry' : 'Arrow keys to move'}
+            {isTouchDevice ? 'Tilt to steer · Swipe or tap to retry' : 'Arrow keys to move'}
           </p>
         </motion.div>
       )}
