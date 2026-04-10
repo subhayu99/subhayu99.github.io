@@ -49,6 +49,11 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   }, []);
 
   const close = useCallback(() => {
+    // Save high score before resetting
+    if (scoreRef.current > (parseInt(localStorage.getItem(LS_KEY) || '0', 10))) {
+      localStorage.setItem(LS_KEY, String(scoreRef.current));
+      setHighScore(scoreRef.current);
+    }
     setScore(0);
     setGameOver(false);
     setStarted(false);
@@ -171,12 +176,12 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       const pulse = Math.sin(Date.now() / 200) * 0.15 + 0.85;
 
       const grad = ctx!.createRadialGradient(cx, cy, 0, cx, cy, cellSize);
-      grad.addColorStop(0, `rgba(255, 50, 50, ${0.3 * pulse})`);
+      grad.addColorStop(0, `rgba(255, 255, 255, ${0.3 * pulse})`);
       grad.addColorStop(1, 'transparent');
       ctx!.fillStyle = grad;
       ctx!.fillRect(food.x * cellSize - cellSize / 2, food.y * cellSize - cellSize / 2, cellSize * 2, cellSize * 2);
 
-      ctx!.fillStyle = `rgba(255, 80, 80, ${pulse})`;
+      ctx!.fillStyle = `rgba(255, 255, 255, ${pulse})`;
       ctx!.fillRect(food.x * cellSize + 3, food.y * cellSize + 3, cellSize - 6, cellSize - 6);
     }
 
@@ -499,7 +504,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
 
       // Food
       const pulse = Math.sin(Date.now() / 200) * 0.1 + 0.2;
-      ctx!.fillStyle = `rgba(255, 80, 80, ${pulse})`;
+      ctx!.fillStyle = `rgba(255, 255, 255, ${pulse})`;
       ctx!.fillRect(food.x * cell + 2, food.y * cell + 2, cell - 4, cell - 4);
     }
 
