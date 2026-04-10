@@ -15,18 +15,12 @@ function randomGlyph() { return GLYPHS[Math.floor(Math.random() * GLYPHS.length)
 // ── Scan data collection ──
 
 interface ScanData {
-  ip?: string;
-  city?: string;
-  region?: string;
-  country?: string;
-  isp?: string;
   browser: string;
   os: string;
   screen: string;
   cores?: string;
   ram?: string;
   network?: string;
-  battery?: string;
   timezone: string;
   language: string;
   theme: string;
@@ -52,7 +46,7 @@ function parseUA(): { browser: string; os: string } {
   return { browser: browser.trim(), os: os.trim() };
 }
 
-async function collectScanData(): Promise<ScanData> {
+function collectScanData(): ScanData {
   const { browser, os } = parseUA();
   const data: ScanData = {
     browser,
@@ -72,77 +66,7 @@ async function collectScanData(): Promise<ScanData> {
   const conn = (navigator as any).connection;
   if (conn?.effectiveType) data.network = conn.effectiveType;
 
-  // Battery
-  try {
-    if ((navigator as any).getBattery) {
-      const bat = await (navigator as any).getBattery();
-      data.battery = `${Math.round(bat.level * 100)}%${bat.charging ? ' (charging)' : ''}`;
-    }
-  } catch { /* skip */ }
-
-  // IP + Location (cached in sessionStorage)
-  try {
-    const cached = sessionStorage.getItem('konami-ip-data');
-    if (cached) {
-      const ipData = JSON.parse(cached);
-      Object.assign(data, ipData);
-    } else {
-      const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(3000) });
-      if (res.ok) {
-        const json = await res.json();
-        const ipData = {
-          ip: json.ip,
-          city: json.city,
-          region: json.region,
-          country: json.country_name,
-          isp: json.org,
-        };
-        sessionStorage.setItem('konami-ip-data', JSON.stringify(ipData));
-        Object.assign(data, ipData);
-      }
-    }
-  } catch { /* skip — no IP data */ }
-
   return data;
-}
-
-// ── Typewriter effect ──
-
-function buildScanLines(data: ScanData): { text: string; delay: number }[] {
-  const lines: { text: string; delay: number }[] = [];
-
-  lines.push({ text: '> INITIALIZING BREACH PROTOCOL...', delay: 400 });
-  lines.push({ text: '> SCANNING TARGET...', delay: 600 });
-  lines.push({ text: '', delay: 200 });
-
-  if (data.ip) lines.push({ text: `  IP ADDRESS:    ${data.ip}`, delay: 100 });
-  if (data.city) lines.push({ text: `  LOCATION:      ${data.city}, ${data.region || ''}, ${data.country || ''}`, delay: 100 });
-  if (data.isp) lines.push({ text: `  ISP:           ${data.isp}`, delay: 100 });
-
-  lines.push({ text: '', delay: 300 });
-  lines.push({ text: '> PROFILING DEVICE...', delay: 500 });
-  lines.push({ text: '', delay: 200 });
-
-  lines.push({ text: `  BROWSER:       ${data.browser} · ${data.os}`, delay: 100 });
-  lines.push({ text: `  SCREEN:        ${data.screen}`, delay: 100 });
-  if (data.cores) lines.push({ text: `  CORES:         ${data.cores}${data.ram ? ` · RAM: ${data.ram}` : ''}`, delay: 100 });
-  if (data.network) lines.push({ text: `  NETWORK:       ${data.network}`, delay: 100 });
-  if (data.battery) lines.push({ text: `  BATTERY:       ${data.battery}`, delay: 100 });
-
-  lines.push({ text: '', delay: 300 });
-  lines.push({ text: '> ANALYZING BEHAVIOR...', delay: 500 });
-  lines.push({ text: '', delay: 200 });
-
-  lines.push({ text: `  TIMEZONE:      ${data.timezone}`, delay: 100 });
-  lines.push({ text: `  LANGUAGE:      ${data.language}`, delay: 100 });
-  lines.push({ text: `  THEME PREF:    ${data.theme}`, delay: 100 });
-  lines.push({ text: `  VISIT TIME:    ${data.visitTime}`, delay: 100 });
-
-  lines.push({ text: '', delay: 500 });
-  lines.push({ text: '> BREACH COMPLETE.', delay: 300 });
-  lines.push({ text: '> CLASSIFICATION: ██████████ TOP SECRET', delay: 0 });
-
-  return lines;
 }
 
 // ── Component ──
@@ -256,11 +180,10 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
     }
 
     (async () => {
-      // Start collecting data in parallel — don't block on it
-      const dataPromise = collectScanData();
+      const data = collectScanData();
+      setScanData(data);
       const displayed: string[] = [];
 
-      // Type intro lines immediately (no waiting for data)
       await wait(50);
       if (cancelled) return;
       await typeLine(displayed, '> INITIALIZING BREACH PROTOCOL...');
@@ -271,19 +194,8 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
       scrollDown();
       await wait(300);
       pushEmpty(displayed);
-
-      // Now wait for data (should be ready or almost ready by now)
-      const data = await dataPromise;
-      if (cancelled || cancelRef.current) return;
-      setScanData(data);
-
-      // IP section
-      if (data.ip) { await typeLine(displayed, `  IP ADDRESS:    ${data.ip}`); scrollDown(); await wait(100); }
-      if (data.city) { await typeLine(displayed, `  LOCATION:      ${data.city}, ${data.region || ''}, ${data.country || ''}`); scrollDown(); await wait(100); }
-      if (data.isp) { await typeLine(displayed, `  ISP:           ${data.isp}`); scrollDown(); await wait(100); }
       if (cancelled) return;
 
-      pushEmpty(displayed); await wait(300);
       await typeLine(displayed, '> PROFILING DEVICE...'); scrollDown(); await wait(300);
       pushEmpty(displayed);
       if (cancelled) return;
@@ -292,7 +204,6 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
       await typeLine(displayed, `  SCREEN:        ${data.screen}`); scrollDown(); await wait(100);
       if (data.cores) { await typeLine(displayed, `  CORES:         ${data.cores}${data.ram ? ` · RAM: ${data.ram}` : ''}`); scrollDown(); await wait(100); }
       if (data.network) { await typeLine(displayed, `  NETWORK:       ${data.network}`); scrollDown(); await wait(100); }
-      if (data.battery) { await typeLine(displayed, `  BATTERY:       ${data.battery}`); scrollDown(); await wait(100); }
       if (cancelled) return;
 
       pushEmpty(displayed); await wait(300);
@@ -404,12 +315,10 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
                 <div className="border-b border-dashed border-green-500/20 px-6 py-5">
                   <h3 className="text-green-400/60 text-xs tracking-widest mb-3">SUBJECT PROFILE</h3>
                   <div className="space-y-1.5 text-green-500/70">
-                    {scanData.ip && <div>IP:        <span className="text-green-400">{scanData.ip}</span></div>}
-                    {scanData.city && <div>Location:  <span className="text-green-400">{scanData.city}, {scanData.country}</span></div>}
                     <div>Device:    <span className="text-green-400">{scanData.browser} · {scanData.os}</span></div>
                     <div>Screen:    <span className="text-green-400">{scanData.screen}</span></div>
-                    {scanData.network && <div>Network:   <span className="text-green-400">{scanData.network} · ██████ Mbps</span></div>}
-                    {scanData.battery && <div>Battery:   <span className="text-green-400">{scanData.battery}</span></div>}
+                    {scanData.cores && <div>Cores:     <span className="text-green-400">{scanData.cores}{scanData.ram ? ` · RAM: ${scanData.ram}` : ''}</span></div>}
+                    {scanData.network && <div>Network:   <span className="text-green-400">{scanData.network}</span></div>}
                   </div>
                   <div className="mt-4 flex gap-8 text-xs">
                     <div>
