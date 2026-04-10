@@ -14,8 +14,14 @@ interface SnakeGameProps {
   onClose: () => void;
 }
 
+const LS_KEY = 'snake-high-score';
+
 export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => {
+    const stored = localStorage.getItem(LS_KEY);
+    return stored ? parseInt(stored, 10) || 0 : 0;
+  });
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -181,6 +187,11 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       if (snake.some(s => s.x === head.x && s.y === head.y)) {
         gameOverRef.current = true;
         setGameOver(true);
+        // Save high score
+        if (scoreRef.current > (parseInt(localStorage.getItem(LS_KEY) || '0', 10))) {
+          localStorage.setItem(LS_KEY, String(scoreRef.current));
+          setHighScore(scoreRef.current);
+        }
         return;
       }
 
@@ -418,6 +429,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
             <span className="text-green-400">SNAKE</span>
             <span className="text-white">SCORE: {score}</span>
+            {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
             {isTouchDevice && !isFullscreen && (
               <button
                 onClick={requestFullscreen}
@@ -446,7 +458,12 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                 animate={{ opacity: 1 }}
               >
                 <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
-                <p className="text-white font-mono text-lg mb-4">Score: {score}</p>
+                <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
+                {score >= highScore && score > 0 ? (
+                  <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
+                ) : highScore > 0 ? (
+                  <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
+                ) : <div className="mb-4" />}
                 <div className="flex gap-4 font-mono text-sm">
                   <button
                     onClick={startGame}
