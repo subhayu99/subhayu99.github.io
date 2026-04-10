@@ -19,7 +19,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: '-30px' });
 
-  const metric = extractMetric(project.highlights);
   const firstHighlight = project.highlights[0] ?? '';
   const remainingHighlights = project.highlights.slice(1);
 
@@ -33,11 +32,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
     >
       <div className="flex items-start justify-between gap-2 mb-1">
         <h3 className="text-white font-bold text-base leading-snug">{project.name}</h3>
-        {metric && (
-          <span className="flex-shrink-0 text-gui-accent text-[10px] font-mono bg-gui-accent/10 px-2 py-0.5 rounded-sm whitespace-nowrap">
-            {metric}
-          </span>
-        )}
       </div>
 
       <p className="text-gui-accent text-xs font-mono mb-3">{project.date}</p>

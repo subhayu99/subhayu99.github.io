@@ -76,6 +76,19 @@ export default function GUIPortfolio() {
     setShowMotionToast(false);
   }, []);
 
+  // Apply GUI theme CSS variables from config (single source of truth)
+  useEffect(() => {
+    const root = document.documentElement.style;
+    root.setProperty('--gui-bg', guiTheme.bg);
+    root.setProperty('--gui-surface', guiTheme.surface);
+    root.setProperty('--gui-border', guiTheme.border);
+    root.setProperty('--gui-text', guiTheme.text);
+    root.setProperty('--gui-text-muted', guiTheme.textMuted);
+    root.setProperty('--gui-accent', accentHex);
+    root.setProperty('--gui-accent-hover', accentHoverHex);
+    root.setProperty('--gui-accent-rgb', accentRgbCss);
+  }, []);
+
   const { data: portfolioData, isLoading, error } = useQuery({
     queryKey: ['portfolio-data'],
     queryFn: loadPortfolioData,

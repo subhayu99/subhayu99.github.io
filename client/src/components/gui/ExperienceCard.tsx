@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { Experience } from '../../../../shared/schema';
 import { renderGuiMarkdown } from '../../lib/guiMarkdown';
+import { accentRgba } from '../../config/gui-theme.config';
 
 interface ExperienceCardProps {
   experience: Experience;
@@ -45,7 +46,7 @@ export default function ExperienceCard({ experience, index, total }: ExperienceC
       <div
         className={`absolute left-0 top-1.5 w-3 h-3 rounded-full border-2 ${
           isLatest
-            ? 'border-gui-accent bg-gui-accent shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+            ? `border-gui-accent bg-gui-accent shadow-[0_0_8px_rgba(var(--gui-accent-rgb),0.5)]`
             : 'border-gui-accent bg-black'
         }`}
         style={{ opacity: dotOpacity }}

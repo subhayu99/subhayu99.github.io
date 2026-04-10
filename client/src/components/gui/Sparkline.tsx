@@ -1,5 +1,6 @@
 import { useMemo, useState, useId } from 'react';
 import { motion } from 'framer-motion';
+import { accentRgbStr, accentRgba } from '../../config/gui-theme.config';
 
 interface SparklineProps {
   data: { date: string; downloads: number }[];
@@ -59,8 +60,8 @@ export default function Sparkline({ data, width = 140, height = 40, className = 
         {/* Gradient fill */}
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgb(245, 158, 11)" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="rgb(245, 158, 11)" stopOpacity="0" />
+            <stop offset="0%" stopColor={accentRgbStr} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={accentRgbStr} stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -77,7 +78,7 @@ export default function Sparkline({ data, width = 140, height = 40, className = 
         <motion.path
           d={path}
           fill="none"
-          stroke="rgb(245, 158, 11)"
+          stroke={accentRgbStr}
           strokeWidth={1.5}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -105,8 +106,8 @@ export default function Sparkline({ data, width = 140, height = 40, className = 
             cx={points[hovered].x}
             cy={points[hovered].y}
             r={3}
-            fill="rgb(245, 158, 11)"
-            className="drop-shadow-[0_0_4px_rgba(245,158,11,0.6)]"
+            fill={accentRgbStr}
+            style={{ filter: `drop-shadow(0 0 4px ${accentRgba(0.6)})` }}
           />
         )}
       </svg>
