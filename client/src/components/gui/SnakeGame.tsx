@@ -401,7 +401,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
       canvas.removeEventListener('touchmove', onTouchMove);
       canvas.removeEventListener('touchend', onTouchEnd);
     };
-  }, [active, startGame, applyDirection]);
+  }, [active, started, startGame, applyDirection]);
 
   // Screensaver — self-playing snake behind the splash screen
   useEffect(() => {

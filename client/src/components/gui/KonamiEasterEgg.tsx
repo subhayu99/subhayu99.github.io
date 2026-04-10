@@ -261,7 +261,7 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
       const displayed: string[] = [];
 
       // Type intro lines immediately (no waiting for data)
-      await wait(200);
+      await wait(50);
       if (cancelled) return;
       await typeLine(displayed, '> INITIALIZING BREACH PROTOCOL...');
       scrollDown();
@@ -371,9 +371,8 @@ export default function KonamiEasterEgg({ active, onClose }: KonamiEasterEggProp
             <motion.div
               ref={scanRef}
               className="absolute inset-0 overflow-y-auto p-6 sm:p-10 font-mono text-sm sm:text-base text-green-400"
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
             >
               {scanLines.map((line, i) => (
                 <div key={i} className={`leading-7 ${line.startsWith('>') ? 'text-green-300 font-bold' : 'text-green-500/80'}`}>
