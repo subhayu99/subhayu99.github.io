@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { cycleTheme, applyColorTheme, colorThemes, type ColorTheme } from '../config/gui-theme.config';
 
 const SNAKE_TRIGGER = 'snake';
+const REFLEX_TRIGGER = 'reflex';
 
 // Shake detection thresholds
 const SHAKE_THRESHOLD = 25;
@@ -15,6 +16,7 @@ const T_KEY_WINDOW_MS = 400;
 export function useGestureTrigger(motionEnabled = false) {
   const [themeFlash, setThemeFlash] = useState<ColorTheme | null>(null);
   const [snakeActive, setSnakeActive] = useState(false);
+  const [reflexActive, setReflexActive] = useState(false);
 
   const snakeBufferRef = useRef('');
   const tTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -22,6 +24,7 @@ export function useGestureTrigger(motionEnabled = false) {
 
   const resetThemeFlash = useCallback(() => setThemeFlash(null), []);
   const resetSnake = useCallback(() => setSnakeActive(false), []);
+  const resetReflex = useCallback(() => setReflexActive(false), []);
 
   const triggerThemeCycle = useCallback(() => {
     const next = cycleTheme();
@@ -140,14 +143,17 @@ export function useGestureTrigger(motionEnabled = false) {
         tPendingRef.current = false;
       }
 
-      // Snake trigger
-      if (snakeActive) return;
+      // Word triggers (snake, reflex)
+      if (snakeActive || reflexActive) return;
       snakeBufferRef.current += key.toLowerCase();
       if (snakeBufferRef.current.length > 10) {
         snakeBufferRef.current = snakeBufferRef.current.slice(-10);
       }
       if (snakeBufferRef.current.endsWith(SNAKE_TRIGGER)) {
         setSnakeActive(true);
+        snakeBufferRef.current = '';
+      } else if (snakeBufferRef.current.endsWith(REFLEX_TRIGGER)) {
+        setReflexActive(true);
         snakeBufferRef.current = '';
       }
     };
@@ -157,7 +163,7 @@ export function useGestureTrigger(motionEnabled = false) {
       window.removeEventListener('keydown', handleKey);
       if (tTimerRef.current) clearTimeout(tTimerRef.current);
     };
-  }, [snakeActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
+  }, [snakeActive, reflexActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
 
-  return { themeFlash, snakeActive, resetThemeFlash, resetSnake };
+  return { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex };
 }
