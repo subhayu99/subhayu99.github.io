@@ -6,7 +6,6 @@ import { useViewMode } from '../../hooks/useViewMode';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import StatCard from './StatCard';
 import SocialIcon from './SocialIcon';
-import ScrambleText from './ScrambleText';
 
 interface HeroSectionProps {
   data: PortfolioData;
@@ -158,11 +157,11 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
       {/* Role */}
       <motion.p
         className="text-gui-text-muted text-xs sm:text-sm tracking-[0.3em] uppercase font-light mb-12 sm:mb-16"
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ delay: 0.5 }}
+        initial={{ opacity: 0, filter: 'blur(6px)' }}
+        animate={isInView ? { opacity: 1, filter: 'blur(0px)' } : { opacity: 0, filter: 'blur(6px)' }}
+        transition={{ delay: 0.7, duration: 0.8, ease: 'easeOut' }}
       >
-        <ScrambleText text={role} delay={200} />
+        {role}
       </motion.p>
 
       {/* Stats grid */}
@@ -201,7 +200,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         )}
       </motion.div>
 
-      <span className="secret-text block mt-2 font-mono">// the cake is a lie. also try the konami code.</span>
+      <span className="secret-text block mt-2 font-mono">// the cake is a lie. press T to change colors.</span>
 
       {/* Decorative vertical text */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center">
