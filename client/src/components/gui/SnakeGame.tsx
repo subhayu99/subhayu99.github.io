@@ -89,9 +89,9 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Use full available screen — compute grid from screen dimensions
-    const w = Math.floor(window.innerWidth * 0.95);
-    const h = Math.floor(window.innerHeight * 0.80);
+    // Fill entire screen edge-to-edge
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     const cellSize = Math.max(CELL_SIZE_TARGET, Math.floor(Math.min(w, h) / 25));
     const cols = Math.floor(w / cellSize);
     const rows = Math.floor(h / cellSize);
@@ -465,58 +465,54 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
             </motion.div>
           ) : (
             <>
-              {/* Header */}
-              <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
-                <span className="text-green-400">SNAKE</span>
-                <span className="text-white">SCORE: {score}</span>
-                {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
+              {/* Canvas — fills entire screen */}
+              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+
+              {/* HUD overlay — top of screen */}
+              <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 font-mono text-xs z-10 bg-gradient-to-b from-black/60 to-transparent">
+                <div className="flex items-center gap-3">
+                  <span className="text-green-400">SNAKE</span>
+                  <span className="text-white">SCORE: {score}</span>
+                  {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
+                </div>
                 <button
                   onClick={close}
                   className="text-zinc-500 hover:text-red-400 transition-colors"
                 >
-                  CLOSE
+                  ✕
                 </button>
               </div>
 
-              {/* Canvas */}
-              <div className="relative border border-green-500/30">
-                <canvas ref={canvasRef} />
-
-                {/* Game over overlay */}
-                {gameOver && (
-                  <motion.div
-                    className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
-                    <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
-                    {score >= highScore && score > 0 ? (
-                      <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
-                    ) : highScore > 0 ? (
-                      <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
-                    ) : <div className="mb-4" />}
-                    <div className="flex gap-4 font-mono text-sm">
-                      <button
-                        onClick={startGame}
-                        className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
-                      >
-                        {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
-                      </button>
-                      <button
-                        onClick={close}
-                        className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white transition-colors"
-                      >
-                        QUIT
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-
-              <p className="text-zinc-600 font-mono text-xs mt-4">
-                {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
-              </p>
+              {/* Game over overlay */}
+              {gameOver && (
+                <motion.div
+                  className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
+                  <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
+                  {score >= highScore && score > 0 ? (
+                    <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
+                  ) : highScore > 0 ? (
+                    <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
+                  ) : <div className="mb-4" />}
+                  <div className="flex gap-4 font-mono text-sm">
+                    <button
+                      onClick={startGame}
+                      className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
+                    >
+                      {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
+                    </button>
+                    <button
+                      onClick={close}
+                      className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white transition-colors"
+                    >
+                      QUIT
+                    </button>
+                  </div>
+                </motion.div>
+              )}
             </>
           )}
         </motion.div>
