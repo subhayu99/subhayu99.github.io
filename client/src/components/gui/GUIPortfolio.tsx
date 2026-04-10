@@ -90,9 +90,10 @@ export default function GUIPortfolio() {
     root.setProperty('--gui-accent', accentHex);
     root.setProperty('--gui-accent-hover', accentHoverHex);
     root.setProperty('--gui-accent-rgb', accentRgbCss);
+    root.setProperty('--gui-accent-ch', accentRgbCss.replace(/,\s*/g, ' '));
     // Restore saved color theme (overrides defaults above if non-default)
     const saved = getSavedTheme();
-    if (saved.key !== 'matrix') applyColorTheme(saved);
+    applyColorTheme(saved);
   }, []);
 
   const { data: portfolioData, isLoading, error } = useQuery({

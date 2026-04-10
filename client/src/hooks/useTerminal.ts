@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
+import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
 // Import specific date-fns functions for better tree-shaking
@@ -1902,23 +1903,20 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     if (theme === 'reset') {
       storage.remove(storageConfig.keys.theme);
-      addLine('<span class="text-terminal-yellow">Theme reset. Refreshing page...</span>');
-      setTimeout(() => window.location.reload(), terminalConfig.animations.themeReloadDelay);
+      localStorage.removeItem('gui-color-theme');
+      applyColorTheme(colorThemes[0]);
+      addLine('<span class="text-terminal-yellow">Theme reset to Matrix Green.</span>');
       return;
     }
 
-    if (themes[theme]) {
+    // Find matching theme in unified palette
+    const matchedTheme = colorThemes.find(t => t.key === theme);
+    if (matchedTheme && themes[theme]) {
       const selectedTheme = themes[theme];
       addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switching to ${selectedTheme.name} theme...</span>`);
 
-      Object.keys(selectedTheme).forEach(key => {
-        if (key !== 'name') {
-          document.documentElement.style.setProperty(key, selectedTheme[key]);
-        }
-      });
-
-      // Save the selected theme to localStorage for persistence
-      storage.set(storageConfig.keys.theme, theme);
+      // Apply to both GUI and terminal CSS variables
+      applyColorTheme(matchedTheme);
 
       setTimeout(() => {
         addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Theme changed successfully!</span>`);
