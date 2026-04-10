@@ -116,10 +116,6 @@ export default function TechStackSection({ data }: TechStackSectionProps) {
                   transition={{ duration: 0.4, delay: gi * 0.1 }}
                 >
                   <div className="flex items-center gap-3 mb-4">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: group.color, boxShadow: `0 0 6px ${group.color}40` }}
-                    />
                     <span className="text-gui-accent font-mono text-xs tracking-widest uppercase">
                       {group.label}
                     </span>
