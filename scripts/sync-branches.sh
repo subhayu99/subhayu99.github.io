@@ -43,6 +43,9 @@
 #   - client/public/manifest.json (generated PWA manifest)
 #   - client/public/resume.md (generated markdown resume)
 #   - client/public/resume.pdf (generated PDF resume)
+#   - client/public/logo.png (personal branding logo)
+#   - client/public/icons/* (PWA icons - differ between branches)
+#   - client/public/data/skill-graph.json (skill graph data)
 #
 # SAFETY FEATURES:
 #   - Won't run if you have uncommitted changes
@@ -97,6 +100,7 @@ PERSONAL_FILES=(
   "client/public/resume\.pdf"
   "client/public/logo\.png"
   "client/public/data/skill-graph\.json"
+  "client/public/icons/.*"
 )
 
 # Parse arguments
@@ -230,7 +234,7 @@ print_info "Finding commits to sync..."
 
 # Build git log command with optional limit
 if [[ -n "$LIMIT_COMMITS" ]]; then
-  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" -n "$LIMIT_COMMITS" | tail -r)
+  COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" -n "$LIMIT_COMMITS" | if command -v tac >/dev/null 2>&1; then tac; else tail -r; fi)
 else
   COMMITS=$(git log "$TARGET_BRANCH..$SOURCE_BRANCH" --format="%H" --reverse)
 fi
