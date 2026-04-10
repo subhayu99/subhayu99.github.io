@@ -562,12 +562,12 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
-                <h2 className="font-display text-green-400 text-5xl sm:text-7xl tracking-wider">SNAKE</h2>
+                <h2 className="font-display text-gui-accent text-5xl sm:text-7xl tracking-wider">SNAKE</h2>
                 {highScore > 0 && (
                   <p className="text-zinc-500 font-mono text-sm">HIGH SCORE: {highScore}</p>
                 )}
                 <motion.p
-                  className="text-green-400/70 font-mono text-sm mt-4"
+                  className="text-gui-accent/70 font-mono text-sm mt-4"
                   animate={{ opacity: [0.4, 1, 0.4] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
@@ -592,7 +592,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
               {/* HUD overlay — top of screen */}
               <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 py-3 font-mono text-xs z-10 bg-gradient-to-b from-black/60 to-transparent">
                 <div className="flex items-center gap-3">
-                  <span className="text-green-400">SNAKE</span>
+                  <span className="text-gui-accent">SNAKE</span>
                   <span className="text-white">SCORE: {score}</span>
                   {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
                   {autopilot && <span className="text-yellow-400/60 animate-pulse">AUTO</span>}
@@ -615,14 +615,14 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
                   <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
                   <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
                   {score >= highScore && score > 0 ? (
-                    <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
+                    <p className="text-gui-accent font-mono text-xs mb-4">NEW HIGH SCORE!</p>
                   ) : highScore > 0 ? (
                     <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
                   ) : <div className="mb-4" />}
                   <div className="flex gap-4 font-mono text-sm">
                     <button
                       onClick={startGame}
-                      className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
+                      className="px-4 py-2 border border-[rgba(var(--gui-accent-rgb),0.4)] text-gui-accent hover:bg-[rgba(var(--gui-accent-rgb),0.1)] transition-colors"
                     >
                       {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
                     </button>
