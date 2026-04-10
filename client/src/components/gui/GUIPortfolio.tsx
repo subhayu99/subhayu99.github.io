@@ -38,7 +38,7 @@ export default function GUIPortfolio() {
     return localStorage.getItem('motionPermission') === 'granted';
   });
   const [showMotionToast, setShowMotionToast] = useState(false);
-  const { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex } = useGestureTrigger(motionEnabled);
+  const { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex, triggerReflex } = useGestureTrigger(motionEnabled);
 
   // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
@@ -167,7 +167,7 @@ export default function GUIPortfolio() {
       <SnakeGame active={snakeActive} onClose={resetSnake} />
       <ReflexGame active={reflexActive} onClose={resetReflex} />
       <Navbar activeSection={activeSection} data={portfolioData} />
-      <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
+      <HeroSection data={portfolioData} pypiStats={pypiStats ?? undefined} onTripleTap={triggerReflex} />
       <AboutSection data={portfolioData} />
       <TechStackSection data={portfolioData} />
       <ExperienceSection data={portfolioData} />
