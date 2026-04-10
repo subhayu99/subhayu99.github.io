@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useInView } from 'framer-motion';
 
 const GLYPHS = '@#%¥∆§£€¢¤░▒▓█▀▄■□◆◇○●アイ ウ エ オ カ キ ク ケ コ サ シ ス セ ソ タ チ ツ テ ト ナ ニ ヌ ネ ノ ハ ヒ フ ヘ ホ マ ミ ム メ モ ヤ ユ ヨ ラ リ ル レ ロ ワ'.split(' ');
-const CYCLES = 5;
+const CYCLES = 3;
 const TICK_MS = 28;
 
 function randomGlyph() {

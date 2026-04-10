@@ -105,7 +105,7 @@ export default function MatrixRain() {
           const charY = col.y - j * (COL_WIDTH - 2);
           if (charY < -20 || charY > h + 20) continue;
 
-          const trailOpacity = (1 - j / trailLen) * 0.04 * opacity * distFade;
+          const trailOpacity = (1 - j / trailLen) * 0.15 * opacity * distFade;
           if (trailOpacity < 0.002) continue;
 
           ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
@@ -123,16 +123,17 @@ export default function MatrixRain() {
     resize();
     resetIdle();
 
-    const onActivity = (e: MouseEvent | Event) => {
+    const onActivity = () => {
       resetIdle();
-      if (e instanceof MouseEvent) {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
     };
 
     window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', onActivity, { passive: true });
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('scroll', onActivity, { passive: true });
     window.addEventListener('keydown', onActivity, { passive: true });
 
@@ -142,7 +143,7 @@ export default function MatrixRain() {
       cancelAnimationFrame(rafId);
       clearTimeout(idleTimer);
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', onActivity);
+      window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('scroll', onActivity);
       window.removeEventListener('keydown', onActivity);
     };
