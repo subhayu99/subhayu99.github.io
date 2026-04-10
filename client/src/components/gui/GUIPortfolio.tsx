@@ -178,14 +178,14 @@ export default function GUIPortfolio() {
       {/* Motion permission toast */}
       {showMotionToast && (
         <div className="fixed bottom-6 left-4 right-4 z-[90] flex items-center justify-between
-                        bg-black/95 border border-green-500/30 px-4 py-3 font-mono text-xs
+                        bg-black/95 border border-[rgba(var(--gui-accent-rgb),0.3)] px-4 py-3 font-mono text-xs
                         backdrop-blur-sm animate-in slide-in-from-bottom-4">
           <span className="text-zinc-300">Shake to change colors!</span>
           <div className="flex gap-2 ml-3 shrink-0">
             <button
               onClick={handleEnableMotion}
-              className="px-3 py-1.5 border border-green-500/50 text-green-400
-                         hover:bg-green-500/10 transition-colors"
+              className="px-3 py-1.5 border border-[rgba(var(--gui-accent-rgb),0.5)] text-gui-accent
+                         hover:bg-[rgba(var(--gui-accent-rgb),0.1)] transition-colors"
             >
               Enable
             </button>
