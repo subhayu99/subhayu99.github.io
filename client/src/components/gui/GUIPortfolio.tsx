@@ -65,6 +65,8 @@ export default function GUIPortfolio() {
         localStorage.setItem('motionPermission', 'granted');
         setMotionEnabled(true);
       }
+      // Lock to portrait globally — user gesture satisfies browser requirement
+      (screen.orientation as any)?.lock?.('portrait').catch(() => {});
     } catch {
       localStorage.setItem('motionPermission', 'denied');
     }
