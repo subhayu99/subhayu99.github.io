@@ -165,5 +165,5 @@ export function useGestureTrigger(motionEnabled = false) {
     };
   }, [snakeActive, reflexActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
 
-  return { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex };
+  return { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex, triggerReflex: () => setReflexActive(true) };
 }

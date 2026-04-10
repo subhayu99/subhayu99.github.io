@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView } from 'framer-motion';
 import type { PortfolioData } from '../../../../shared/schema';
 import type { PyPIStatsData } from '../../lib/pypiStats';
@@ -10,6 +10,7 @@ import SocialIcon from './SocialIcon';
 interface HeroSectionProps {
   data: PortfolioData;
   pypiStats?: PyPIStatsData;
+  onTripleTap?: () => void;
 }
 
 function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
@@ -58,7 +59,7 @@ function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
   return stats.slice(0, 4);
 }
 
-export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
+export default function HeroSection({ data, pypiStats, onTripleTap }: HeroSectionProps) {
   const { switchTo } = useViewMode();
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { margin: '-40px' });
@@ -67,6 +68,20 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
   const nameParts = cv.name.toUpperCase().split(' ');
   const firstName = nameParts[0];
   const restName = nameParts.slice(1).join(' ');
+
+  // Triple-tap detection on name
+  const tapTimesRef = useRef<number[]>([]);
+  const handleNameTap = useCallback(() => {
+    const now = Date.now();
+    tapTimesRef.current.push(now);
+    // Keep only last 3 taps
+    if (tapTimesRef.current.length > 3) tapTimesRef.current.shift();
+    // Check if 3 taps within 600ms
+    if (tapTimesRef.current.length === 3 && now - tapTimesRef.current[0] < 600) {
+      tapTimesRef.current = [];
+      onTripleTap?.();
+    }
+  }, [onTripleTap]);
 
   // Parallax mouse tracking for hero name
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -123,7 +138,7 @@ export default function HeroSection({ data, pypiStats }: HeroSectionProps) {
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
       >
-        <h1 className="font-display text-white leading-[0.85] tracking-tight">
+        <h1 className="font-display text-white leading-[0.85] tracking-tight cursor-default" onClick={handleNameTap}>
           <span
             className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] transition-all duration-150 ease-out will-change-transform"
             style={{
