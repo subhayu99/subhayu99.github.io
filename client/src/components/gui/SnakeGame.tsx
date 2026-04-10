@@ -23,6 +23,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     return stored ? parseInt(stored, 10) || 0 : 0;
   });
   const [gameOver, setGameOver] = useState(false);
+  const [started, setStarted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -47,20 +48,23 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   const close = useCallback(() => {
     setScore(0);
     setGameOver(false);
+    setStarted(false);
     if (tickRef.current) clearInterval(tickRef.current);
     cancelAnimationFrame(rafRef.current);
     exitFullscreen();
     onClose();
   }, [onClose, exitFullscreen]);
 
-  // Enter fullscreen + lock orientation when game activates
-  // Triggered by first user tap on the game container
-  const requestFullscreen = useCallback(() => {
+  // Enter fullscreen + lock orientation + start the game
+  // Called from "TAP TO PLAY" splash (user gesture required for fullscreen)
+  const enterAndStart = useCallback(() => {
     const el = containerRef.current;
-    if (!el || document.fullscreenElement) return;
-    el.requestFullscreen?.().then(() => {
-      (screen.orientation as any)?.lock?.('portrait').catch(() => {});
-    }).catch(() => {});
+    if (el && !document.fullscreenElement) {
+      el.requestFullscreen?.().then(() => {
+        (screen.orientation as any)?.lock?.('portrait').catch(() => {});
+      }).catch(() => {});
+    }
+    setStarted(true);
   }, []);
 
   const placeFood = useCallback((snake: Point[], cols: number, rows: number): Point => {
@@ -85,7 +89,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = Math.min(window.innerWidth * 0.85, window.innerHeight * 0.65, 600);
+    const size = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.75);
     const dpr = window.devicePixelRatio || 1;
     canvas.width = size * dpr;
     canvas.height = size * dpr;
@@ -391,14 +395,14 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     };
   }, [active, startGame, applyDirection]);
 
-  // Start game when activated
+  // Start game when player taps to play
   useEffect(() => {
-    if (active) startGame();
+    if (active && started) startGame();
     return () => {
       if (tickRef.current) clearInterval(tickRef.current);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [active, startGame]);
+  }, [active, started, startGame]);
 
   // Exit fullscreen if user exits via browser gesture (swipe down on Android)
   useEffect(() => {
@@ -412,7 +416,6 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
   }, [active]);
 
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isFullscreen = typeof document !== 'undefined' && !!document.fullscreenElement;
 
   return (
     <AnimatePresence>
@@ -425,66 +428,92 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header */}
-          <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
-            <span className="text-green-400">SNAKE</span>
-            <span className="text-white">SCORE: {score}</span>
-            {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
-            {isTouchDevice && !isFullscreen && (
-              <button
-                onClick={requestFullscreen}
-                className="px-2 py-1 border border-green-500/40 text-green-400 text-xs hover:bg-green-500/10 transition-colors"
-              >
-                ⛶ FULLSCREEN
-              </button>
-            )}
-            <button
-              onClick={close}
-              className="text-zinc-500 hover:text-red-400 transition-colors"
+          {!started ? (
+            // Tap-to-play splash — enters fullscreen + locks orientation + starts game
+            <motion.div
+              className="flex flex-col items-center justify-center gap-6 cursor-pointer select-none"
+              onClick={enterAndStart}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.4 }}
             >
-              CLOSE
-            </button>
-          </div>
-
-          {/* Canvas */}
-          <div className="relative border border-green-500/30">
-            <canvas ref={canvasRef} />
-
-            {/* Game over overlay */}
-            {gameOver && (
-              <motion.div
-                className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+              <h2 className="font-display text-green-400 text-5xl sm:text-7xl tracking-wider">SNAKE</h2>
+              {highScore > 0 && (
+                <p className="text-zinc-500 font-mono text-sm">HIGH SCORE: {highScore}</p>
+              )}
+              <motion.p
+                className="text-green-400/70 font-mono text-sm mt-4"
+                animate={{ opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2, repeat: Infinity }}
               >
-                <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
-                <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
-                {score >= highScore && score > 0 ? (
-                  <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
-                ) : highScore > 0 ? (
-                  <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
-                ) : <div className="mb-4" />}
-                <div className="flex gap-4 font-mono text-sm">
-                  <button
-                    onClick={startGame}
-                    className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
-                  >
-                    {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
-                  </button>
-                  <button
-                    onClick={close}
-                    className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white transition-colors"
-                  >
-                    QUIT
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </div>
+                {isTouchDevice ? 'TAP TO PLAY' : 'CLICK TO PLAY'}
+              </motion.p>
+              <p className="text-zinc-600 font-mono text-xs">
+                {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
+              </p>
+              <button
+                onClick={(e) => { e.stopPropagation(); close(); }}
+                className="mt-4 px-4 py-2 border border-white/10 text-zinc-500 font-mono text-xs hover:text-zinc-300 transition-colors"
+              >
+                BACK
+              </button>
+            </motion.div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex items-center gap-4 sm:gap-6 mb-4 font-mono text-sm">
+                <span className="text-green-400">SNAKE</span>
+                <span className="text-white">SCORE: {score}</span>
+                {highScore > 0 && <span className="text-zinc-500">BEST: {highScore}</span>}
+                <button
+                  onClick={close}
+                  className="text-zinc-500 hover:text-red-400 transition-colors"
+                >
+                  CLOSE
+                </button>
+              </div>
 
-          <p className="text-zinc-600 font-mono text-xs mt-4">
-            {isTouchDevice ? 'Tilt to steer · Tap FULLSCREEN to lock rotation' : 'Arrow keys to move'}
-          </p>
+              {/* Canvas */}
+              <div className="relative border border-green-500/30">
+                <canvas ref={canvasRef} />
+
+                {/* Game over overlay */}
+                {gameOver && (
+                  <motion.div
+                    className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <h3 className="font-display text-red-400 text-4xl mb-2">GAME OVER</h3>
+                    <p className="text-white font-mono text-lg mb-1">Score: {score}</p>
+                    {score >= highScore && score > 0 ? (
+                      <p className="text-green-400 font-mono text-xs mb-4">NEW HIGH SCORE!</p>
+                    ) : highScore > 0 ? (
+                      <p className="text-zinc-500 font-mono text-xs mb-4">Best: {highScore}</p>
+                    ) : <div className="mb-4" />}
+                    <div className="flex gap-4 font-mono text-sm">
+                      <button
+                        onClick={startGame}
+                        className="px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-500/10 transition-colors"
+                      >
+                        {isTouchDevice ? 'TAP TO ' : '[ENTER] '}RETRY
+                      </button>
+                      <button
+                        onClick={close}
+                        className="px-4 py-2 border border-white/20 text-zinc-400 hover:text-white transition-colors"
+                      >
+                        QUIT
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              <p className="text-zinc-600 font-mono text-xs mt-4">
+                {isTouchDevice ? 'Tilt to steer' : 'Arrow keys to move'}
+              </p>
+            </>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
