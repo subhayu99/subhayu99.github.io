@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { guiTheme } from '../../config/gui-theme.config';
+import { getAccentRgb } from '../../config/gui-theme.config';
 
 const CELL_SIZE_TARGET = 20; // px per cell — grid adapts to screen
 const TICK_MS = 100;
@@ -110,7 +110,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     canvas.style.height = `${canvasH}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const [r, g, b] = guiTheme.accentRgb;
+    const [r, g, b] = getAccentRgb();
 
     const startSnake: Point[] = [
       { x: 5, y: Math.floor(rows / 2) },
@@ -425,7 +425,7 @@ export default function SnakeGame({ active, onClose }: SnakeGameProps) {
     canvas.style.height = `${ch}px`;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    const [r, g, b] = guiTheme.accentRgb;
+    const [r, g, b] = getAccentRgb();
     const ALL_DIRS: Direction[] = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
     const OPP: Record<Direction, Direction> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
     const DELTA: Record<Direction, Point> = { UP: { x: 0, y: -1 }, DOWN: { x: 0, y: 1 }, LEFT: { x: -1, y: 0 }, RIGHT: { x: 1, y: 0 } };

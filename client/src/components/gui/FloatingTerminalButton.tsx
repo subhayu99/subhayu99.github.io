@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useViewMode } from '../../hooks/useViewMode';
-import { accentRgba } from '../../config/gui-theme.config';
+const ar = (o: number) => `rgba(var(--gui-accent-rgb), ${o})`;
 
 export default function FloatingTerminalButton() {
   const { switchTo } = useViewMode();
@@ -17,9 +17,9 @@ export default function FloatingTerminalButton() {
       title="Switch to Terminal view"
       animate={{
         boxShadow: [
-          `0 0 0px ${accentRgba(0)}`,
-          `0 0 12px ${accentRgba(0.3)}`,
-          `0 0 0px ${accentRgba(0)}`,
+          `0 0 0px ${ar(0)}`,
+          `0 0 12px ${ar(0.3)}`,
+          `0 0 0px ${ar(0)}`,
         ],
       }}
       transition={{

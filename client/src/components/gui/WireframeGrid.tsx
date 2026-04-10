@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { guiTheme } from '../../config/gui-theme.config';
+import { getAccentRgb } from '../../config/gui-theme.config';
 
 const GRID_SPACING = 60;
 const WARP_RADIUS = 150;
@@ -23,8 +23,6 @@ export default function WireframeGrid() {
     let mouseY = -1000;
     let scrollY = 0;
     let needsRedraw = true;
-
-    const [r, g, b] = guiTheme.accentRgb;
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -54,6 +52,7 @@ export default function WireframeGrid() {
       rafId = requestAnimationFrame(draw);
       if (!needsRedraw) return;
       needsRedraw = false;
+      const [r, g, b] = getAccentRgb();
 
       ctx!.clearRect(0, 0, w, h);
 

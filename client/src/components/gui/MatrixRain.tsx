@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { guiTheme } from '../../config/gui-theme.config';
+import { getAccentRgb } from '../../config/gui-theme.config';
 
 const KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
 const DIGITS = '0123456789';
@@ -37,8 +37,6 @@ export default function MatrixRain() {
     let lastTime = 0;
     let mouseX = -1;
     let mouseY = -1;
-
-    const [r, g, b] = guiTheme.accentRgb;
 
     function resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -84,6 +82,7 @@ export default function MatrixRain() {
       rafId = requestAnimationFrame(draw);
       const dt = lastTime ? (now - lastTime) / 1000 : 0.016;
       lastTime = now;
+      const [r, g, b] = getAccentRgb();
 
       // Fade opacity
       if (isIdle && opacity < 1) {

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { Project } from '../../../../shared/schema';
 import type { PyPIPackageStats } from '../../lib/pypiStats';
 import { renderGuiMarkdown } from '../../lib/guiMarkdown';
-import { accentRgba } from '../../config/gui-theme.config';
+const accentRgba = (o: number) => `rgba(var(--gui-accent-rgb), ${o})`;
 import Sparkline from './Sparkline';
 
 interface ProjectCardProps {

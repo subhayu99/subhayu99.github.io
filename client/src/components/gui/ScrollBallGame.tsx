@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValue, useMotionValueEvent, AnimatePresence } from 'framer-motion';
-import { accentRgba } from '../../config/gui-theme.config';
+// CSS variable shorthand for live accent color with opacity
+const ar = (opacity: number) => `rgba(var(--gui-accent-rgb), ${opacity})`;
 
 interface PathData {
   progress: number[];
@@ -225,11 +226,11 @@ function MobileBall() {
               className="w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2"
               style={{
                 background: rainPhase === 'warning'
-                  ? `radial-gradient(circle, rgba(0,255,100,0.9) 0%, ${accentRgba(0.6)} 50%, transparent 100%)`
-                  : `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.3)} 70%, transparent 100%)`,
+                  ? `radial-gradient(circle, rgba(var(--gui-accent-rgb), 0.9) 0%, ${ar(0.6)} 50%, transparent 100%)`
+                  : `radial-gradient(circle, ${ar(0.9)} 0%, ${ar(0.3)} 70%, transparent 100%)`,
                 boxShadow: rainPhase === 'warning'
-                  ? `0 0 30px rgba(0,255,100,0.6), 0 0 60px rgba(0,255,100,0.3)`
-                  : `0 0 10px ${accentRgba(0.3)}`,
+                  ? `0 0 30px rgba(var(--gui-accent-rgb), 0.6), 0 0 60px rgba(var(--gui-accent-rgb), 0.3)`
+                  : `0 0 10px ${ar(0.3)}`,
                 transition: 'background 0.5s, box-shadow 0.5s',
               }}
             />
@@ -479,15 +480,15 @@ function DesktopBall() {
                 height: 14,
                 transition: 'background 0.5s, box-shadow 0.5s',
                 background: rainPhase === 'warning'
-                  ? `radial-gradient(circle, rgba(0,255,100,0.9) 0%, ${accentRgba(0.5)} 50%, transparent 100%)`
-                  : `radial-gradient(circle, ${accentRgba(0.9)} 0%, ${accentRgba(0.4)} 60%, transparent 100%)`,
+                  ? `radial-gradient(circle, rgba(var(--gui-accent-rgb), 0.9) 0%, ${ar(0.5)} 50%, transparent 100%)`
+                  : `radial-gradient(circle, ${ar(0.9)} 0%, ${ar(0.4)} 60%, transparent 100%)`,
                 boxShadow: rainPhase === 'warning'
-                  ? `0 0 40px rgba(0,255,100,0.7), 0 0 80px rgba(0,255,100,0.3)`
+                  ? `0 0 40px rgba(var(--gui-accent-rgb), 0.7), 0 0 80px rgba(var(--gui-accent-rgb), 0.3)`
                   : pulse
-                    ? `0 0 30px ${accentRgba(0.6)}, 0 0 60px ${accentRgba(0.2)}`
+                    ? `0 0 30px ${ar(0.6)}, 0 0 60px ${ar(0.2)}`
                     : magnetized
-                      ? `0 0 24px ${accentRgba(0.6)}, 0 0 48px ${accentRgba(0.25)}, 0 0 8px ${accentRgba(0.7)}`
-                      : `0 0 16px ${accentRgba(0.3)}, 0 0 4px ${accentRgba(0.5)}`,
+                      ? `0 0 24px ${ar(0.6)}, 0 0 48px ${ar(0.25)}, 0 0 8px ${ar(0.7)}`
+                      : `0 0 16px ${ar(0.3)}, 0 0 4px ${ar(0.5)}`,
               }}
               animate={
                 rainPhase === 'warning'
