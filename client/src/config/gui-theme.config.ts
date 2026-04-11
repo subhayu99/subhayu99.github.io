@@ -45,6 +45,9 @@ export function applyColorTheme(theme: ColorTheme) {
   const [r, g, b] = theme.accentRgb;
   const [rh, gh, bh] = theme.accentHoverRgb;
   const root = document.documentElement.style;
+
+  // Update cached RGB so canvas components pick it up instantly
+  _cachedRgb = [r, g, b];
   const hex = (n: number) => n.toString(16).padStart(2, '0');
 
   // GUI accent variables
@@ -115,26 +118,24 @@ export const accentHex = `#${r.toString(16).padStart(2, '0')}${g.toString(16).pa
 export const accentHoverHex = `#${rh.toString(16).padStart(2, '0')}${gh.toString(16).padStart(2, '0')}${bh.toString(16).padStart(2, '0')}`;
 export const accentRgbCss = `${r}, ${g}, ${b}`;
 
-// ── Live helpers (read current theme from CSS variables) ─────
+// ── Live helpers (cached — updated on theme change) ─────
 
-/** Read current accent RGB from the live CSS variable */
+/** Cached accent RGB — avoids getComputedStyle() on every frame */
+let _cachedRgb: [number, number, number] = [r, g, b];
+
+/** Read cached accent RGB (updated automatically when theme changes) */
 export function getAccentRgb(): [number, number, number] {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue('--gui-accent-rgb').trim();
-  if (raw) {
-    const parts = raw.split(',').map(s => parseInt(s.trim(), 10));
-    if (parts.length === 3 && parts.every(n => !isNaN(n))) return parts as unknown as [number, number, number];
-  }
-  return [r, g, b]; // fallback to default
+  return _cachedRgb;
 }
 
-/** Live rgb() string — reads current theme */
+/** rgba() with opacity — uses cached RGB */
 export function accentRgbStr(): string {
-  const [cr, cg, cb] = getAccentRgb();
+  const [cr, cg, cb] = _cachedRgb;
   return `rgb(${cr}, ${cg}, ${cb})`;
 }
 
-/** Live rgba() with opacity — reads current theme */
+/** rgba() with configurable opacity — uses cached RGB */
 export function accentRgba(opacity: number): string {
-  const [cr, cg, cb] = getAccentRgb();
+  const [cr, cg, cb] = _cachedRgb;
   return `rgba(${cr}, ${cg}, ${cb}, ${opacity})`;
 }
