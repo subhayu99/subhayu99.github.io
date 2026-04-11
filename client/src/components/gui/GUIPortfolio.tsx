@@ -22,7 +22,6 @@ import ScrollBallGame from './ScrollBallGame';
 import MouseSpotlight from './MouseSpotlight';
 import WireframeGrid from './WireframeGrid';
 import MatrixRain from './MatrixRain';
-import CursorTrail from './CursorTrail';
 import ThemeFlash from './KonamiEasterEgg';
 import SnakeGame from './SnakeGame';
 import ReflexGame from './ReflexGame';
@@ -162,7 +161,6 @@ export default function GUIPortfolio() {
       <WireframeGrid />
       <MatrixRain />
       <MouseSpotlight />
-      <CursorTrail />
       <ThemeFlash theme={themeFlash} onClose={resetThemeFlash} />
       <SnakeGame active={snakeActive} onClose={resetSnake} />
       <ReflexGame active={reflexActive} onClose={resetReflex} />
