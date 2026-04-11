@@ -374,19 +374,32 @@ function DesktopBall() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Trailing springs (stay on scroll path, not affected by magnet)
-  const trail1X = useSpring(rawX, { stiffness: 30, damping: 14, mass: 1.0 });
-  const trail1Y = useSpring(rawY, { stiffness: 30, damping: 14, mass: 1.0 });
-  const trail2X = useSpring(rawX, { stiffness: 18, damping: 14, mass: 1.4 });
-  const trail2Y = useSpring(rawY, { stiffness: 18, damping: 14, mass: 1.4 });
+  // Trailing springs — 6 dots with progressively softer springs for a smooth comet tail
+  const TRAIL_COUNT = 6;
+  const trailSprings = Array.from({ length: TRAIL_COUNT }, (_, i) => {
+    const stiffness = 40 - i * 5;   // 40, 35, 30, 25, 20, 15
+    const mass = 0.8 + i * 0.2;     // 0.8, 1.0, 1.2, 1.4, 1.6, 1.8
+    return {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      x: useSpring(rawX, { stiffness, damping: 14, mass }),
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      y: useSpring(rawY, { stiffness, damping: 14, mass }),
+      size: Math.max(1, 6 - i),      // 6, 5, 4, 3, 2, 1 px
+      opacity: 0.3 - i * 0.04,       // 0.30, 0.26, 0.22, 0.18, 0.14, 0.10
+    };
+  });
 
-  // CSS values — main ball uses finalX/Y (scroll + magnet), trails on original path
+  // CSS values — main ball uses finalX/Y (scroll + magnet)
   const left = useTransform(finalX, v => `${v}vw`);
   const top = useTransform(finalY, v => `${v}vh`);
-  const t1Left = useTransform(trail1X, v => `${v}vw`);
-  const t1Top = useTransform(trail1Y, v => `${v}vh`);
-  const t2Left = useTransform(trail2X, v => `${v}vw`);
-  const t2Top = useTransform(trail2Y, v => `${v}vh`);
+  const trailCss = trailSprings.map(t => ({
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    left: useTransform(t.x, v => `${v}vw`),
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    top: useTransform(t.y, v => `${v}vh`),
+    size: t.size,
+    opacity: t.opacity,
+  }));
 
   // Particle burst
   const burst = useCallback((cx: number, cy: number) => {
@@ -426,35 +439,29 @@ function DesktopBall() {
 
   return (
     <>
-      {/* Trail dot 2 (farthest) */}
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            className="fixed z-[2] pointer-events-none"
-            style={{ left: t2Left, top: t2Top }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="w-1.5 h-1.5 rounded-full bg-gui-accent/15 -translate-x-1/2 -translate-y-1/2" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Trail dot 1 */}
-      <AnimatePresence>
-        {visible && (
-          <motion.div
-            className="fixed z-[2] pointer-events-none"
-            style={{ left: t1Left, top: t1Top }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="w-2 h-2 rounded-full bg-gui-accent/25 -translate-x-1/2 -translate-y-1/2" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Comet tail — 6 trailing dots that fade in size and opacity */}
+      {trailCss.map((t, i) => (
+        <AnimatePresence key={i}>
+          {visible && (
+            <motion.div
+              className="fixed z-[2] pointer-events-none"
+              style={{ left: t.left, top: t.top }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div
+                className="rounded-full -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  width: t.size,
+                  height: t.size,
+                  backgroundColor: `rgba(var(--gui-accent-rgb), ${t.opacity})`,
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      ))}
 
       {/* Main ball */}
       <AnimatePresence>
