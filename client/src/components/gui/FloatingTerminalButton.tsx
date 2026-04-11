@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { useViewMode } from '../../hooks/useViewMode';
 const ar = (o: number) => `rgba(var(--gui-accent-rgb), ${o})`;
 
+const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export default function FloatingTerminalButton() {
   const { switchTo } = useViewMode();
 
@@ -15,14 +17,14 @@ export default function FloatingTerminalButton() {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
       title="Switch to Terminal view"
-      animate={{
+      animate={prefersReduced ? undefined : {
         boxShadow: [
           `0 0 0px ${ar(0)}`,
           `0 0 12px ${ar(0.3)}`,
           `0 0 0px ${ar(0)}`,
         ],
       }}
-      transition={{
+      transition={prefersReduced ? undefined : {
         boxShadow: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' },
       }}
     >

@@ -374,32 +374,9 @@ function DesktopBall() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Trailing springs — 6 dots with progressively softer springs for a smooth comet tail
-  const TRAIL_COUNT = 6;
-  const trailSprings = Array.from({ length: TRAIL_COUNT }, (_, i) => {
-    const stiffness = 40 - i * 5;   // 40, 35, 30, 25, 20, 15
-    const mass = 0.8 + i * 0.2;     // 0.8, 1.0, 1.2, 1.4, 1.6, 1.8
-    return {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      x: useSpring(rawX, { stiffness, damping: 14, mass }),
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      y: useSpring(rawY, { stiffness, damping: 14, mass }),
-      size: Math.max(1, 6 - i),      // 6, 5, 4, 3, 2, 1 px
-      opacity: 0.3 - i * 0.04,       // 0.30, 0.26, 0.22, 0.18, 0.14, 0.10
-    };
-  });
-
   // CSS values — main ball uses finalX/Y (scroll + magnet)
   const left = useTransform(finalX, v => `${v}vw`);
   const top = useTransform(finalY, v => `${v}vh`);
-  const trailCss = trailSprings.map(t => ({
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    left: useTransform(t.x, v => `${v}vw`),
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    top: useTransform(t.y, v => `${v}vh`),
-    size: t.size,
-    opacity: t.opacity,
-  }));
 
   // Particle burst
   const burst = useCallback((cx: number, cy: number) => {
@@ -439,30 +416,6 @@ function DesktopBall() {
 
   return (
     <>
-      {/* Comet tail — 6 trailing dots that fade in size and opacity */}
-      {trailCss.map((t, i) => (
-        <AnimatePresence key={i}>
-          {visible && (
-            <motion.div
-              className="fixed z-[2] pointer-events-none"
-              style={{ left: t.left, top: t.top }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div
-                className="rounded-full -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  width: t.size,
-                  height: t.size,
-                  backgroundColor: `rgba(var(--gui-accent-rgb), ${t.opacity})`,
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      ))}
-
       {/* Main ball */}
       <AnimatePresence>
         {visible && (

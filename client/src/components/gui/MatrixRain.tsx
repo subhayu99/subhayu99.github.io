@@ -18,6 +18,8 @@ export default function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    // Skip entirely if user prefers reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // Use fewer columns on small screens for performance
     const isMobile = window.innerWidth < 768;
 
@@ -65,6 +67,8 @@ export default function MatrixRain() {
       clearTimeout(warnTimer);
       if (isIdle) {
         isIdle = false;
+        // Restart RAF for fade-out animation
+        if (!rafId) { lastTime = 0; rafId = requestAnimationFrame(draw); }
         window.dispatchEvent(new CustomEvent('matrix-rain', { detail: { phase: 'inactive' } }));
       }
       // Warning phase — ball starts glowing
@@ -74,15 +78,15 @@ export default function MatrixRain() {
       // Active phase — ball explodes, rain starts
       idleTimer = setTimeout(() => {
         isIdle = true;
+        // Restart RAF loop if it was stopped
+        if (!rafId) { lastTime = 0; rafId = requestAnimationFrame(draw); }
         window.dispatchEvent(new CustomEvent('matrix-rain', { detail: { phase: 'active' } }));
       }, IDLE_MS);
     }
 
     function draw(now: number) {
-      rafId = requestAnimationFrame(draw);
       const dt = lastTime ? (now - lastTime) / 1000 : 0.016;
       lastTime = now;
-      const [r, g, b] = getAccentRgb();
 
       // Fade opacity
       if (isIdle && opacity < 1) {
@@ -91,8 +95,15 @@ export default function MatrixRain() {
         opacity = Math.max(0, opacity - dt / (FADE_OUT_MS / 1000));
       }
 
-      if (opacity <= 0) return;
+      // Skip rendering and stop RAF loop when fully transparent
+      if (opacity <= 0) {
+        ctx!.clearRect(0, 0, w, h);
+        lastTime = 0;
+        return;
+      }
 
+      rafId = requestAnimationFrame(draw);
+      const [r, g, b] = getAccentRgb();
       ctx!.clearRect(0, 0, w, h);
       ctx!.font = `${COL_WIDTH - 4}px monospace`;
       ctx!.textAlign = 'center';
