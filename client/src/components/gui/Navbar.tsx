@@ -53,7 +53,7 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
           animate={{ y: 0 }}
           exit={{ y: -80 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
-          className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-sm sm:backdrop-blur-md border-b border-white/5 ${
+          className={`fixed top-0 left-0 right-0 z-40 backdrop-blur-md border-b border-white/5 ${
             mobileOpen ? 'bg-black/30' : 'bg-black/80'
           } transition-colors duration-200`}
         >

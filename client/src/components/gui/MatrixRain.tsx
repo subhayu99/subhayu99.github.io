@@ -18,8 +18,6 @@ export default function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // Skip entirely if user prefers reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // Use fewer columns on small screens for performance
     const isMobile = window.innerWidth < 768;
 
@@ -99,6 +97,7 @@ export default function MatrixRain() {
       if (opacity <= 0) {
         ctx!.clearRect(0, 0, w, h);
         lastTime = 0;
+        rafId = 0;
         return;
       }
 
