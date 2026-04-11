@@ -105,7 +105,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
         animate={isInView ? { opacity: 1 } : { opacity: 0 }}
         transition={{ delay: 0.8 }}
       >
-        Built with React + TypeScript
+        Built with love and a little obsession
       </motion.p>
     </section>
   );
