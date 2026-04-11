@@ -9,7 +9,7 @@ export default function WireframeGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return;
+    if (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth < 768) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
