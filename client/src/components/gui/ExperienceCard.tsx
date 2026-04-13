@@ -80,7 +80,7 @@ export default function ExperienceCard({ experience, index, total }: ExperienceC
             <span className="inline-block transition-transform duration-200" style={{ transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)' }}>
               ▶
             </span>
-            {expanded ? 'Hide details' : `View details (${experience.highlights!.length})`}
+            {expanded ? 'Hide details' : `View details (${experience.highlights?.length ?? 0})`}
           </button>
 
           <AnimatePresence>
@@ -92,7 +92,7 @@ export default function ExperienceCard({ experience, index, total }: ExperienceC
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden mt-2 space-y-2 pl-3 border-l border-white/5"
               >
-                {experience.highlights!.map((h, i) => (
+                {(experience.highlights ?? []).map((h, i) => (
                   <motion.li
                     key={i}
                     className="text-gui-text-muted text-sm leading-relaxed"

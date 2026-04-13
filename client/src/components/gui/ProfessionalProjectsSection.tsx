@@ -19,8 +19,8 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: '-30px' });
 
-  const firstHighlight = project.highlights[0] ?? '';
-  const remainingHighlights = project.highlights.slice(1);
+  const firstHighlight = project.highlights?.[0] ?? '';
+  const remainingHighlights = (project.highlights ?? []).slice(1);
 
   return (
     <motion.div

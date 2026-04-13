@@ -70,7 +70,7 @@ export default function EducationSection({ data }: EducationSectionProps) {
                   {edu.degree} in {edu.area}
                 </span>
                 <span className="text-gui-accent text-xs font-mono">
-                  {edu.start_date.split('-')[0]}–{edu.end_date.split('-')[0]}
+                  {edu.start_date.split('-')[0]}–{edu.end_date ? edu.end_date.split('-')[0] : 'Present'}
                   {cgpa && ` · ${cgpa}`}
                 </span>
               </div>

@@ -15,28 +15,32 @@ interface HeroSectionProps {
 
 function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
   const cv = data.cv;
-  const stats: { value: number; suffix: string; label: string }[] = [];
+  const sections = cv.sections;
+  const candidates: { value: number; suffix: string; label: string; priority: number }[] = [];
 
   // Years of experience
-  if (cv.sections.experience?.length) {
-    const earliest = cv.sections.experience.reduce((min, exp) => {
+  if (sections.experience?.length) {
+    const earliest = sections.experience.reduce((min, exp) => {
       const year = parseInt(exp.start_date);
       return year < min ? year : min;
     }, new Date().getFullYear());
-    stats.push({ value: new Date().getFullYear() - earliest, suffix: '+', label: 'Years Experience' });
+    const years = new Date().getFullYear() - earliest;
+    if (years > 0) {
+      candidates.push({ value: years, suffix: '+', label: 'Years Experience', priority: 1 });
+    }
   }
 
   // Clients (professional projects count)
-  const clientCount = cv.sections.professional_projects?.length ?? 0;
+  const clientCount = sections.professional_projects?.length ?? 0;
   if (clientCount > 0) {
-    stats.push({ value: clientCount, suffix: '+', label: 'Clients Served' });
+    candidates.push({ value: clientCount, suffix: '+', label: 'Clients Served', priority: 2 });
   }
 
   // PyPI Downloads — use real API stats if available, fall back to text parsing
   if (pypiStats && pypiStats.total_downloads > 0) {
-    stats.push({ value: pypiStats.total_downloads, suffix: '+', label: 'PyPI Downloads' });
+    candidates.push({ value: pypiStats.total_downloads, suffix: '+', label: 'PyPI Downloads', priority: 3 });
   } else {
-    const introText = (cv.sections.intro ?? []).join(' ');
+    const introText = (sections.intro ?? []).join(' ');
     const grandMatch = introText.match(/(\d{1,3}),?(\d{3})\+?\s*(PyPI\s*)?[Dd]ownloads/i)
       ?? introText.match(/(\d+)[,.]?(\d*)[kK]\+?\s*(PyPI\s*)?[Dd]ownloads/i);
     if (grandMatch) {
@@ -46,17 +50,60 @@ function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
       } else {
         num = parseInt(grandMatch[1] + (grandMatch[2] || ''));
       }
-      stats.push({ value: num, suffix: '+', label: 'PyPI Downloads' });
+      candidates.push({ value: num, suffix: '+', label: 'PyPI Downloads', priority: 3 });
     }
   }
 
-  // Open source packages
-  const packageCount = cv.sections.personal_projects?.length ?? 0;
-  if (packageCount > 0) {
-    stats.push({ value: packageCount, suffix: '', label: 'Open Source Packages' });
+  // Projects built (personal projects)
+  const projectCount = sections.personal_projects?.length ?? 0;
+  if (projectCount > 0) {
+    // Label adapts: "Open Source Packages" if any have pypi_package, else "Projects Built"
+    const hasPypi = sections.personal_projects?.some((p: Record<string, unknown>) => p.pypi_package);
+    candidates.push({
+      value: projectCount,
+      suffix: '',
+      label: hasPypi ? 'Open Source Packages' : 'Projects Built',
+      priority: 4,
+    });
   }
 
-  return stats.slice(0, 4);
+  // Technologies/skills count
+  if (sections.technologies?.length) {
+    const techCount = sections.technologies.reduce((sum, t) => {
+      return sum + t.details.split(',').length;
+    }, 0);
+    if (techCount > 0) {
+      candidates.push({ value: techCount, suffix: '+', label: 'Technologies', priority: 5 });
+    }
+  }
+
+  // Achievements — extract notable numbers (ratings, ranks) from highlights
+  const achievements = sections.achievements as Array<Record<string, unknown>> | undefined;
+  if (achievements?.length) {
+    // Count total achievement bullet points
+    const bulletCount = achievements.reduce((sum, a) => {
+      const highlights = a.highlights as string[] | undefined;
+      return sum + (highlights?.length ?? 0);
+    }, 0);
+    if (bulletCount > 0) {
+      candidates.push({ value: bulletCount, suffix: '+', label: 'Achievements', priority: 6 });
+    }
+  }
+
+  // Leadership & volunteering
+  const leadership = sections.leadership_volunteering as Array<Record<string, unknown>> | undefined;
+  if (leadership?.length) {
+    candidates.push({ value: leadership.length, suffix: '', label: 'Leadership Roles', priority: 7 });
+  }
+
+  // Publications
+  if (sections.publication?.length) {
+    candidates.push({ value: sections.publication.length, suffix: '', label: 'Publications', priority: 8 });
+  }
+
+  // Sort by priority (lower = higher priority) and take first 4
+  candidates.sort((a, b) => a.priority - b.priority);
+  return candidates.slice(0, 4).map(({ value, suffix, label }) => ({ value, suffix, label }));
 }
 
 export default function HeroSection({ data, pypiStats, onTripleTap }: HeroSectionProps) {

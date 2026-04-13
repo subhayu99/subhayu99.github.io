@@ -97,7 +97,7 @@ function deriveTagline(
   }
 
   const parts: string[] = [];
-  if (experience?.length) parts.push(experience[0].position);
+  if (experience?.[0]?.position) parts.push(experience[0].position);
   if (years > 0) parts.push(`${years} Years`);
   if (downloads) parts.push(`${downloads} PyPI Downloads`);
 
