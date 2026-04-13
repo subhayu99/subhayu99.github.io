@@ -28,7 +28,7 @@ export const educationSchema = z.object({
   area: z.string(),
   degree: z.string(),
   start_date: z.string(),
-  end_date: z.string(),
+  end_date: z.string().optional(),
   highlights: z.array(z.string()).optional(),
 }).passthrough(); // Allow custom fields like gpa, honors, thesis_title, etc.
 

@@ -27,12 +27,13 @@ function formatDownloads(n: number): string {
 
 export default function ProjectCard({ project, index, stats }: ProjectCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const githubUrl = extractUrl(project.highlights, 'GitHub');
-  const pypiUrl = extractUrl(project.highlights, 'PyPI');
-  const docsUrl = extractUrl(project.highlights, 'documentation');
+  const highlights = project.highlights ?? [];
+  const githubUrl = extractUrl(highlights, 'GitHub');
+  const pypiUrl = extractUrl(highlights, 'PyPI');
+  const docsUrl = extractUrl(highlights, 'documentation');
 
-  const firstHighlight = project.highlights[0] ?? '';
-  const remainingHighlights = project.highlights.slice(1);
+  const firstHighlight = highlights[0] ?? '';
+  const remainingHighlights = highlights.slice(1);
 
   // Real download count from API, fallback to text extraction
   const downloadCount = stats?.total_all_time;
@@ -43,7 +44,7 @@ export default function ProjectCard({ project, index, stats }: ProjectCardProps)
   // Fallback: extract from text if no API stats
   const textDownloads = (() => {
     if (stats) return null;
-    for (const h of project.highlights) {
+    for (const h of highlights) {
       const match = h.match(/(\d+[\d,.]*[kK]\+?)\s*(?:PyPI\s*)?downloads/i);
       if (match) return match[1];
     }
