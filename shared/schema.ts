@@ -51,12 +51,19 @@ export const publicationSchema = z.object({
 // Phase 3: Dynamic Section Names
 // Union of all possible entry types for dynamic sections
 // Maps to RenderCV entry types: ExperienceEntry, EducationEntry, NormalEntry, OneLineEntry, PublicationEntry, TextEntry
+// Generic entry for dynamic sections (achievements, volunteering, etc.)
+export const genericEntrySchema = z.object({
+  name: z.string().optional(),
+  highlights: z.array(z.string()).optional(),
+}).passthrough(); // Allow any additional fields
+
 export const sectionEntrySchema = z.union([
   experienceSchema,     // ExperienceEntry
   educationSchema,      // EducationEntry
   projectSchema,        // NormalEntry (projects, certifications, etc.)
   technologySchema,     // OneLineEntry (skills, technologies, etc.)
   publicationSchema,    // PublicationEntry
+  genericEntrySchema,   // Generic entries (achievements, volunteering, etc.)
   z.string(),          // TextEntry (simple text items)
 ]);
 
