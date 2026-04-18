@@ -3,6 +3,8 @@ import { cycleTheme, applyColorTheme, colorThemes, type ColorTheme } from '../co
 
 const SNAKE_TRIGGER = 'snake';
 const REFLEX_TRIGGER = 'reflex';
+const RACER_TRIGGER = 'racer';
+const HELP_TRIGGER = 'help';
 
 // Shake detection thresholds
 const SHAKE_THRESHOLD = 25;
@@ -17,6 +19,8 @@ export function useGestureTrigger(motionEnabled = false) {
   const [themeFlash, setThemeFlash] = useState<ColorTheme | null>(null);
   const [snakeActive, setSnakeActive] = useState(false);
   const [reflexActive, setReflexActive] = useState(false);
+  const [racerActive, setRacerActive] = useState(false);
+  const [helpActive, setHelpActive] = useState(false);
 
   const snakeBufferRef = useRef('');
   const tTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -25,6 +29,8 @@ export function useGestureTrigger(motionEnabled = false) {
   const resetThemeFlash = useCallback(() => setThemeFlash(null), []);
   const resetSnake = useCallback(() => setSnakeActive(false), []);
   const resetReflex = useCallback(() => setReflexActive(false), []);
+  const resetRacer = useCallback(() => setRacerActive(false), []);
+  const resetHelp = useCallback(() => setHelpActive(false), []);
 
   const triggerThemeCycle = useCallback(() => {
     const next = cycleTheme();
@@ -143,8 +149,8 @@ export function useGestureTrigger(motionEnabled = false) {
         tPendingRef.current = false;
       }
 
-      // Word triggers (snake, reflex)
-      if (snakeActive || reflexActive) return;
+      // Word triggers (snake, reflex, racer, help)
+      if (snakeActive || reflexActive || racerActive || helpActive) return;
       snakeBufferRef.current += key.toLowerCase();
       if (snakeBufferRef.current.length > 10) {
         snakeBufferRef.current = snakeBufferRef.current.slice(-10);
@@ -155,6 +161,12 @@ export function useGestureTrigger(motionEnabled = false) {
       } else if (snakeBufferRef.current.endsWith(REFLEX_TRIGGER)) {
         setReflexActive(true);
         snakeBufferRef.current = '';
+      } else if (snakeBufferRef.current.endsWith(RACER_TRIGGER)) {
+        setRacerActive(true);
+        snakeBufferRef.current = '';
+      } else if (snakeBufferRef.current.endsWith(HELP_TRIGGER)) {
+        setHelpActive(true);
+        snakeBufferRef.current = '';
       }
     };
 
@@ -163,7 +175,13 @@ export function useGestureTrigger(motionEnabled = false) {
       window.removeEventListener('keydown', handleKey);
       if (tTimerRef.current) clearTimeout(tTimerRef.current);
     };
-  }, [snakeActive, reflexActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
+  }, [snakeActive, reflexActive, racerActive, helpActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
 
-  return { themeFlash, snakeActive, reflexActive, resetThemeFlash, resetSnake, resetReflex, triggerReflex: () => setReflexActive(true) };
+  return {
+    themeFlash, snakeActive, reflexActive, racerActive, helpActive,
+    resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp,
+    triggerReflex: () => setReflexActive(true),
+    triggerRacer: () => setRacerActive(true),
+    triggerHelp: () => setHelpActive(true),
+  };
 }
