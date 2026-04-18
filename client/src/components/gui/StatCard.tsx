@@ -6,13 +6,33 @@ interface StatCardProps {
   suffix?: string;
   label: string;
   index: number;
+  /** 2-second long-press callback. Used to trigger hidden easter-egg games. */
+  onLongPress?: () => void;
 }
 
-export default function StatCard({ value, suffix = '', label, index }: StatCardProps) {
+const LONG_PRESS_MS = 2000;
+
+export default function StatCard({ value, suffix = '', label, index, onLongPress }: StatCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { margin: '-40px' });
   const hasAnimated = useRef(false);
   const [count, setCount] = useState(0);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startPress = () => {
+    if (!onLongPress || longPressTimer.current) return;
+    longPressTimer.current = setTimeout(() => {
+      longPressTimer.current = null;
+      onLongPress();
+    }, LONG_PRESS_MS);
+  };
+  const cancelPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+  useEffect(() => () => cancelPress(), []); // cleanup on unmount
 
   useEffect(() => {
     if (!isInView || hasAnimated.current) return;
@@ -45,6 +65,13 @@ export default function StatCard({ value, suffix = '', label, index }: StatCardP
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
+      onMouseDown={startPress}
+      onMouseUp={cancelPress}
+      onMouseLeave={cancelPress}
+      onTouchStart={startPress}
+      onTouchEnd={cancelPress}
+      onTouchCancel={cancelPress}
+      style={onLongPress ? { userSelect: 'none', WebkitUserSelect: 'none' } : undefined}
     >
       <div className="font-display text-4xl sm:text-5xl text-white leading-none">
         {count >= 1000 ? `${(count / 1000).toFixed(count % 1000 === 0 ? 0 : 1)}K` : count}{suffix}

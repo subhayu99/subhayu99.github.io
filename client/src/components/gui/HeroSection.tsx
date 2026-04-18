@@ -11,6 +11,8 @@ interface HeroSectionProps {
   data: PortfolioData;
   pypiStats?: PyPIStatsData;
   onTripleTap?: () => void;
+  /** 2-second long-press on the Years Experience stat card launches the Racer. */
+  onTriggerRacer?: () => void;
 }
 
 function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
@@ -106,7 +108,7 @@ function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
   return candidates.slice(0, 4).map(({ value, suffix, label }) => ({ value, suffix, label }));
 }
 
-export default function HeroSection({ data, pypiStats, onTripleTap }: HeroSectionProps) {
+export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRacer }: HeroSectionProps) {
   const { switchTo } = useViewMode();
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { margin: '-40px' });
@@ -230,7 +232,14 @@ export default function HeroSection({ data, pypiStats, onTripleTap }: HeroSectio
       {stats.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px max-w-4xl">
           {stats.map((stat, i) => (
-            <StatCard key={stat.label} value={stat.value} suffix={stat.suffix} label={stat.label} index={i} />
+            <StatCard
+              key={stat.label}
+              value={stat.value}
+              suffix={stat.suffix}
+              label={stat.label}
+              index={i}
+              onLongPress={stat.label === 'Years Experience' ? onTriggerRacer : undefined}
+            />
           ))}
         </div>
       )}
