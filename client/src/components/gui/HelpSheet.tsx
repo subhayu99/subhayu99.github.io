@@ -21,7 +21,7 @@ const TRIGGERS: TriggerRow[] = [
   {
     label: 'Snake',
     desktop: 'type "snake"',
-    mobile: 'flip device (face-down → face-up)',
+    mobile: 'long-press "PyPI Downloads" (2s) — python 🐍',
   },
   {
     label: 'Reflex',
@@ -32,6 +32,16 @@ const TRIGGERS: TriggerRow[] = [
     label: 'Infinity Racer',
     desktop: 'type "racer"',
     mobile: 'long-press "Years Experience" (2s)',
+  },
+  {
+    label: 'This Help Sheet',
+    desktop: 'type "help"',
+    mobile: 'flip device (face-down → face-up)',
+  },
+  {
+    label: 'Fullscreen',
+    desktop: 'press F, or tap ⛶ in the navbar',
+    mobile: 'tap ⛶ in the navbar',
   },
 ];
 
@@ -88,7 +98,7 @@ export default function HelpSheet({ active, onClose }: HelpSheetProps) {
             </div>
 
             <div className="text-[11px] tracking-[0.1em] text-zinc-500 leading-relaxed mb-6">
-              Four hidden features are scattered across this portfolio.
+              Six hidden features are scattered across this portfolio.
               Here's how to wake them up.
             </div>
 
@@ -114,7 +124,7 @@ export default function HelpSheet({ active, onClose }: HelpSheetProps) {
             </div>
 
             <div className="mt-6 pt-4 border-t border-white/5 text-[9px] tracking-[0.22em] uppercase text-zinc-600 text-center">
-              type "help" or tap the clues block to reopen this
+              type "help" · or flip your phone · to reopen this
             </div>
           </motion.div>
         </motion.div>

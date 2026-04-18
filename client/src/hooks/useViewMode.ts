@@ -1,8 +1,26 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import { createElement } from 'react';
-import { storage, storageConfig } from '../config';
+import { storageConfig } from '../config';
 
 export type ViewMode = 'splash' | 'terminal' | 'gui';
+
+/**
+ * View-mode persistence: sessionStorage (per-tab, per-session) rather than
+ * localStorage. Every new browser session / new tab sees the splash again,
+ * which means every first interaction after opening the site gives us a
+ * valid user gesture to request fullscreen (via SplashPage.handleSelect).
+ * URL hash still takes precedence for deep-linking.
+ */
+const viewModeStore = {
+  get(): string | null {
+    try { return sessionStorage.getItem(storageConfig.keys.viewMode); }
+    catch { return null; }
+  },
+  set(value: string): void {
+    try { sessionStorage.setItem(storageConfig.keys.viewMode, value); }
+    catch {}
+  },
+};
 
 interface ViewModeContextValue {
   viewMode: ViewMode;
@@ -31,7 +49,7 @@ function getInitialViewMode(): ViewMode {
   if (fromHash) return fromHash;
 
   // Then localStorage
-  const stored = storage.get(storageConfig.keys.viewMode);
+  const stored = viewModeStore.get();
   if (stored === 'terminal' || stored === 'gui') {
     return stored;
   }
@@ -45,7 +63,7 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
     setViewModeState(mode);
     // Never persist "splash" - only persist terminal/gui
     if (mode !== 'splash') {
-      storage.set(storageConfig.keys.viewMode, mode);
+      viewModeStore.set(mode);
     }
     // Update URL hash without triggering scroll
     const newHash = modeToHash(mode);
@@ -67,7 +85,7 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
       const mode = hashToMode(window.location.hash);
       if (mode && mode !== viewMode) {
         setViewModeState(mode);
-        storage.set(storageConfig.keys.viewMode, mode);
+        viewModeStore.set(mode);
       }
     };
     window.addEventListener('hashchange', onHashChange);
