@@ -13,6 +13,8 @@ interface HeroSectionProps {
   onTripleTap?: () => void;
   /** 2-second long-press on the Years Experience stat card launches the Racer. */
   onTriggerRacer?: () => void;
+  /** 2-second long-press on the PyPI Downloads stat card launches the Snake (Python = snake). */
+  onTriggerSnake?: () => void;
 }
 
 function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
@@ -108,7 +110,7 @@ function deriveStats(data: PortfolioData, pypiStats?: PyPIStatsData) {
   return candidates.slice(0, 4).map(({ value, suffix, label }) => ({ value, suffix, label }));
 }
 
-export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRacer }: HeroSectionProps) {
+export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRacer, onTriggerSnake }: HeroSectionProps) {
   const { switchTo } = useViewMode();
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { margin: '-40px' });
@@ -231,16 +233,21 @@ export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRac
       {/* Stats grid */}
       {stats.length > 0 && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px max-w-4xl">
-          {stats.map((stat, i) => (
-            <StatCard
-              key={stat.label}
-              value={stat.value}
-              suffix={stat.suffix}
-              label={stat.label}
-              index={i}
-              onLongPress={stat.label === 'Years Experience' ? onTriggerRacer : undefined}
-            />
-          ))}
+          {stats.map((stat, i) => {
+            let onLongPress: (() => void) | undefined;
+            if (stat.label === 'Years Experience') onLongPress = onTriggerRacer;
+            else if (stat.label === 'PyPI Downloads') onLongPress = onTriggerSnake;
+            return (
+              <StatCard
+                key={stat.label}
+                value={stat.value}
+                suffix={stat.suffix}
+                label={stat.label}
+                index={i}
+                onLongPress={onLongPress}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -271,7 +278,7 @@ export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRac
         )}
       </motion.div>
 
-      <span className="secret-text block mt-2 font-mono">// the cake is a lie. press T to change colors.</span>
+      <span className="secret-text block mt-2 font-mono">// the cake is a lie. a single T spills over the world.</span>
 
       {/* Decorative vertical text */}
       <div className="hidden lg:block absolute right-8 top-1/2 -translate-y-1/2 -rotate-90 origin-center">

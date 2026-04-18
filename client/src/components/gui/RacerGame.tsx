@@ -22,8 +22,6 @@ const LS_KEY = 'racer-high-score';
  */
 export default function RacerGame({ active, onClose }: RacerGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const steerRef = useRef<HTMLDivElement>(null);
-  const steerKnobRef = useRef<HTMLDivElement>(null);
 
   const [started, setStarted] = useState(false);
   const [overlayKind, setOverlayKind] = useState<'start' | 'over'>('start');
@@ -146,12 +144,31 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
-    // ---------- canvas tap to dismiss demo / restart on game over ----------
-    const onCanvasTouchStart = () => {
+    // ---------- canvas swipe-anywhere steering ----------
+    // Entire canvas is a steering surface: tap anywhere to set lane, drag to update.
+    // Replaces the previous bottom-slider (which felt glitchy and restricted). The
+    // finger's absolute X on screen maps to game.x on the road [0.14, 0.86].
+    const applySteerFromScreenX = (clientX: number) => {
+      const frac = Math.max(0, Math.min(1, clientX / window.innerWidth));
+      g.x = 0.14 + frac * (0.86 - 0.14);
+      g.vx = 0;
+    };
+    const onCanvasTouchStart = (e: TouchEvent) => {
       if (g.over) { restart(); return; }
       firstInput();
+      g.steerActive = true;
+      if (e.touches[0]) applySteerFromScreenX(e.touches[0].clientX);
     };
+    const onCanvasTouchMove = (e: TouchEvent) => {
+      if (!g.steerActive || g.over || !e.touches[0]) return;
+      e.preventDefault();
+      applySteerFromScreenX(e.touches[0].clientX);
+    };
+    const onCanvasTouchEnd = () => { g.steerActive = false; };
     canvas.addEventListener('touchstart', onCanvasTouchStart, { passive: true });
+    canvas.addEventListener('touchmove', onCanvasTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onCanvasTouchEnd, { passive: true });
+    canvas.addEventListener('touchcancel', onCanvasTouchEnd, { passive: true });
 
     // ---------- boot game loop ----------
     resetGame(true);
@@ -165,6 +182,9 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       canvas.removeEventListener('touchstart', onCanvasTouchStart);
+      canvas.removeEventListener('touchmove', onCanvasTouchMove);
+      canvas.removeEventListener('touchend', onCanvasTouchEnd);
+      canvas.removeEventListener('touchcancel', onCanvasTouchEnd);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
@@ -797,55 +817,8 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     const dotFreq = 2 + speedFrac * 9;
     const idx = Math.floor((g.t * dotFreq) % 7);
     setLitDot(idx);
-    // sync steer knob
-    if (isTouchLayout && steerKnobRef.current && !g.steerActive) {
-      const frac = Math.max(0, Math.min(1, (g.x - 0.14) / (0.86 - 0.14)));
-      steerKnobRef.current.style.left = (8 + frac * 84) + '%';
-    }
     rafRef.current = requestAnimationFrame(tick);
   }
-
-  // ============================================================================
-  // Steering slider handlers
-  // ============================================================================
-  function applySteerFromClientX(clientX: number) {
-    const steer = steerRef.current;
-    const knob = steerKnobRef.current;
-    if (!steer || !knob) return;
-    const rect = steer.getBoundingClientRect();
-    const trackPxL = rect.left + rect.width * 0.08;
-    const trackPxR = rect.left + rect.width * 0.92;
-    const frac = Math.max(0, Math.min(1, (clientX - trackPxL) / (trackPxR - trackPxL)));
-    const g = gameRef.current;
-    g.x = 0.14 + frac * (0.86 - 0.14);
-    g.vx = 0;
-    knob.style.left = (8 + frac * 84) + '%';
-    firstInput();
-  }
-
-  const onSteerTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    gameRef.current.steerActive = true;
-    applySteerFromClientX(e.touches[0].clientX);
-  };
-  const onSteerTouchMove = (e: React.TouchEvent) => {
-    if (!gameRef.current.steerActive) return;
-    e.preventDefault();
-    applySteerFromClientX(e.touches[0].clientX);
-  };
-  const onSteerTouchEnd = () => { gameRef.current.steerActive = false; };
-  const onSteerMouseDown = (e: React.MouseEvent) => {
-    gameRef.current.steerActive = true;
-    applySteerFromClientX(e.clientX);
-    const onMove = (me: MouseEvent) => applySteerFromClientX(me.clientX);
-    const onUp = () => {
-      gameRef.current.steerActive = false;
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-  };
 
   // ============================================================================
   // Render
@@ -938,44 +911,13 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
           </>
         )}
 
-        {/* Mobile steering slider */}
-        {isTouchLayout && (
+        {/* Mobile hint — whole canvas is a steering surface now; slider removed. */}
+        {isTouchLayout && started && (
           <div
-            ref={steerRef}
-            className="fixed bottom-[26px] left-0 right-0 h-14 z-[55]"
-            style={{ touchAction: 'none', userSelect: 'none' }}
-            onTouchStart={onSteerTouchStart}
-            onTouchMove={onSteerTouchMove}
-            onTouchEnd={onSteerTouchEnd}
-            onTouchCancel={onSteerTouchEnd}
-            onMouseDown={onSteerMouseDown}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 text-[9px] tracking-[0.28em] uppercase whitespace-nowrap pointer-events-none z-[55]"
+            style={{ color: col('dim') }}
           >
-            <div
-              className="absolute left-[8%] right-[8%] top-1/2 h-[2px] -translate-y-1/2"
-              style={{ background: col('ghost') }}
-            >
-              <div
-                className="absolute top-[-2px] left-1/2 -translate-x-1/2 w-px h-[6px]"
-                style={{ background: col('dim') }}
-              />
-            </div>
-            <div
-              ref={steerKnobRef}
-              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-[54px] h-[26px] pointer-events-none"
-              style={{
-                left: '50%',
-                border: `1px solid ${col('fg')}`,
-                background: 'rgba(0,0,0,0.5)',
-                boxShadow: `0 0 10px rgba(${accentRgb()}, 0.4)`,
-                transition: 'left .08s linear',
-              }}
-            />
-            <div
-              className="absolute left-1/2 -translate-x-1/2 text-[9px] tracking-[0.28em] uppercase whitespace-nowrap"
-              style={{ bottom: -14, color: col('dim') }}
-            >
-              drag to steer
-            </div>
+            tap + drag anywhere to steer
           </div>
         )}
       </motion.div>
