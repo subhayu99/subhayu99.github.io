@@ -10,7 +10,54 @@ const FADE_IN_MS = 1000;
 const FADE_OUT_MS = 500;
 const COL_WIDTH = 22;
 
+// Hidden messages that occasionally replace the random chars in a column,
+// scrolling down like the rest of the rain. Readable top-to-bottom if you
+// catch one. Kept short (≤ trail length of 18 chars). Mix of Matrix nods,
+// self-aware jokes, and a quiet help nudge for curious lingerers.
+const HIDDEN_MESSAGES = [
+  'wake up',
+  'hi curious',
+  'hello world',
+  'you saw this',
+  'not random',
+  'i was here',
+  'follow me',
+  'there is no spoon',
+  'keep looking',
+  'dont panic',
+  'need help?',
+  'wake up neo',
+  'not a bug',
+  'stay curious',
+  'happy hunting',
+  'keep watching',
+  'decode me',
+  'i see you',
+  'nothing is random',
+  'think harder',
+  'youre close',
+  'breathe deep',
+  'ding ding',
+  'have some coffee',
+];
+// Probability that a column starts a new message when it wraps around.
+const MESSAGE_CHANCE = 0.035;
+// Messages live 3-5 seconds then dissolve back into random chars.
+// Keeps them fleeting — if you didn't catch it, you didn't catch it.
+const MESSAGE_LIFE_MIN_MS = 3000;
+const MESSAGE_LIFE_MAX_MS = 5000;
+
+// Rare accent glyphs that occasionally flash in the rain. Single-frame
+// substitutions make you doubt whether you saw them. Very low probability
+// per char per frame keeps density around 1-2 sightings per minute of idle.
+const RARE_GLYPHS = ['♥', '★', '✦', '☕', '☽', '☾', '♠', '♦', '⚡', '☄', '✧', '♪'];
+const RARE_GLYPH_CHANCE = 0.0008;
+
 function randomChar() {
+  // Very rare single-frame glyph flash
+  if (Math.random() < RARE_GLYPH_CHANCE) {
+    return RARE_GLYPHS[Math.floor(Math.random() * RARE_GLYPHS.length)];
+  }
   return CHARS[Math.floor(Math.random() * CHARS.length)];
 }
 
@@ -29,7 +76,16 @@ export default function MatrixRain() {
     let w = 0;
     let h = 0;
     let colWidth = isMobile ? COL_WIDTH * 2 : COL_WIDTH;
-    let columns: { y: number; speed: number; charTimer: number; charInterval: number }[] = [];
+    let columns: {
+      y: number;
+      speed: number;
+      charTimer: number;
+      charInterval: number;
+      /** When non-null, this column renders the message chars instead of random. */
+      message: string | null;
+      /** Milliseconds remaining for the current message. When ≤ 0, message clears. */
+      messageLife: number;
+    }[] = [];
     let isIdle = false;
     let opacity = 0;
     let idleTimer: ReturnType<typeof setTimeout>;
@@ -55,6 +111,8 @@ export default function MatrixRain() {
         speed: 40 + Math.random() * 80,
         charTimer: 0,
         charInterval: 50 + Math.random() * 100,
+        message: null,
+        messageLife: 0,
       }));
     }
 
@@ -110,7 +168,29 @@ export default function MatrixRain() {
       for (let i = 0; i < columns.length; i++) {
         const col = columns[i];
         col.y += col.speed * dt;
-        if (col.y > h + 40) col.y = -20;
+        if (col.y > h + 40) {
+          col.y = -20;
+          // On wrap, maybe start a hidden message on this column. Lifetime is
+          // 3-5s — if you didn't catch it, it dissolves back into random noise
+          // mid-column. Staying short makes each sighting feel lucky.
+          if (Math.random() < MESSAGE_CHANCE) {
+            col.message = HIDDEN_MESSAGES[Math.floor(Math.random() * HIDDEN_MESSAGES.length)];
+            col.messageLife = MESSAGE_LIFE_MIN_MS
+              + Math.random() * (MESSAGE_LIFE_MAX_MS - MESSAGE_LIFE_MIN_MS);
+          } else {
+            col.message = null;
+            col.messageLife = 0;
+          }
+        }
+
+        // Countdown + auto-clear when the message's time runs out.
+        if (col.message) {
+          col.messageLife -= dt * 1000;
+          if (col.messageLife <= 0) {
+            col.message = null;
+            col.messageLife = 0;
+          }
+        }
 
         col.charTimer += dt * 1000;
 
@@ -134,9 +214,18 @@ export default function MatrixRain() {
           const trailOpacity = (1 - j / trailLen) * 0.3 * opacity * distFade;
           if (trailOpacity < 0.002) continue;
 
+          // Hidden-message columns render message chars top-to-bottom readable:
+          // trail[0] is the bottom of the trail (last letter), trail[msgLen-1]
+          // is the top (first letter). Positions beyond the message fall back
+          // to random noise so the rain still looks random from afar.
+          let ch: string;
+          if (col.message && j < col.message.length) {
+            ch = col.message[col.message.length - 1 - j];
+          } else {
+            ch = randomChar();
+          }
+
           ctx!.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
-          // Use a fixed character per position, change on timer
-          const ch = col.charTimer > col.charInterval ? randomChar() : randomChar();
           ctx!.fillText(ch, colX, charY);
         }
 

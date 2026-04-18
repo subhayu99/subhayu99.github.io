@@ -16,6 +16,18 @@ const FALLBACK_PATH: PathData = {
   y: [5, 50, 95],
 };
 
+// Tiny words the ball "whispers" just before it bursts (warning → active).
+// Picked fresh each time the warning phase begins. Short strings read best
+// at the tiny 9px whisper size — aim for ≤ ~8 chars each.
+const BURST_MSGS = [
+  'hii', 'boo', 'wake up', 'peek!', 'shhh', 'poof', 'boom', 'bye',
+  'uwu', 'hmm', 'pop', 'zap', 'puff', 'fizz', 'psst', 'yo',
+  'hi :)', 'oops', 'ta-da', 'bam', 'whoosh',
+];
+function pickBurstMsg(): string {
+  return BURST_MSGS[Math.floor(Math.random() * BURST_MSGS.length)];
+}
+
 /**
  * Compute waypoints by querying real DOM positions.
  * The ball's X follows actual content gaps; Y maps linearly from scroll progress.
@@ -180,6 +192,7 @@ function MobileBall() {
   const { scrollYProgress } = useScroll();
   const [visible, setVisible] = useState(false);
   const [rainPhase, setRainPhase] = useState<'inactive' | 'warning' | 'active'>('inactive');
+  const [burstMsg, setBurstMsg] = useState('');
 
   const rawY = useTransform(scrollYProgress, [0, 1], [6, 94]);
   const springY = useSpring(rawY, { stiffness: 60, damping: 16, mass: 0.5 });
@@ -193,7 +206,12 @@ function MobileBall() {
   useEffect(() => {
     const handler = (e: Event) => {
       const phase = (e as CustomEvent).detail?.phase;
-      if (phase) setRainPhase(phase);
+      if (phase) {
+        setRainPhase(phase);
+        // Whisper a new word each time warning begins — stays up through 'active'.
+        if (phase === 'warning') setBurstMsg(pickBurstMsg());
+        else if (phase === 'inactive') setBurstMsg('');
+      }
     };
     window.addEventListener('matrix-rain', handler);
     return () => window.removeEventListener('matrix-rain', handler);
@@ -235,6 +253,23 @@ function MobileBall() {
               }}
             />
           </motion.div>
+
+          {/* Burst whisper — tiny word floating to the LEFT of the ball during warning/active */}
+          <AnimatePresence>
+            {burstMsg && rainPhase !== 'inactive' && (
+              <motion.div
+                className="fixed right-[18px] z-[4] pointer-events-none"
+                style={{ top }}
+                initial={{ opacity: 0, x: 6 }}
+                animate={{ opacity: rainPhase === 'active' ? 0 : 1, x: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <span className="block -translate-y-1/2 font-mono text-[9px] tracking-[0.16em] lowercase text-gui-accent/75 whitespace-nowrap">
+                  {burstMsg}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </AnimatePresence>
@@ -254,12 +289,18 @@ function DesktopBall() {
   const [score, setScore] = useState(0);
   const [pulse, setPulse] = useState(false);
   const [rainPhase, setRainPhase] = useState<'inactive' | 'warning' | 'active'>('inactive');
+  const [burstMsg, setBurstMsg] = useState('');
 
   // Listen for matrix rain phases
   useEffect(() => {
     const handler = (e: Event) => {
       const phase = (e as CustomEvent).detail?.phase;
-      if (phase) setRainPhase(phase);
+      if (phase) {
+        setRainPhase(phase);
+        // Whisper a new word each time warning begins — stays up through 'active'.
+        if (phase === 'warning') setBurstMsg(pickBurstMsg());
+        else if (phase === 'inactive') setBurstMsg('');
+      }
     };
     window.addEventListener('matrix-rain', handler);
     return () => window.removeEventListener('matrix-rain', handler);
@@ -469,6 +510,23 @@ function DesktopBall() {
                       : { y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }, scale: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } }
               }
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Burst whisper — tiny word floating just ABOVE the ball during warning/active */}
+      <AnimatePresence>
+        {visible && burstMsg && rainPhase !== 'inactive' && (
+          <motion.div
+            className="fixed z-[4] pointer-events-none"
+            style={{ left, top }}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: rainPhase === 'active' ? 0 : 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            <span className="block -translate-x-1/2 -translate-y-[180%] font-mono text-[9px] tracking-[0.16em] lowercase text-gui-accent/75 whitespace-nowrap">
+              {burstMsg}
+            </span>
           </motion.div>
         )}
       </AnimatePresence>

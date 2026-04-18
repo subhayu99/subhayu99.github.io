@@ -5,6 +5,7 @@ import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { loadPyPIStats } from '../lib/pypiStats';
 import { useViewMode } from '../hooks/useViewMode';
 import { apiConfig } from '../config';
+import { enterFullscreen } from '../lib/fullscreen';
 
 const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 const SCRAMBLE_DURATION = 1500;
@@ -130,6 +131,10 @@ export default function SplashPage() {
 
   const handleSelect = useCallback((mode: 'terminal' | 'gui') => {
     setSelected(mode);
+    // The click is a valid user gesture — request fullscreen synchronously
+    // before the view transition kicks in. Silently no-ops if the browser
+    // denies (e.g. iframe, unsupported).
+    enterFullscreen();
     setTimeout(() => switchTo(mode), 400);
   }, [switchTo]);
 

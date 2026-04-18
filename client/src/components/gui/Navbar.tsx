@@ -4,6 +4,7 @@ import { useViewMode } from '../../hooks/useViewMode';
 import type { PortfolioData } from '../../../../shared/schema';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import SocialIcon from './SocialIcon';
+import { toggleFullscreen } from '../../lib/fullscreen';
 
 const NAV_SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -136,6 +137,31 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
                   <SocialIcon network={sn.network} size={16} />
                 </a>
               ))}
+              {/* Fullscreen toggle — also triggerable via "F" key. */}
+              <button
+                type="button"
+                onClick={() => toggleFullscreen()}
+                className="hover:text-white transition-colors leading-none"
+                aria-label="Toggle fullscreen"
+                title="Toggle fullscreen (F)"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                >
+                  <path d="M4 9V4h5" />
+                  <path d="M20 9V4h-5" />
+                  <path d="M4 15v5h5" />
+                  <path d="M20 15v5h-5" />
+                </svg>
+              </button>
             </div>
           </div>
 

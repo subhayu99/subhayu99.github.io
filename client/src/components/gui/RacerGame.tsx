@@ -415,7 +415,15 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       if (leftRoom > rightRoom) target = Math.max(0.08, threat.x - 0.22);
       else target = Math.min(0.92, threat.x + 0.22);
     } else target = 0.5;
-    g.x += (target - g.x) * Math.min(1, dt * 3);
+    // Ship tilt during demo. Instead of deriving vx from the raw position
+    // delta (which was spiky — demo moves in bursts, so vx pegged ±1.4 one
+    // frame and back to 0 the next), compute a smoothed "intent velocity"
+    // from the direction toward the target and lerp toward it. Settles
+    // cleanly, no jitter.
+    const diff = target - g.x;
+    const desiredVx = Math.max(-1.0, Math.min(1.0, diff * 4));
+    g.vx += (desiredVx - g.vx) * Math.min(1, dt * 8);
+    g.x += diff * Math.min(1, dt * 3);
   }
 
   function gameOver() {
@@ -865,10 +873,12 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
         {/* Close button top-right corner */}
         <button
           onClick={close}
-          className="fixed top-3 right-4 z-[70] text-[11px] tracking-[0.2em] uppercase hover:opacity-80 transition-opacity"
-          style={{ color: col('dim'), top: 36 }}
+          className="fixed z-[70] text-[16px] leading-none hover:opacity-80 transition-opacity"
+          style={{ color: col('dim'), bottom: 16, right: 16, padding: '6px 10px' }}
+          aria-label="Close (ESC)"
+          title="Close (ESC)"
         >
-          ✕ ESC
+          ✕
         </button>
 
         {/* Start/Game-over overlay */}
@@ -886,8 +896,16 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
         )}
         {overlayKind === 'over' && (
           <>
-            <div className="fixed inset-0 z-20 bg-black/70 backdrop-blur-[6px]" />
-            <div className="fixed inset-0 z-30 flex flex-col items-center justify-center text-center select-none px-5">
+            <div
+              className="fixed inset-0 z-20 bg-black/70 backdrop-blur-[6px]"
+              onClick={() => { if (gameRef.current.over) restart(); }}
+              onTouchStart={(e) => { if (gameRef.current.over) { e.preventDefault(); restart(); } }}
+            />
+            <div
+              className="fixed inset-0 z-30 flex flex-col items-center justify-center text-center select-none px-5"
+              onClick={() => { if (gameRef.current.over) restart(); }}
+              onTouchStart={(e) => { if (gameRef.current.over) { e.preventDefault(); restart(); } }}
+            >
               <div className="text-[13px] tracking-[0.5em] uppercase mb-4" style={{ color: col('dim') }}>Game Over</div>
               <div
                 className="leading-none font-medium"
