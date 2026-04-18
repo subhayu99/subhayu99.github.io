@@ -97,7 +97,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
         </motion.div>
       )}
 
-      <span className="secret-text block mt-6 font-mono">// hire me before someone else does ;) stuck in the maze? "help" unlocks it.</span>
+      <span className="secret-text block mt-6 font-mono">// i'm happy where i am — will update when i need a job!</span>
 
       <motion.p
         className="absolute bottom-6 text-zinc-700 text-xs font-mono"
