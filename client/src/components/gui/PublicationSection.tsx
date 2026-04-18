@@ -50,6 +50,7 @@ export default function PublicationSection({ data }: PublicationSectionProps) {
             </div>
           </motion.div>
         ))}
+        <span className="secret-text block mt-6 font-mono">// stuck in the maze? "help" unlocks it.</span>
       </div>
     </SectionWrapper>
   );

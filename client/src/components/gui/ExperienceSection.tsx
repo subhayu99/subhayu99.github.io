@@ -23,6 +23,7 @@ export default function ExperienceSection({ data }: ExperienceSectionProps) {
         {experience.map((exp, i) => (
           <ExperienceCard key={`${exp.company}-${exp.start_date}`} experience={exp} index={i} total={experience.length} />
         ))}
+        <span className="secret-text block mt-6 font-mono">// name the one who races through life (5 keys).</span>
       </div>
     </SectionWrapper>
   );
