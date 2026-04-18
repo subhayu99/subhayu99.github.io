@@ -39,7 +39,7 @@ export default function AboutSection({ data }: AboutSectionProps) {
             dangerouslySetInnerHTML={{ __html: renderGuiMarkdown(paragraph) }}
           />
         ))}
-        <span className="secret-text block mt-4 font-mono">// you found a secret! try selecting more text around the page...</span>
+        <span className="secret-text block mt-4 font-mono">// you found a secret. spell what slithers (5 keys) and something hisses. more hides around — keep selecting.</span>
       </div>
     </SectionWrapper>
   );

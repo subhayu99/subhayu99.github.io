@@ -27,7 +27,6 @@ import SnakeGame from './SnakeGame';
 import ReflexGame from './ReflexGame';
 import RacerGame from './RacerGame';
 import HelpSheet from './HelpSheet';
-import TriggerHints from './TriggerHints';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -40,7 +39,7 @@ export default function GUIPortfolio() {
     return localStorage.getItem('motionPermission') === 'granted';
   });
   const [showMotionToast, setShowMotionToast] = useState(false);
-  const { themeFlash, snakeActive, reflexActive, racerActive, helpActive, resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, triggerReflex, triggerRacer, triggerHelp } = useGestureTrigger(motionEnabled);
+  const { themeFlash, snakeActive, reflexActive, racerActive, helpActive, resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, triggerSnake, triggerReflex, triggerRacer, triggerHelp } = useGestureTrigger(motionEnabled);
 
   // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
@@ -174,6 +173,7 @@ export default function GUIPortfolio() {
         pypiStats={pypiStats ?? undefined}
         onTripleTap={triggerReflex}
         onTriggerRacer={triggerRacer}
+        onTriggerSnake={triggerSnake}
       />
       <AboutSection data={portfolioData} />
       <TechStackSection data={portfolioData} />
@@ -183,7 +183,6 @@ export default function GUIPortfolio() {
       <EducationSection data={portfolioData} />
       <PublicationSection data={portfolioData} />
       <ContactSection data={portfolioData} />
-      <TriggerHints onRequestHelp={triggerHelp} />
       <HelpSheet active={helpActive} onClose={resetHelp} />
       <ScrollBallGame />
       <FloatingTerminalButton />

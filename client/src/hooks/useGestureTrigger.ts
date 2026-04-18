@@ -80,15 +80,18 @@ export function useGestureTrigger(motionEnabled = false) {
     return () => window.removeEventListener('devicemotion', onMotion);
   }, [motionEnabled, snakeActive, themeFlash, triggerThemeCycle]);
 
-  // ── Flip detection (Snake) ──
+  // ── Flip detection (Help — was Snake) ──
+  // Flipping the phone face-down then back up now opens the hidden Help sheet,
+  // which is the mobile discovery path for all the cryptic triggers. Snake itself
+  // moved to a long-press on the PyPI Downloads stat (Python = snake).
   useEffect(() => {
-    if (!motionEnabled || snakeActive) return;
+    if (!motionEnabled || helpActive) return;
 
     let wasFlipped = false;
     let flipTime = 0;
 
     const onMotion = (e: DeviceMotionEvent) => {
-      if (snakeActive || themeFlash) return;
+      if (helpActive || themeFlash) return;
 
       const acc = e.accelerationIncludingGravity;
       if (!acc || acc.z == null) return;
@@ -101,7 +104,7 @@ export function useGestureTrigger(motionEnabled = false) {
       }
 
       if (wasFlipped && acc.z > 7) {
-        if (now - flipTime < 2000) setSnakeActive(true);
+        if (now - flipTime < 2000) setHelpActive(true);
         wasFlipped = false;
         flipTime = 0;
       }
@@ -114,7 +117,7 @@ export function useGestureTrigger(motionEnabled = false) {
 
     window.addEventListener('devicemotion', onMotion);
     return () => window.removeEventListener('devicemotion', onMotion);
-  }, [motionEnabled, snakeActive, themeFlash]);
+  }, [motionEnabled, helpActive, themeFlash]);
 
   // ── Keyboard: T (cycle) / T1-T5 (jump) / "snake" ──
   useEffect(() => {
@@ -180,6 +183,7 @@ export function useGestureTrigger(motionEnabled = false) {
   return {
     themeFlash, snakeActive, reflexActive, racerActive, helpActive,
     resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp,
+    triggerSnake: () => setSnakeActive(true),
     triggerReflex: () => setReflexActive(true),
     triggerRacer: () => setRacerActive(true),
     triggerHelp: () => setHelpActive(true),
