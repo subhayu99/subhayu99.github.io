@@ -41,6 +41,34 @@ export default function GUIPortfolio() {
   const [showMotionToast, setShowMotionToast] = useState(false);
   const { themeFlash, snakeActive, reflexActive, racerActive, helpActive, resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, triggerSnake, triggerReflex, triggerRacer, triggerHelp } = useGestureTrigger(motionEnabled);
 
+  // URL-hash deep links: #snake / #racer / #reflex / #help opens the game.
+  // Works on direct page load AND when navigating back/forward through history.
+  useEffect(() => {
+    const check = () => {
+      const h = window.location.hash.slice(1).toLowerCase();
+      if (h === 'snake') triggerSnake();
+      else if (h === 'racer') triggerRacer();
+      else if (h === 'reflex') triggerReflex();
+      else if (h === 'help') triggerHelp();
+    };
+    check();
+    window.addEventListener('hashchange', check);
+    return () => window.removeEventListener('hashchange', check);
+  }, [triggerSnake, triggerReflex, triggerRacer, triggerHelp]);
+
+  // When a game closes, reset the hash back to #gui so a browser refresh
+  // doesn't re-open the game and the URL reflects current state.
+  const clearGameHash = useCallback(() => {
+    const h = window.location.hash.toLowerCase();
+    if (h === '#snake' || h === '#racer' || h === '#reflex' || h === '#help') {
+      window.history.replaceState(null, '', '#gui');
+    }
+  }, []);
+  const handleResetSnake = useCallback(() => { resetSnake(); clearGameHash(); }, [resetSnake, clearGameHash]);
+  const handleResetReflex = useCallback(() => { resetReflex(); clearGameHash(); }, [resetReflex, clearGameHash]);
+  const handleResetRacer = useCallback(() => { resetRacer(); clearGameHash(); }, [resetRacer, clearGameHash]);
+  const handleResetHelp = useCallback(() => { resetHelp(); clearGameHash(); }, [resetHelp, clearGameHash]);
+
   // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
     if (!isMobile) return;
@@ -164,9 +192,9 @@ export default function GUIPortfolio() {
       <MatrixRain />
       <MouseSpotlight />
       <ThemeFlash theme={themeFlash} onClose={resetThemeFlash} />
-      <SnakeGame active={snakeActive} onClose={resetSnake} />
-      <ReflexGame active={reflexActive} onClose={resetReflex} />
-      <RacerGame active={racerActive} onClose={resetRacer} />
+      <SnakeGame active={snakeActive} onClose={handleResetSnake} />
+      <ReflexGame active={reflexActive} onClose={handleResetReflex} />
+      <RacerGame active={racerActive} onClose={handleResetRacer} />
       <Navbar activeSection={activeSection} data={portfolioData} />
       <HeroSection
         data={portfolioData}
@@ -183,7 +211,7 @@ export default function GUIPortfolio() {
       <EducationSection data={portfolioData} />
       <PublicationSection data={portfolioData} />
       <ContactSection data={portfolioData} />
-      <HelpSheet active={helpActive} onClose={resetHelp} />
+      <HelpSheet active={helpActive} onClose={handleResetHelp} />
       <ScrollBallGame />
       <FloatingTerminalButton />
       {/* Motion permission toast */}

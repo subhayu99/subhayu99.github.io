@@ -30,10 +30,16 @@ interface ViewModeContextValue {
 
 const ViewModeContext = createContext<ViewModeContextValue | null>(null);
 
+/** Hashes that should land the user inside GUI (games live there). */
+const GAME_HASHES = new Set(['snake', 'racer', 'reflex', 'help']);
+
 function hashToMode(hash: string): ViewMode | null {
   const clean = hash.replace('#', '').toLowerCase();
   if (clean === 'terminal') return 'terminal';
   if (clean === 'gui') return 'gui';
+  // Game-name hashes force GUI view — GUIPortfolio then reads the hash and
+  // fires the corresponding trigger. Skips splash on direct-link arrivals.
+  if (GAME_HASHES.has(clean)) return 'gui';
   return null;
 }
 
