@@ -5,6 +5,7 @@ import type { PortfolioData } from '../../../../shared/schema';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import SocialIcon from './SocialIcon';
 import { toggleFullscreen } from '../../lib/fullscreen';
+import * as audio from '../../lib/audio';
 
 const NAV_SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -137,6 +138,8 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
                   <SocialIcon network={sn.network} size={16} />
                 </a>
               ))}
+              {/* Audio mute toggle — also triggerable via "M" key. */}
+              <MuteButton />
               {/* Fullscreen toggle — also triggerable via "F" key. */}
               <button
                 type="button"
@@ -193,5 +196,40 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
         </motion.nav>
       )}
     </AnimatePresence>
+  );
+}
+
+/**
+ * Speaker icon that reflects audio mute state. Clicking toggles mute.
+ * Also triggerable via the "M" key (wired in App.tsx). Audio is unlocked on
+ * the first click/keypress — procedural sounds live in lib/audio.ts.
+ */
+function MuteButton() {
+  const [muted, setMuted] = useState(() => audio.isMuted());
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        audio.unlock();
+        setMuted(audio.toggleMuted());
+      }}
+      className="hover:text-white transition-colors leading-none"
+      aria-label={muted ? 'Unmute audio' : 'Mute audio'}
+      title={muted ? 'Unmute audio (M)' : 'Mute audio (M)'}
+    >
+      {muted ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M11 5L6 9H2v6h4l5 4V5z" />
+          <line x1="23" y1="9" x2="17" y2="15" />
+          <line x1="17" y1="9" x2="23" y2="15" />
+        </svg>
+      ) : (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M11 5L6 9H2v6h4l5 4V5z" />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+        </svg>
+      )}
+    </button>
   );
 }

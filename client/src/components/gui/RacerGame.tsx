@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getAccentRgb } from '../../config/gui-theme.config';
+import * as audio from '../../lib/audio';
 
 interface RacerGameProps {
   active: boolean;
@@ -8,6 +9,14 @@ interface RacerGameProps {
 }
 
 const LS_KEY = 'racer-high-score';
+const SENS_KEY = 'racer-sensitivity';
+
+// 5-step sensitivity scale for L/R key steering. Affects input acceleration
+// AND max lateral velocity — so higher sens means the ship reaches a steeper
+// lean faster AND tops out at a wider lane-change range.
+const SENS_MULTIPLIERS = [0.6, 0.8, 1.0, 1.3, 1.7];
+const SENS_LABELS      = ['very slow', 'slow', 'normal', 'fast', 'very fast'];
+const DEFAULT_SENS_LEVEL = 2;
 
 /**
  * RacerGame — portfolio-native infinite-runner racer.
@@ -33,6 +42,34 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
   const [speedDisplay, setSpeedDisplay] = useState('0.0 KM');
   const [litDot, setLitDot] = useState(0);
   const [isTouchLayout, setIsTouchLayout] = useState(false);
+  const [lives, setLives] = useState(3);
+  /**
+   * Index of the bar that was JUST lost. On transition from 3→2 lives this
+   * becomes 2 (the bar that vanished); cleared after ~900ms. Renders the bar
+   * with a bright flash + size pulse so the loss is visually obvious without
+   * any on-road text to read. Works identically on desktop and mobile.
+   */
+  const [lostBarIndex, setLostBarIndex] = useState<number | null>(null);
+  const lostBarTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sensitivity — user-tunable multiplier for keyboard L/R steering response.
+  // Stored per device. Kept out of gameRef so the React UI re-renders on change.
+  const [sensLevel, setSensLevelState] = useState<number>(() => {
+    const stored = localStorage.getItem(SENS_KEY);
+    const n = stored == null ? DEFAULT_SENS_LEVEL : parseInt(stored, 10);
+    return Number.isFinite(n) ? Math.max(0, Math.min(4, n)) : DEFAULT_SENS_LEVEL;
+  });
+  // Ref mirror so the RAF loop reads the latest value without rebinding listeners.
+  const sensRef = useRef(SENS_MULTIPLIERS[sensLevel]);
+  useEffect(() => {
+    sensRef.current = SENS_MULTIPLIERS[sensLevel];
+    localStorage.setItem(SENS_KEY, String(sensLevel));
+  }, [sensLevel]);
+
+  // Cleanup the bar-flash timer on unmount so it doesn't fire after the game closes.
+  useEffect(() => () => {
+    if (lostBarTimerRef.current) clearTimeout(lostBarTimerRef.current);
+  }, []);
 
   // Game state lives in refs — RAF loop mutates directly without re-renders.
   const gameRef = useRef({
@@ -60,7 +97,11 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       x: number; z: number; type: string; rot: number; spin: number;
       bob?: number; flying?: boolean; flyPhase?: number; w: number;
       passed?: boolean;
+      /** Seconds remaining on the brief hit-flash render (bright stroke + scale pulse). */
+      hitT?: number;
     }>,
+    /** Bright sparks radiating from the obstacle on collision. Live ~0.6s. */
+    hitParticles: [] as Array<{ x: number; y: number; vx: number; vy: number; life: number }>,
     nextSpawn: 0.8,
     trail: [] as Array<{ x: number; life: number }>,
     input: { left: false, right: false },
@@ -86,6 +127,7 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       setBest(g.score);
     }
     cancelAnimationFrame(rafRef.current);
+    audio.stopEngine();
     setStarted(false);
     onClose();
   }, [onClose]);
@@ -194,8 +236,16 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
   // ============================================================================
   function firstInput() {
     const g = gameRef.current;
+    const wasDemo = g.demo;
     if (g.demo) g.demo = false;
     if (!started) setStarted(true);
+    // Transitioning from demo → live play: fire the "go" chime and start
+    // the engine rumble. Engine pitch follows game.speed every frame.
+    if (wasDemo) {
+      audio.unlock();
+      audio.playStart();
+      audio.startEngine();
+    }
   }
 
   function resetGame(keepDemo: boolean) {
@@ -211,6 +261,7 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     g.obstacles.length = 0;
     g.nextSpawn = 0.8;
     g.trail.length = 0;
+    g.hitParticles.length = 0;
     g.falling = false;
     g.fallTime = 0;
     g.demo = keepDemo;
@@ -219,6 +270,14 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     g.lastBuildingDistance = 0;
     buildingsRef.current.initialized = false;
     setScore(0);
+    // Sync HUD state immediately so there's no one-frame stale flash from the
+    // life that was just lost when we died.
+    setLives(3);
+    setLostBarIndex(null);
+    if (lostBarTimerRef.current) {
+      clearTimeout(lostBarTimerRef.current);
+      lostBarTimerRef.current = null;
+    }
     setOverlayKind('start');
   }
 
@@ -226,6 +285,12 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     resetGame(false);
     setStarted(true);
     setOverlayKind('start');
+    // Engine was stopped on gameOver. Since restart is called from a user
+    // gesture (R key / tap overlay), this is a valid point to resume audio
+    // and re-spark the engine rumble + "go" chime.
+    audio.unlock();
+    audio.playStart();
+    audio.startEngine();
   }
 
   function spawnObstacle() {
@@ -319,11 +384,15 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     g.speed += (g.targetSpeed - g.speed) * Math.min(1, dt * 1.2);
 
     if (!g.demo) {
-      const accel = 4.5;
+      // Sensitivity scales both the input acceleration and the max vx clamp,
+      // so higher sens = faster response AND wider lateral range at full input.
+      const sens = sensRef.current;
+      const accel = 4.5 * sens;
+      const vxMax = 1.4 * sens;
       if (g.input.left) g.vx -= accel * dt;
       if (g.input.right) g.vx += accel * dt;
       if (!g.input.left && !g.input.right) g.vx *= Math.pow(0.0001, dt);
-      g.vx = Math.max(-1.4, Math.min(1.4, g.vx));
+      g.vx = Math.max(-vxMax, Math.min(vxMax, g.vx));
       if (!g.falling) {
         g.x += g.vx * dt * 0.35;
         if (g.x < 0.10 || g.x > 0.90) {
@@ -334,6 +403,9 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
           g.fallRotV = (Math.random() - 0.5) * 4;
           g.fallVx = g.vx * 0.6 + (g.x > 0.5 ? 0.8 : -0.8);
           g.flash = 1;
+          // Distinct plunging whoosh — fires INSTANTLY so the audio cue
+          // matches the visual the moment the ship leaves the road.
+          audio.playFallOff();
         }
       }
     }
@@ -350,6 +422,9 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
         g.x = 0.5; g.vx = 0;
         g.lives -= 1;
         g.flash = 1;
+        // No playLifeLost() here — the playFallOff() at fall-start already
+        // told the user "life lost". Playing another "uh-oh" on top of it
+        // caused the lagging double-sound the user didn't want.
         if (g.lives <= 0) gameOver();
       }
     }
@@ -366,6 +441,8 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     for (const o of g.obstacles) {
       const perspRate = 0.25 + o.z * o.z * 3.0;
       o.z += dt * g.speed * 0.55 * perspRate;
+      // Decay the hit-flash so the bright stroke fades after ~0.4s.
+      if (o.hitT && o.hitT > 0) o.hitT = Math.max(0, o.hitT - dt);
     }
     for (const o of g.obstacles) {
       if (o.passed) continue;
@@ -377,9 +454,14 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
         if (o.type === 'gate') { o.passed = true; g.score += 25; }
         else if (dx < hitRange) {
           o.passed = true;
+          o.hitT = 0.6; // longer, more visible flash on the obstacle
+          // Sparks from the hit point so collision reads dramatic
+          spawnHitSparks();
+          audio.playCollision();
           if (!g.demo) {
             g.lives--;
             g.flash = 1;
+            audio.playLifeLost();
             if (g.lives <= 0) gameOver();
           } else g.flash = 1;
         }
@@ -389,6 +471,15 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       }
     }
     g.obstacles = g.obstacles.filter(o => o.z < 1.25);
+
+    // Update hit sparks — basic particle system with slight gravity.
+    for (const p of g.hitParticles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 240 * dt; // gravity
+      p.life -= dt;
+    }
+    g.hitParticles = g.hitParticles.filter(p => p.life > 0);
     if (g.demo) { demoStep(dt); g.lives = 3; }
     updateBuildings();
     g.trail.push({ x: g.x, life: 1 });
@@ -426,9 +517,47 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     g.x += diff * Math.min(1, dt * 3);
   }
 
+  /**
+   * Spawn ~12 bright sparks from the player's screen position. Fly outward
+   * with radial velocity + slight upward bias, fall under gravity, fade out.
+   */
+  function spawnHitSparks() {
+    const g = gameRef.current;
+    const { W, H } = g.dims;
+    if (!W || !H) return;
+    // Reuse player-screen-X math (same as the life-lost marker spawn).
+    const bottomInset = W * 0.08;
+    const vx = W / 2;
+    const speedFracFOV = Math.max(0, Math.min(1, (g.speed - 1) / 1.6));
+    const horizon = H * 0.16;
+    const wob = Math.sin(g.t * 18) * 0.4 * (g.speed - 1);
+    const horizonLift = Math.min(H * 0.07, 56) + speedFracFOV * 14;
+    const vanishY = (horizon + wob) - horizonLift;
+    const perspDenom = H - vanishY;
+    const p1 = (H - vanishY) / perspDenom;
+    const eL = vx + (bottomInset - vx) * p1;
+    const eR = vx + ((W - bottomInset) - vx) * p1;
+    const sx = eL + (eR - eL) * g.x;
+    const sy = (isTouchLayout ? H - 170 : H - 100);
+    const count = 14;
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const speed = 90 + Math.random() * 180;
+      g.hitParticles.push({
+        x: sx,
+        y: sy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 60, // slight upward bias
+        life: 0.55 + Math.random() * 0.25,
+      });
+    }
+  }
+
   function gameOver() {
     const g = gameRef.current;
     g.over = true;
+    audio.stopEngine();
+    audio.playGameOver();
     if (g.score > parseInt(localStorage.getItem(LS_KEY) || '0', 10)) {
       localStorage.setItem(LS_KEY, String(g.score));
       setBest(g.score);
@@ -685,16 +814,30 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
       ctx.strokeRect(2, 2, W - 4, H - 4);
       ctx.globalAlpha = 1;
     }
+
+    // Hit sparks — bright quick flecks flying from the impact point.
+    // White for visual impact, alpha fades with remaining life.
+    if (g.hitParticles.length > 0) {
+      for (const p of g.hitParticles) {
+        const alpha = Math.max(0, Math.min(1, p.life / 0.6));
+        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.fillRect(p.x - 1.5, p.y - 1.5, 3, 3);
+      }
+    }
   }
 
   function drawObstacle(
     ctx: CanvasRenderingContext2D,
-    o: { type: string; rot: number; spin: number; flyPhase?: number },
+    o: { type: string; rot: number; spin: number; flyPhase?: number; hitT?: number },
     cx: number, y: number, size: number, scale: number,
   ) {
-    const fg = col('fg');
-    const dim = col('dim');
-    const ghost = col('ghost');
+    // Hit flash — right after collision, override strokes to bright white and
+    // boost line weight so the obstacle visibly "reacts". Fades in 0.4s.
+    const hitAmt = o.hitT ?? 0;
+    const hitFlash = hitAmt > 0;
+    const fg = hitFlash ? '#fff' : col('fg');
+    const dim = hitFlash ? '#fff' : col('dim');
+    const ghost = hitFlash ? col('fg') : col('ghost');
     if (o.type === 'fly') {
       const hover = Math.sin(gameRef.current.t * 3 + (o.flyPhase || 0)) * 10 * scale;
       const s = Math.max(5, size * 0.55);
@@ -818,8 +961,24 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
     if (g.flash > 0) g.flash -= dt * 2;
     update(dt);
     draw();
+    // Engine pitch tracks current game speed so the rumble builds as you accelerate.
+    if (!g.demo && !g.over) audio.setEnginePitch(g.speed);
     // HUD updates
     setScore(g.score);
+    // Only set state when value actually changes — avoids pointless re-renders.
+    if (g.lives !== lives) {
+      if (g.lives < lives) {
+        // A life just dropped — flash the bar that disappeared (index = new lives count).
+        setLostBarIndex(g.lives);
+        if (lostBarTimerRef.current) clearTimeout(lostBarTimerRef.current);
+        lostBarTimerRef.current = setTimeout(() => setLostBarIndex(null), 900);
+      } else if (g.lives > lives) {
+        // Lives replenished (restart). Clear any pending flash.
+        setLostBarIndex(null);
+        if (lostBarTimerRef.current) clearTimeout(lostBarTimerRef.current);
+      }
+      setLives(g.lives);
+    }
     setSpeedDisplay((g.distance / 1000).toFixed(2) + ' KM');
     const speedFrac = Math.min(1, Math.max(0, (g.speed - 0.7) / 1.6));
     const dotFreq = 2 + speedFrac * 9;
@@ -852,6 +1011,63 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
           <span>RACER</span>
           <span className="ml-1" style={{ color: col('dim') }}> · SCORE</span> <span>{fmt(score)}</span>
           <span className="ml-2" style={{ color: col('dim') }}>BEST</span> <span>{best}</span>
+        </div>
+        {/* Lives — three bars. A separate flash overlay mounts/unmounts via
+            AnimatePresence when a life is lost, so the flash always starts
+            fresh and never clashes with the filled/empty state transition.
+            Bars are bumped to 22×4px so the flash is clearly visible. */}
+        <div className="fixed top-10 left-4 flex items-center gap-2 text-[10px] tracking-[0.28em] uppercase pointer-events-none z-10" style={{ color: col('dim') }}>
+          <span>lives</span>
+          {[0, 1, 2].map(i => {
+            const filled = i < lives;
+            return (
+              <span
+                key={i}
+                className="relative inline-block"
+                style={{ width: 22, height: 4 }}
+              >
+                {/* Base bar — always rendered, just filled vs empty state. */}
+                <span
+                  className="absolute inset-0 block transition-colors duration-200"
+                  style={{
+                    background: filled ? col('fg') : col('ghost'),
+                    opacity: filled ? 1 : 0.4,
+                    boxShadow: filled ? `0 0 4px rgba(${accentRgb()}, 0.5)` : 'none',
+                  }}
+                />
+                {/* Flash overlay — appears ONLY for the bar that just got lost.
+                    Mounts → plays once → unmounts cleanly. No initial-value
+                    glitches, no keyframe quirks on first life loss. */}
+                <AnimatePresence>
+                  {lostBarIndex === i && (
+                    <motion.span
+                      key="flash"
+                      className="absolute block pointer-events-none"
+                      initial={{
+                        opacity: 1,
+                        scaleY: 3.5,
+                        scaleX: 1.3,
+                        backgroundColor: '#ffffff',
+                      }}
+                      animate={{
+                        opacity: 0,
+                        scaleY: 1,
+                        scaleX: 1,
+                        backgroundColor: `rgb(${accentRgb()})`,
+                      }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                      style={{
+                        inset: 0,
+                        transformOrigin: 'center',
+                        boxShadow: `0 0 16px rgba(${accentRgb()}, 1), 0 0 28px rgba(255, 255, 255, 0.6)`,
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+              </span>
+            );
+          })}
         </div>
         <div className="fixed top-3.5 right-4 text-[11px] tracking-[0.18em] uppercase text-right pointer-events-none z-10" style={{ color: col('dim') }}>
           <div style={{ color: col('fg') }}>{speedDisplay}</div>
@@ -892,6 +1108,45 @@ export default function RacerGame({ active, onClose }: RacerGameProps) {
             <div className="text-[10px] tracking-[0.22em] uppercase mt-3" style={{ color: col('dim') }}>
               ← → · A D · Swipe · Dodge blocks · ESC to exit
             </div>
+
+            {/* Sensitivity slider — desktop only (touch uses swipe-anywhere). */}
+            {!isTouchLayout && (
+              <div className="mt-5 pointer-events-auto">
+                <div className="text-[9px] tracking-[0.28em] uppercase mb-2" style={{ color: col('dim') }}>
+                  L/R sensitivity
+                </div>
+                <div className="flex gap-3 justify-center">
+                  {[0, 1, 2, 3, 4].map(i => {
+                    const active = sensLevel === i;
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setSensLevelState(i)}
+                        className="w-5 h-5 flex items-center justify-center hover:opacity-100 transition-opacity"
+                        aria-label={`Sensitivity ${SENS_LABELS[i]}`}
+                        title={SENS_LABELS[i]}
+                      >
+                        <span
+                          className="rounded-full transition-all"
+                          style={{
+                            width: active ? 8 : 5,
+                            height: active ? 8 : 5,
+                            background: active ? col('fg') : col('ghost'),
+                            boxShadow: active
+                              ? `0 0 8px rgba(${accentRgb()}, 0.6)`
+                              : 'none',
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-[8px] tracking-[0.22em] uppercase mt-2 opacity-70" style={{ color: col('dim') }}>
+                  {SENS_LABELS[sensLevel]}
+                </div>
+              </div>
+            )}
           </div>
         )}
         {overlayKind === 'over' && (

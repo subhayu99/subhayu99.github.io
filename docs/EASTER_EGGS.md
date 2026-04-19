@@ -22,9 +22,30 @@ Two categories:
 | 4 | Infinity Racer | type `racer`                    | long-press "Years Experience" stat (2s)|
 | 5 | Help sheet     | type `help`                     | flip device (face-down → face-up)      |
 | 6 | Fullscreen     | press `F`, or tap ⛶ in navbar   | tap ⛶ in navbar                         |
+| 7 | Mute audio     | press `M`, or tap 🔊 in navbar   | tap 🔊 in navbar                         |
 
 Also: **first splash-page click** → enters fullscreen (session-gated splash
 means every new browser session triggers this again).
+
+### URL hash deep-links (shareable)
+
+Any visitor can jump straight into a game by appending a hash to the URL:
+
+| Hash                           | What opens  |
+|--------------------------------|-------------|
+| `site.com/#snake`              | Snake       |
+| `site.com/#racer`              | Infinity Racer |
+| `site.com/#reflex`             | Reflex      |
+| `site.com/#help`               | Help sheet  |
+| `site.com/#gui` / `#terminal`  | View modes (existing) |
+
+On arrival, splash is skipped, GUI mounts, and `GUIPortfolio` reads the
+hash and fires the corresponding trigger. When the game closes, the hash
+resets to `#gui` so a refresh doesn't re-open it.
+
+**File:** `client/src/hooks/useViewMode.ts` (`GAME_HASHES` set in
+`hashToMode`) + `client/src/components/gui/GUIPortfolio.tsx` (hash-watcher
+effect + `clearGameHash` wrapper on reset callbacks).
 
 **Core code:** `client/src/hooks/useGestureTrigger.ts` (keyword + accelerometer
 triggers), `client/src/components/gui/StatCard.tsx` (long-press hook),
@@ -123,6 +144,25 @@ Date-gated lines appended to the console welcome on specific days:
 
 **File:** `client/src/lib/consoleEasterEgg.ts` (`ANNIVERSARIES` map).
 To add: `'<month-1-indexed>-<day>': 'your message'`.
+
+### Procedural audio (Racer only)
+
+Web Audio API — fully procedural, zero asset files. Unlocks on first
+user gesture (click / keypress). Preference stored in `localStorage`.
+
+- **Start chime** — square sweep 320→820Hz when going demo→live
+- **Engine rumble** — detuned sawtooths (128 + 131Hz) + octave square +
+  bandpassed noise + 9Hz LFO cylinder-firing pulse. Pitch & LFO rate
+  both track `game.speed` for real rev feel.
+- **Collision crunch** — sub-bass thump + bandpass noise + metallic hit,
+  3 layered oscillators.
+- **Fall off road** — distinct Doppler wail 1100→90Hz + air-whoosh noise,
+  fires instantly when ship crosses edge.
+- **Life lost** — triangle descending "uh-oh", plays alongside collisions.
+- **Game over** — three-note triangle cascade (C5 → G4 → C4) with
+  octave-doubled body.
+
+**File:** `client/src/lib/audio.ts`. Mute via **M** key or 🔊 in navbar.
 
 ### Other ambient effects (already present before this iteration)
 
