@@ -172,6 +172,16 @@ html {
     animation: blink 1s infinite;
   }
 
+  /* Engulf: per-element spaghettification. Each leaf element computes its
+     own trajectory toward the BH (the transform/transition are applied
+     inline from JS). This rule only handles pointer-events/selection lockout
+     on the container while a BH holds the stage. */
+  body[data-bh-active] [data-engulfable] {
+    pointer-events: none;
+    -webkit-user-select: none;
+            user-select: none;
+  }
+
   @keyframes blink {
     0%, 50% { opacity: 1; }
     51%, 100% { opacity: 0; }

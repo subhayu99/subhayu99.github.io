@@ -123,6 +123,9 @@ export function useGestureTrigger(motionEnabled = false) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      // A black hole is holding the stage — no easter-egg triggers until the
+      // user escapes out of it.
+      if (document.body.hasAttribute('data-bh-active')) return;
 
       const key = e.key;
 
