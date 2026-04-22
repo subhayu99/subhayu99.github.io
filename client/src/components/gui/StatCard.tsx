@@ -61,6 +61,7 @@ export default function StatCard({ value, suffix = '', label, index, onLongPress
   return (
     <motion.div
       ref={ref}
+      data-stat-card
       className="border border-white/5 p-5 sm:p-6"
       initial={{ opacity: 0, y: 20 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}

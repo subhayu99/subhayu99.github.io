@@ -195,25 +195,27 @@ export default function GUIPortfolio() {
       <SnakeGame active={snakeActive} onClose={handleResetSnake} />
       <ReflexGame active={reflexActive} onClose={handleResetReflex} />
       <RacerGame active={racerActive} onClose={handleResetRacer} />
-      <Navbar activeSection={activeSection} data={portfolioData} />
-      <HeroSection
-        data={portfolioData}
-        pypiStats={pypiStats ?? undefined}
-        onTripleTap={triggerReflex}
-        onTriggerRacer={triggerRacer}
-        onTriggerSnake={triggerSnake}
-      />
-      <AboutSection data={portfolioData} />
-      <TechStackSection data={portfolioData} />
-      <ExperienceSection data={portfolioData} />
-      <ProfessionalProjectsSection data={portfolioData} />
-      <ProjectsSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
-      <EducationSection data={portfolioData} />
-      <PublicationSection data={portfolioData} />
-      <ContactSection data={portfolioData} />
+      <div data-engulfable>
+        <Navbar activeSection={activeSection} data={portfolioData} />
+        <HeroSection
+          data={portfolioData}
+          pypiStats={pypiStats ?? undefined}
+          onTripleTap={triggerReflex}
+          onTriggerRacer={triggerRacer}
+          onTriggerSnake={triggerSnake}
+        />
+        <AboutSection data={portfolioData} />
+        <TechStackSection data={portfolioData} />
+        <ExperienceSection data={portfolioData} />
+        <ProfessionalProjectsSection data={portfolioData} />
+        <ProjectsSection data={portfolioData} pypiStats={pypiStats ?? undefined} />
+        <EducationSection data={portfolioData} />
+        <PublicationSection data={portfolioData} />
+        <ContactSection data={portfolioData} />
+        <ScrollBallGame />
+        <FloatingTerminalButton />
+      </div>
       <HelpSheet active={helpActive} onClose={handleResetHelp} />
-      <ScrollBallGame />
-      <FloatingTerminalButton />
       {/* Motion permission toast */}
       {showMotionToast && (
         <div className="fixed bottom-6 left-4 right-4 z-[90] flex items-center justify-between
