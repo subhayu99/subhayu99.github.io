@@ -43,6 +43,16 @@ const TRIGGERS: TriggerRow[] = [
     desktop: 'press M, or tap the 🔊 icon in the navbar',
     mobile: 'tap the 🔊 icon in the navbar',
   },
+  {
+    label: 'Drop a Planet',
+    desktop: 'click-and-hold empty space, release to drop — flick to throw',
+    mobile: 'press-and-hold empty space (≈¼ sec), release to drop',
+  },
+  {
+    label: 'Summon a Black Hole',
+    desktop: 'stack 3 heavies on the same spot — mass ≥ 55 collapses it',
+    mobile: 'stack 3 heavies on the same spot — tap the pill to return',
+  },
 ];
 
 /**
