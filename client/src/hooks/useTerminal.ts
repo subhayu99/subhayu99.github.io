@@ -5,6 +5,7 @@ import { themes } from '../lib/themes';
 import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
+import { inlineMd } from '../lib/tuiMarkdown';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -120,7 +121,7 @@ function getProjectsHtml(projectData: Array<Record<string, unknown>>, type: stri
                 <div class="space-y-1">
                   ${(project.highlights as string[] || []).map(highlight => `
                     <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                      • ${highlight}
+                      • ${inlineMd(highlight)}
                     </div>
                   `).join('')}
                 </div>
@@ -130,7 +131,7 @@ function getProjectsHtml(projectData: Array<Record<string, unknown>>, type: stri
           `;
         }).join('')}
         <div class="border-t border-terminal-green/30 pt-3 mt-4">
-          <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+          <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
           <div class="space-y-1 ml-2 text-xs">
             <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
             <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
@@ -388,13 +389,6 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }]);
   }, []);
 
-  const addMultipleLines = useCallback((contents: string[], className?: string, delay = terminalConfig.animations.typeDelay) => {
-    contents.forEach((content, index) => {
-      setTimeout(() => {
-        addLine(content, className);
-      }, index * delay);
-    });
-  }, [addLine]);
 
   const clearTerminal = useCallback(() => {
     setLines([]);
@@ -486,7 +480,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       const config = categoryConfig[category as keyof typeof categoryConfig];
       const commandsHtml = commands.map(cmd => {
         const argHint = ['search', 'theme', 'cat'].includes(cmd.name) ? '<span class="text-white"> [...]</span>' : '';
-        return `<div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=${cmd.name}" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">${cmd.name}</a></span>${argHint}</div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">${cmd.description}</span></div></div>`;
+        const aliasHint = cmd.aliases?.length
+          ? ` <span class="text-terminal-green/70 text-[10px]">(${cmd.aliases.join(', ')})</span>`
+          : '';
+        return `<div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=${cmd.name}" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">${cmd.name}</a></span>${argHint}${aliasHint}</div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">${cmd.description}</span></div></div>`;
       }).join('\n              ');
 
       return `
@@ -511,7 +508,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           ${generateCategoryHtml('tools', commandsByCategory.tools)}
           ${generateCategoryHtml('terminal', commandsByCategory.terminal)}
           <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 QUICK TIPS</div>
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
               <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Tab</span> for auto-completion</div>
               <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to navigate command history</div>
@@ -536,7 +533,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       const resumeUrl = portfolioData.cv.resume_url;
       if (resumeUrl) {
         window.open(resumeUrl, '_blank');
-        addLine(`Opened ${resumeUrl} in a new tab`, 'text-terminal-green');
+        addLine(`Opened ${resumeUrl} in a new tab.`, 'text-terminal-green');
       } else {
         addLine(uiText.messages.error.resumeNotFound, 'text-terminal-red');
       }
@@ -970,7 +967,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             </div>
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 NEXT STEPS</div>
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span> for all my social links</div>
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see my technical expertise</div>
@@ -1037,7 +1034,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                       <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Key Achievements:</div>
                       <div class="space-y-1">
                         ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
                         `).join('')}
                       </div>
                     </div>
@@ -1062,7 +1059,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     <div class="ml-2">
                       <div class="space-y-1">
                         ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
                         `).join('')}
                       </div>
                     </div>
@@ -1084,7 +1081,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     <div class="ml-2">
                       <div class="space-y-1">
                         ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${h}</div>
+                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
                         `).join('')}
                       </div>
                     </div>
@@ -1192,7 +1189,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                   <div class="space-y-1">
                     ${job.highlights.map(highlight => `
                       <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                        • ${highlight}
+                        • ${inlineMd(highlight)}
                       </div>
                     `).join('')}
                   </div>
@@ -1202,7 +1199,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             `;
           }).join('')}
           <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see specific work examples</div>
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
@@ -1250,7 +1247,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     <div class="space-y-1">
                       ${edu.highlights.map(highlight => `
                         <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                          • ${highlight}
+                          • ${inlineMd(highlight)}
                         </div>
                       `).join('')}
                     </div>
@@ -1263,7 +1260,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             `;
           }).join('')}
           <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
               <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
@@ -1610,19 +1607,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                   <div class="text-white/70 text-xs">Positions</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-blue-400 font-bold text-lg">
+                  <div class="text-terminal-bright-green font-bold text-lg">
                     ${portfolioData.cv.sections?.education?.length ?? 0}
                   </div>
                   <div class="text-white/70 text-xs">Degrees</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-purple-400 font-bold text-lg">
+                  <div class="text-terminal-bright-green font-bold text-lg">
                     ${(portfolioData.cv.sections?.professional_projects?.length ?? 0) + (portfolioData.cv.sections?.personal_projects?.length ?? 0)}
                   </div>
                   <div class="text-white/70 text-xs">Projects</div>
                 </div>
                 <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-yellow-400 font-bold text-lg">
+                  <div class="text-terminal-bright-green font-bold text-lg">
                     ${portfolioData.cv.sections?.publication?.length || 0}
                   </div>
                   <div class="text-white/70 text-xs">Publications</div>
@@ -1890,20 +1887,29 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const theme = args.join(' ').trim().toLowerCase();
 
     if (!theme) {
-      addLine('<span class="text-terminal-bright-green">Available Themes:</span>');
-      addLine('');
-      addLine('<span class="text-terminal-green">matrix</span>    - Classic green on black (default)');
-      addLine('<span class="text-blue-400">blue</span>      - Blue cyberpunk theme');
-      addLine('<span class="text-cyan-400">cyan</span>      - Phosphor CRT cyan');
-      addLine('<span class="text-purple-400">purple</span>    - Purple hacker theme');
-      addLine('<span class="text-pink-400">pink</span>      - Synthwave magenta');
-      addLine('<span class="text-orange-400">amber</span>     - Vintage amber terminal');
-      addLine('<span class="text-yellow-400">yellow</span>    - Commodore phosphor yellow');
-      addLine('<span class="text-red-400">red</span>       - Red alert theme');
-      addLine('<span class="text-slate-200">glacier</span>   - Monochrome ice');
-      addLine('<span class="text-terminal-yellow">reset</span>     - Reset to default theme');
-      addLine('');
-      addLine('<span class="text-terminal-yellow">Usage: theme [name]</span>');
+      // Each row's swatch colour comes from the theme's own accentRgb so
+      // the preview matches what actually gets applied, and stays in sync
+      // if the palette is tuned later.
+      const themeRows = colorThemes
+        .map((t) => {
+          const [r, g, b] = t.accentRgb;
+          const padKey = t.key.padEnd(9, ' ');
+          return `<div><span style="color: rgb(${r}, ${g}, ${b})" class="font-semibold">${padKey}</span>- ${t.name}</div>`;
+        })
+        .join('');
+      const themeBox = `
+        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+          <div class="border-b border-terminal-green/30 px-3 py-1">
+            <span class="text-terminal-bright-green text-sm font-bold">AVAILABLE THEMES</span>
+          </div>
+          <div class="p-3 space-y-1 text-xs sm:text-sm">
+            ${themeRows}
+            <div><span class="text-terminal-yellow font-semibold">reset    </span>- Reset to default theme</div>
+            <div class="border-t border-terminal-green/30 pt-2 mt-2 text-terminal-yellow">Usage: theme [name]</div>
+          </div>
+        </div>
+      `.trim();
+      addLine(themeBox);
       return;
     }
 
@@ -1911,7 +1917,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       storage.remove(storageConfig.keys.theme);
       localStorage.removeItem('gui-color-theme');
       applyColorTheme(colorThemes[0]);
-      addLine('<span class="text-terminal-yellow">Theme reset to Matrix Green.</span>');
+      addLine('<span class="text-terminal-yellow">Theme reset.</span>');
       return;
     }
 
@@ -1924,14 +1930,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     if (matchedTheme && themes[matchedTheme.key]) {
       const selectedTheme = themes[matchedTheme.key];
-      addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switching to ${selectedTheme.name} theme...</span>`);
-
-      // Apply to both GUI and terminal CSS variables
+      // Apply first, announce once. One line, period — no ceremony.
       applyColorTheme(matchedTheme);
-
-      setTimeout(() => {
-        addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Theme changed successfully!</span>`);
-      }, 500);
+      addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switched to ${selectedTheme.name}.</span>`);
     } else {
       addLine('<span class="text-terminal-red">Theme not found. Use "theme" to see available themes.</span>');
     }
@@ -2012,7 +2013,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             </div>
           </div>
           <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">{uiText.messages.info.connecting}</div>
+            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
             <div class="space-y-1 ml-2 text-xs">
               <div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
                 Feel free to reach out for collaborations, opportunities, or just to connect!
@@ -2035,10 +2036,20 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
       return;
     }
-
-    addLine(`<span class="text-terminal-green">User:</span> <span class="text-white">${portfolioData.cv.name}</span>`);
-    addLine(`<span class="text-terminal-green">Location:</span> <span class="text-white">${portfolioData.cv.location}</span>`);
-    addLine(`<span class="text-terminal-green">Role:</span> <span class="text-white">${portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional}</span>`);
+    const role = portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional;
+    const box = `
+      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+        <div class="border-b border-terminal-green/30 px-3 py-1">
+          <span class="text-terminal-bright-green text-sm font-bold">WHOAMI</span>
+        </div>
+        <div class="p-3 space-y-1 text-xs sm:text-sm">
+          <div><span class="text-terminal-green w-20 inline-block">User</span><span class="text-white">${portfolioData.cv.name}</span></div>
+          <div><span class="text-terminal-green w-20 inline-block">Location</span><span class="text-white">${portfolioData.cv.location}</span></div>
+          <div><span class="text-terminal-green w-20 inline-block">Role</span><span class="text-white">${role}</span></div>
+        </div>
+      </div>
+    `.trim();
+    addLine(box, 'w-full');
   }, [addLine, portfolioData]);
 
   const showCat = useCallback((args: string[]) => {
@@ -2183,7 +2194,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                             <div class="space-y-1">
                               ${exp.highlights.map(highlight => `
                                 <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                  • ${highlight}
+                                  • ${inlineMd(highlight)}
                                 </div>
                               `).join('')}
                             </div>
@@ -2219,7 +2230,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                           <div class="space-y-1 mt-2">
                             ${edu.highlights?.map(highlight => `
                               <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${highlight}
+                                • ${inlineMd(highlight)}
                               </div>
                             `).join('')}
                           </div>
@@ -2255,7 +2266,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                           <div class="space-y-1">
                             ${project.highlights.map(highlight => `
                               <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${highlight}
+                                • ${inlineMd(highlight)}
                               </div>
                             `).join('')}
                           </div>
@@ -2291,7 +2302,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                           <div class="space-y-1">
                             ${project.highlights.map(highlight => `
                               <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${highlight}
+                                • ${inlineMd(highlight)}
                               </div>
                             `).join('')}
                           </div>
@@ -2331,7 +2342,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             ` : ''}
 
             <div class="border-t border-terminal-green/30 pt-3">
-              <div class="text-terminal-yellow font-bold mb-2">💡 LEARN MORE</div>
+              <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
               <div class="space-y-1 ml-2 text-xs">
                 <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span> for a formatted introduction</div>
                 <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> for detailed work history</div>
@@ -2372,21 +2383,21 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const border = '─'.repeat(width);
 
     addLine('');
-    addLine(`<span style="font-family: monospace !important;">┌${border}┐</span>`);
+    addLine(`<span>┌${border}┐</span>`);
 
     // Name (centered and bold)
     const nameLine = name.toUpperCase();
     const nameSpacing = ' '.repeat(Math.max(0, Math.floor((width - nameLine.length) / 2)));
-    addLine(`<span style="font-family: monospace !important;">│${nameSpacing}<span class="text-terminal-yellow font-bold">${nameLine}</span>${' '.repeat(width - nameLine.length - nameSpacing.length)}│</span>`);
+    addLine(`<span>│${nameSpacing}<span class="text-terminal-yellow font-bold">${nameLine}</span>${' '.repeat(width - nameLine.length - nameSpacing.length)}│</span>`);
 
-    addLine(`<span style="font-family: monospace !important;">├${border}┤</span>`);
+    addLine(`<span>├${border}┤</span>`);
 
     // Contact info
     const addInfoLine = (label: string, value: string | undefined) => {
       if (value) {
         const line = `${label}: ${value}`;
         const padding = ' '.repeat(Math.max(0, width - line.length));
-        addLine(`<span style="font-family: monospace !important;">│ <span class="text-terminal-green">${label}:</span> ${value}${padding}│</span>`);
+        addLine(`<span>│ <span class="text-terminal-green">${label}:</span> ${value}${padding}│</span>`);
       }
     };
 
@@ -2395,7 +2406,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (location) addInfoLine('Location', location);
     if (website) addInfoLine('Website', website);
 
-    addLine(`<span style="font-family: monospace !important;">├${border}┤</span>`);
+    addLine(`<span>├${border}┤</span>`);
 
     // Top skills (first 5)
     if (sections?.technologies && sections.technologies.length > 0) {
@@ -2403,10 +2414,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       const skillsLabel = 'Skills';
       const line = `${skillsLabel}: ${topSkills}`;
       const padding = ' '.repeat(Math.max(0, width - line.length));
-      addLine(`<span style="font-family: monospace !important;">│ <span class="text-terminal-green">${skillsLabel}:</span> ${topSkills}${padding}│</span>`);
+      addLine(`<span>│ <span class="text-terminal-green">${skillsLabel}:</span> ${topSkills}${padding}│</span>`);
     }
 
-    addLine(`<span style="font-family: monospace !important;">└${border}┘</span>`);
+    addLine(`<span>└${border}┘</span>`);
     addLine('');
     addLine('<span class="text-terminal-dim">💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt</span>');
     addLine('');
@@ -2442,7 +2453,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         } else {
           // Convert spaces to   for proper HTML display
           const htmlLine = line.replace(/ /g, ' ');
-          addLine(`<span style="font-family: monospace !important;">${htmlLine}</span>`);
+          addLine(`<span>${htmlLine}</span>`);
         }
       });
       
@@ -2551,7 +2562,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       case 'gui':
         if (onSwitchToGUI) {
           addLine('Switching to GUI view...', 'text-terminal-yellow');
-          setTimeout(() => onSwitchToGUI(), 500);
+          // One paint to flush the banner, then hand off — no arbitrary delay.
+          requestAnimationFrame(() => onSwitchToGUI());
         } else {
           addLine('GUI view is not available.', 'text-terminal-red');
         }
@@ -2607,7 +2619,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const themeSubCommands = [...colorThemes.map((t) => t.key), 'reset'];
     const subCommands = ['cat resume.txt', ...themeSubCommands.map((color) => `theme ${color}`)];
     const lower = input.toLowerCase();
-    var matched = commands.filter((cmd) => cmd.startsWith(lower));
+    let matched = commands.filter((cmd) => cmd.startsWith(lower));
     if (matched.length === 0) {
       matched = subCommands.filter((cmd) => cmd.startsWith(lower));
     }
