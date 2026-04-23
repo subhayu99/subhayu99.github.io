@@ -45,7 +45,14 @@ export default function WireframeGrid() {
   const [planetCount, setPlanetCount] = useState(0);
   const [bhMode, setBhMode] = useState(false);
   const [bhPos, setBhPos] = useState<{ x: number; y: number } | null>(null);
+  // Frozen at mount — pointer type doesn't change at runtime; viewport-width
+  // changes that cross 768 during a session are rare enough to ignore.
+  const [isMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
+  });
   const clearPlanetsRef = useRef<(() => void) | null>(null);
+  const stopBhRef = useRef<(() => void) | null>(null);
   const bhModeRef = useRef(false);
   bhModeRef.current = bhMode;
 
@@ -115,6 +122,9 @@ export default function WireframeGrid() {
         el.style.transformOrigin = 'center';
         el.dataset.engulfItem = 'true';
 
+        // Mobile GPUs choke on `filter: blur(...)` per frame across ~150 DOM
+        // nodes. Keep transform/opacity (compositor-free) and drop the blur.
+        const blurSkip = isMobile;
         const anim = el.animate(
           [
             {
@@ -125,25 +135,25 @@ export default function WireframeGrid() {
             {
               transform: `translate(${k1.tx}px, ${k1.ty}px) rotate(${k1.rot}deg) scaleX(1.9) scaleY(0.3)`,
               opacity: 0.92,
-              filter: 'blur(1px) contrast(1.08)',
+              filter: blurSkip ? 'contrast(1.08)' : 'blur(1px) contrast(1.08)',
               offset: 0.22,
             },
             {
               transform: `translate(${k2.tx}px, ${k2.ty}px) rotate(${k2.rot}deg) scaleX(2.6) scaleY(0.14)`,
               opacity: 0.7,
-              filter: 'blur(2.5px)',
+              filter: blurSkip ? 'none' : 'blur(2.5px)',
               offset: 0.5,
             },
             {
               transform: `translate(${k3.tx}px, ${k3.ty}px) rotate(${k3.rot}deg) scaleX(1.3) scaleY(0.05)`,
               opacity: 0.3,
-              filter: 'blur(5px)',
+              filter: blurSkip ? 'none' : 'blur(5px)',
               offset: 0.78,
             },
             {
               transform: `translate(${k4.tx}px, ${k4.ty}px) rotate(${k4.rot}deg) scale(0)`,
               opacity: 0,
-              filter: 'blur(10px)',
+              filter: blurSkip ? 'none' : 'blur(10px)',
             },
           ],
           {
@@ -174,11 +184,9 @@ export default function WireframeGrid() {
         });
       };
     }
-  }, [bhMode, bhPos]);
+  }, [bhMode, bhPos, isMobile]);
 
   useEffect(() => {
-    if (window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768) return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -197,6 +205,14 @@ export default function WireframeGrid() {
     const velSamples: Array<{ t: number; x: number; y: number }> = [];
     const ripples: Array<{ x: number; y: number; bornAt: number; maxR: number }> = [];
 
+    // Mobile tuning
+    const maxPlanets = isMobile ? 12 : MAX_PLANETS;
+    const numHorizontal = isMobile ? 20 : 30;
+    const segmentsH = isMobile ? 28 : 40;
+    const numVertical = isMobile ? 16 : 24;
+    const segmentsV = isMobile ? 22 : 30;
+    const dprCap = isMobile ? 2 : Infinity;
+
     clearPlanetsRef.current = () => {
       planets.length = 0;
       ripples.length = 0;
@@ -204,8 +220,18 @@ export default function WireframeGrid() {
       needsRedraw = true;
     };
 
+    stopBhRef.current = () => {
+      planets.length = 0;
+      ripples.length = 0;
+      charge = null;
+      setPlanetCount(0);
+      setBhMode(false);
+      setBhPos(null);
+      needsRedraw = true;
+    };
+
     function resize() {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       w = window.innerWidth;
       h = window.innerHeight;
       canvas!.width = w * dpr;
@@ -517,7 +543,6 @@ export default function WireframeGrid() {
       // afford to read more clearly without fighting any UI behind it.
       const baseOpacity = bhModeRef.current ? 0.075 : 0.018;
 
-      const numHorizontal = 30;
       for (let i = 0; i <= numHorizontal; i++) {
         const t = i / numHorizontal;
         const perspT = t * t;
@@ -528,9 +553,8 @@ export default function WireframeGrid() {
         if (opacity < 0.002) continue;
 
         ctx!.beginPath();
-        const segments = 40;
-        for (let s = 0; s <= segments; s++) {
-          const sx = (s / segments) * w;
+        for (let s = 0; s <= segmentsH; s++) {
+          const sx = (s / segmentsH) * w;
           const [wx, wy] = warpPoint(sx, y);
           if (s === 0) ctx!.moveTo(wx, wy);
           else ctx!.lineTo(wx, wy);
@@ -540,7 +564,6 @@ export default function WireframeGrid() {
         ctx!.stroke();
       }
 
-      const numVertical = 24;
       for (let i = 0; i <= numVertical; i++) {
         const t = (i / numVertical - 0.5) * 2;
         const bottomX = vanishX + t * w * 0.8;
@@ -550,9 +573,8 @@ export default function WireframeGrid() {
         if (opacity < 0.002) continue;
 
         ctx!.beginPath();
-        const segments = 30;
-        for (let s = 0; s <= segments; s++) {
-          const st = s / segments;
+        for (let s = 0; s <= segmentsV; s++) {
+          const st = s / segmentsV;
           const x = topX + (bottomX - topX) * st * st;
           const y = horizonY + st * st * (h - horizonY + 200);
           const [wx, wy] = warpPoint(x, y);
@@ -651,7 +673,7 @@ export default function WireframeGrid() {
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0) return;
       if (isInteractiveTarget(e.target)) return;
-      if (planets.length >= MAX_PLANETS) return;
+      if (planets.length >= maxPlanets) return;
       charge = { startedAt: performance.now(), x: e.clientX, y: e.clientY };
       velSamples.length = 0;
       recordVel(performance.now(), e.clientX, e.clientY);
@@ -661,7 +683,7 @@ export default function WireframeGrid() {
     const onMouseUp = () => {
       if (!charge) return;
       const held = performance.now() - charge.startedAt;
-      if (held >= MIN_HOLD_MS && planets.length < MAX_PLANETS) {
+      if (held >= MIN_HOLD_MS && planets.length < maxPlanets) {
         const clamped = Math.min(MAX_HOLD_MS, held);
         const norm = (clamped - MIN_HOLD_MS) / (MAX_HOLD_MS - MIN_HOLD_MS);
         const mass = MIN_MASS + (MAX_MASS - MIN_MASS) * norm;
@@ -683,6 +705,143 @@ export default function WireframeGrid() {
       needsRedraw = true;
     };
 
+    // ── Touch (mobile) ─────────────────────────────────────────
+    // Phone interaction model:
+    // - Tap-and-hold still on the background for ≥220ms → start charging.
+    //   Any movement before that window is treated as a page-scroll and
+    //   we stay out of the way (never preventDefault).
+    // - Once charging, subsequent touchmoves preventDefault so the page
+    //   doesn't scroll the canvas area.
+    // - Touch release with enough hold drops a planet (same logic as mouse).
+    // - In BH mode the commit window is skipped — the whole viewport is a
+    //   playground, so touches charge immediately.
+    let touchCommitTimer: ReturnType<typeof setTimeout> | null = null;
+    let touchStartPos: { x: number; y: number } | null = null;
+    let touchCharging = false;
+    const COMMIT_MS = 220;
+    const COMMIT_MOVE_PX_SQ = 64; // (8 px)²
+
+    function cancelTouchCommit() {
+      if (touchCommitTimer !== null) {
+        clearTimeout(touchCommitTimer);
+        touchCommitTimer = null;
+      }
+    }
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) {
+        cancelTouchCommit();
+        touchCharging = false;
+        touchStartPos = null;
+        charge = null;
+        return;
+      }
+      const t = e.touches[0];
+      touchStartPos = { x: t.clientX, y: t.clientY };
+
+      if (bhModeRef.current) {
+        // Immersive mode — no scroll to defer to. Start charge immediately.
+        if (planets.length >= maxPlanets) return;
+        charge = { startedAt: performance.now(), x: t.clientX, y: t.clientY };
+        velSamples.length = 0;
+        recordVel(performance.now(), t.clientX, t.clientY);
+        mouseX = t.clientX;
+        mouseY = t.clientY;
+        touchCharging = true;
+        needsRedraw = true;
+        return;
+      }
+
+      if (isInteractiveTarget(e.target)) return;
+      if (planets.length >= maxPlanets) return;
+
+      // Wait for the commit window before consuming the touch.
+      // Record the original touchstart time so the commit window is invisible
+      // to the user's "charge duration" — a 1.8 s press gives full mass, not
+      // 1.8 s minus the 220 ms commit lag.
+      const startedAt = performance.now();
+      touchCommitTimer = setTimeout(() => {
+        touchCommitTimer = null;
+        if (!touchStartPos) return;
+        charge = { startedAt, x: touchStartPos.x, y: touchStartPos.y };
+        velSamples.length = 0;
+        recordVel(performance.now(), touchStartPos.x, touchStartPos.y);
+        mouseX = touchStartPos.x;
+        mouseY = touchStartPos.y;
+        touchCharging = true;
+        needsRedraw = true;
+      }, COMMIT_MS);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+
+      if (touchCommitTimer !== null && touchStartPos) {
+        // Pre-commit: if the finger travels too far, it was a scroll.
+        const dx = t.clientX - touchStartPos.x;
+        const dy = t.clientY - touchStartPos.y;
+        if (dx * dx + dy * dy > COMMIT_MOVE_PX_SQ) {
+          cancelTouchCommit();
+          touchStartPos = null;
+        }
+        return;
+      }
+
+      if (touchCharging) {
+        e.preventDefault(); // own the gesture so the page doesn't scroll
+        mouseX = t.clientX;
+        mouseY = t.clientY;
+        recordVel(performance.now(), t.clientX, t.clientY);
+        if (charge) {
+          charge.x = mouseX;
+          charge.y = mouseY;
+        }
+        needsRedraw = true;
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      cancelTouchCommit();
+      if (!touchCharging) {
+        touchStartPos = null;
+        return;
+      }
+      touchCharging = false;
+      touchStartPos = null;
+      if (!charge) return;
+      const held = performance.now() - charge.startedAt;
+      if (held >= MIN_HOLD_MS && planets.length < maxPlanets) {
+        const clamped = Math.min(MAX_HOLD_MS, held);
+        const norm = (clamped - MIN_HOLD_MS) / (MAX_HOLD_MS - MIN_HOLD_MS);
+        const mass = MIN_MASS + (MAX_MASS - MIN_MASS) * norm;
+        const { vx, vy } = computeDropVelocity(charge.x, charge.y);
+        planets.push({ x: charge.x, y: charge.y, vx, vy, mass });
+        setPlanetCount(planets.length);
+      }
+      charge = null;
+      needsRedraw = true;
+      // After-lift "ghost": keep the last touch position as the cursor-well
+      // for a breath, then drift off-screen so the lattice settles.
+      setTimeout(() => {
+        if (!touchCharging) {
+          mouseX = -1000;
+          mouseY = -1000;
+          needsRedraw = true;
+        }
+      }, 1200);
+      // `e` is unused but kept for signature parity with the DOM event.
+      void e;
+    };
+
+    const onTouchCancel = () => {
+      cancelTouchCommit();
+      touchCharging = false;
+      touchStartPos = null;
+      charge = null;
+      needsRedraw = true;
+    };
+
     resize();
     rafId = requestAnimationFrame(draw);
 
@@ -693,21 +852,21 @@ export default function WireframeGrid() {
     document.addEventListener('mouseleave', onDocMouseLeave);
     window.addEventListener('scroll', onScroll, { passive: true });
 
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+    window.addEventListener('touchcancel', onTouchCancel);
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && bhModeRef.current) {
-        planets.length = 0;
-        ripples.length = 0;
-        charge = null;
-        setPlanetCount(0);
-        setBhMode(false);
-        setBhPos(null);
-        needsRedraw = true;
+        stopBhRef.current?.();
       }
     };
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
       cancelAnimationFrame(rafId);
+      cancelTouchCommit();
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mousedown', onMouseDown);
@@ -715,12 +874,21 @@ export default function WireframeGrid() {
       document.removeEventListener('mouseleave', onDocMouseLeave);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchCancel);
       clearPlanetsRef.current = null;
+      stopBhRef.current = null;
     };
-  }, []);
+  }, [isMobile]);
 
   const handleClear = useCallback(() => {
     clearPlanetsRef.current?.();
+  }, []);
+
+  const handleExitBh = useCallback(() => {
+    stopBhRef.current?.();
   }, []);
 
   return (
@@ -751,7 +919,7 @@ export default function WireframeGrid() {
         style={{ zIndex: bhMode ? 56 : 0 }}
         aria-hidden
       />
-      {bhMode && (
+      {bhMode && !isMobile && (
         <div
           className="fixed bottom-6 left-1/2 -translate-x-1/2 font-mono text-[10px] tracking-[0.25em]
                      text-gui-accent/60 uppercase pointer-events-none select-none"
@@ -759,6 +927,21 @@ export default function WireframeGrid() {
         >
           press esc to return
         </div>
+      )}
+      {bhMode && isMobile && (
+        <button
+          onClick={handleExitBh}
+          className="fixed bottom-10 left-1/2 -translate-x-1/2 px-5 py-2.5 font-mono text-[11px]
+                     tracking-[0.22em] uppercase text-gui-accent
+                     border border-[rgba(var(--gui-accent-rgb),0.45)]
+                     bg-black/40 backdrop-blur-sm
+                     active:bg-[rgba(var(--gui-accent-rgb),0.15)]
+                     select-none"
+          style={{ zIndex: 57 }}
+          aria-label="Return from black hole"
+        >
+          ← tap to return
+        </button>
       )}
       {planetCount > 0 && !bhMode && (
         <button
