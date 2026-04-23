@@ -138,6 +138,37 @@ export default function SplashPage() {
     setTimeout(() => switchTo(mode), 400);
   }, [switchTo]);
 
+  // Auto-advance to GUI after a short idle. If the visitor doesn't touch
+  // the page for a few seconds, take them to the polished view instead
+  // of leaving them staring at the splash. Timer resets on any
+  // interaction; never shown as a visible countdown.
+  useEffect(() => {
+    if (selected || !nameReady) return;
+
+    const IDLE_MS = 6000;
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => handleSelect('gui'), IDLE_MS);
+    };
+    schedule();
+
+    const events: (keyof WindowEventMap)[] = [
+      'mousemove',
+      'mousedown',
+      'keydown',
+      'touchstart',
+      'wheel',
+      'scroll',
+    ];
+    events.forEach((e) => window.addEventListener(e, schedule, { passive: true }));
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, schedule));
+    };
+  }, [selected, nameReady, handleSelect]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}

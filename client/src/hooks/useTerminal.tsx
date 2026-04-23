@@ -9,6 +9,7 @@ import { inlineMd } from '../lib/tuiMarkdown';
 import { SectionBox } from '../components/tui/SectionBox';
 import { CmdLink } from '../components/tui/TuiLink';
 import { UsageHint } from '../components/tui/UsageHint';
+import { ExploreMore } from '../components/tui/ExploreMore';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -919,87 +920,93 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
       return;
     }
+    const { cv } = portfolioData;
+    const gh = getUsername(portfolioData, 'GitHub');
+    const li = getUsername(portfolioData, 'LinkedIn');
 
-    // Create the about content as a single HTML string, matching showHelp structure
-    const aboutBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">ABOUT ME</span>
+    const LinkRow = ({ label, children }: { label: string; children: ReactNode }) => (
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-3 bg-terminal-green/10">
+          <span className="text-terminal-yellow font-semibold">{label}</span>
         </div>
-        <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
-            <div class="space-y-2 ml-2">
-              ${portfolioData.cv.sections?.intro?.map(paragraph =>
-                `<div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">${paragraph}</div>`
-              )?.join('') ?? ''}
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Portfolio</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">
-                    ${portfolioData.cv.website ? `<a href="${portfolioData.cv.website}" class="hover:text-terminal-bright-green">${portfolioData.cv.website?.replace('https://', '').trim()}</a> (you are here)` : ''}
-                  </span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Email</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">
-                    <a href="mailto:${portfolioData.cv.email}" class="hover:text-terminal-bright-green">${portfolioData.cv.email}</a>
-                  </span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">GitHub</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">
-                    <a href="https://github.com/${getUsername(portfolioData, 'GitHub')}" class="hover:text-terminal-bright-green">
-                      ${getUsername(portfolioData, 'GitHub')}
-                    </a>
-                  </span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">LinkedIn</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">
-                    <a href="https://linkedin.com/in/${getUsername(portfolioData, 'LinkedIn')}" class="hover:text-terminal-bright-green">
-                      ${getUsername(portfolioData, 'LinkedIn')}
-                    </a>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span> for all my social links</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see my technical expertise</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to view my work history</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to explore my work</div>
-            </div>
-          </div>
+        <div className="col-span-9 bg-terminal-green/5">
+          <span className="text-white">{children}</span>
         </div>
       </div>
-    `.trim();
-    
-    // Add the entire about box as a single line
-    addLine(aboutBox, 'w-full');
-  }, [addLine, portfolioData]);
+    );
+
+    addNode(
+      <SectionBox
+        title="ABOUT ME"
+        centerTitle
+        bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
+      >
+        <div>
+          <div className="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
+          <div className="space-y-2 ml-2">
+            {(cv.sections?.intro ?? []).map((paragraph, i) => (
+              <div
+                key={i}
+                className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded"
+                dangerouslySetInnerHTML={{ __html: inlineMd(paragraph) }}
+              />
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
+          <div className="space-y-1 ml-2">
+            {cv.website ? (
+              <LinkRow label="Portfolio">
+                <a href={cv.website} className="hover:text-terminal-bright-green">
+                  {cv.website.replace('https://', '').trim()}
+                </a>{' '}
+                (you are here)
+              </LinkRow>
+            ) : null}
+            <LinkRow label="Email">
+              <a href={`mailto:${cv.email}`} className="hover:text-terminal-bright-green">
+                {cv.email}
+              </a>
+            </LinkRow>
+            {gh && (
+              <LinkRow label="GitHub">
+                <a
+                  href={`https://github.com/${gh}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-terminal-bright-green"
+                >
+                  {gh}
+                </a>
+              </LinkRow>
+            )}
+            {li && (
+              <LinkRow label="LinkedIn">
+                <a
+                  href={`https://linkedin.com/in/${li}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-terminal-bright-green"
+                >
+                  {li}
+                </a>
+              </LinkRow>
+            )}
+          </div>
+        </div>
+        <ExploreMore
+          items={[
+            { cmd: 'contact', label: 'contact', suffix: 'for all my social links' },
+            { cmd: 'skills', label: 'skills', suffix: 'to see my technical expertise' },
+            { cmd: 'experience', label: 'experience', suffix: 'to view my work history' },
+            { cmd: 'projects', label: 'projects', suffix: 'to explore my work' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   /**
    * Generic section renderer for dynamic sections (e.g., certifications, awards, volunteer_work)
@@ -1139,98 +1146,109 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
       return;
     }
-
-    // Create the skills content as a single HTML string, matching showAbout structure
-    const skillsBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">SKILLS & TECHNOLOGIES</span>
-        </div>
-        <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div class="space-y-1 ml-2">
-            ${portfolioData.cv.sections?.technologies?.map(tech => `
-              <div class="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
-                <div class="md:col-span-3 bg-terminal-green/10 p-2 rounded">
-                  <span class="text-terminal-yellow font-semibold mb-1">${tech.label}</span>
-                </div>
-                <div class="md:col-span-9 bg-terminal-green/5 p-2 rounded ml-3">
-                  <span class="text-white">${tech.details}</span>
-                </div>
+    const techs = portfolioData.cv.sections?.technologies ?? [];
+    addNode(
+      <SectionBox
+        title="SKILLS & TECHNOLOGIES"
+        centerTitle
+        bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
+      >
+        <div className="space-y-1 ml-2">
+          {techs.map((tech, i) => (
+            <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
+              <div className="md:col-span-3 bg-terminal-green/10 p-2 rounded">
+                <span className="text-terminal-yellow font-semibold mb-1">{tech.label}</span>
               </div>
-            `)?.join('') ?? ''}
-          </div>
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see these skills in action</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see how I've applied them professionally</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span> to explore my open source contributions</div>
+              <div className="md:col-span-9 bg-terminal-green/5 p-2 rounded ml-3">
+                <span
+                  className="text-white"
+                  dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }}
+                />
+              </div>
             </div>
-          </div>
+          ))}
         </div>
-      </div>
-    `.trim();
-    
-    // Add the entire skills box as a single line
-    addLine(skillsBox, 'w-full');
-  }, [addLine, portfolioData]);
+        <ExploreMore
+          items={[
+            { cmd: 'projects', label: 'projects', suffix: 'to see these skills in action' },
+            {
+              cmd: 'experience',
+              label: 'experience',
+              suffix: "to see how I've applied them professionally",
+            },
+            { cmd: 'personal', label: 'personal', suffix: 'to explore my open source contributions' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showExperience = useCallback(() => {
     if (!portfolioData) {
       addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
       return;
     }
-
-    // Create the experience content as a single HTML string, matching showSkills structure
-    const experienceBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">PROFESSIONAL EXPERIENCE</span>
-        </div>
-        <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${portfolioData.cv.sections?.experience?.map((job, index) => {
-            const period = formatExperiencePeriod(job.start_date, job.end_date);
-            return `
-              <div class="border-b border-terminal-green/20 pb-4 ${index === (portfolioData.cv.sections?.experience?.length ?? 0) - 1 ? 'border-b-0 pb-0' : ''}">
-                <div class="mb-3">
-                  <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                    <span class="text-terminal-yellow font-semibold">${job.position}</span>
-                    <span class="text-white"> @ </span>
-                    <span class="text-terminal-bright-green font-bold">${job.company}</span>
-                  </div>
-                  <div class="ml-2">
-                    <span class="text-white opacity-80 text-xs">${job.location} | ${period}</span>
-                  </div>
+    const jobs = portfolioData.cv.sections?.experience ?? [];
+    addNode(
+      <SectionBox
+        title="PROFESSIONAL EXPERIENCE"
+        centerTitle
+        bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
+      >
+        {jobs.map((job, index) => {
+          const period = formatExperiencePeriod(job.start_date, job.end_date);
+          const isLast = index === jobs.length - 1;
+          return (
+            <div
+              key={`${job.company}-${index}`}
+              className={`pb-4 ${isLast ? '' : 'border-b border-terminal-green/20'}`}
+            >
+              <div className="mb-3">
+                <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                  <span className="text-terminal-yellow font-semibold">{job.position}</span>
+                  <span className="text-white"> @ </span>
+                  <span className="text-terminal-bright-green font-bold">{job.company}</span>
                 </div>
-                <div class="ml-2">
-                  <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Key Achievements:</div>
-                  <div class="space-y-1">
-                    ${job.highlights.map(highlight => `
-                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                        • ${inlineMd(highlight)}
-                      </div>
-                    `).join('')}
-                  </div>
-                  ${renderCustomFields(job, 'experience')}
+                <div className="ml-2">
+                  <span className="text-white opacity-80 text-xs">
+                    {job.location} | {period}
+                  </span>
                 </div>
               </div>
-            `;
-          }).join('')}
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see specific work examples</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span> for a chronological career overview</div>
+              <div className="ml-2">
+                <div className="text-terminal-bright-green font-semibold mb-2 text-xs">
+                  Key Achievements:
+                </div>
+                <div className="space-y-1">
+                  {job.highlights.map((highlight, hi) => (
+                    <div
+                      key={hi}
+                      className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                    >
+                      {'• '}
+                      <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                    </div>
+                  ))}
+                </div>
+                <span
+                  dangerouslySetInnerHTML={{ __html: renderCustomFields(job, 'experience') }}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    `.trim();
-    
-    // Add the entire experience box as a single line
-    addLine(experienceBox, 'w-full');
-  }, [addLine, portfolioData, formatExperiencePeriod]);
+          );
+        })}
+        <ExploreMore
+          items={[
+            { cmd: 'projects', suffix: 'to see specific work examples' },
+            { cmd: 'skills', suffix: "to see technologies I've mastered" },
+            { cmd: 'timeline', suffix: 'for a chronological career overview' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showEducation = useCallback(() => {
     if (!portfolioData) {
@@ -1238,60 +1256,71 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
 
-    // Create the education content as a single HTML string, matching showExperience structure
-    const educationBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">EDUCATION</span>
-        </div>
-        <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${portfolioData.cv.sections?.education?.map((edu, index) => {
-            const period = `${edu.start_date} - ${edu.end_date || 'Present'}`;
-            return `
-              <div class="border-b border-terminal-green/20 pb-4 ${index === (portfolioData.cv.sections?.education?.length ?? 0) - 1 ? 'border-b-0 pb-0' : ''}">
-                <div class="mb-3">
-                  <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                    <span class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area}</span>
-                    <span class="text-white"> from </span>
-                    <span class="text-terminal-bright-green font-bold">${edu.institution}</span>
-                  </div>
-                  <div class="ml-2">
-                    <span class="text-white opacity-80 text-xs">${edu.location || ""} | ${period}</span>
-                  </div>
+    const edus = portfolioData.cv.sections?.education ?? [];
+    addNode(
+      <SectionBox
+        title="EDUCATION"
+        centerTitle
+        bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
+      >
+        {edus.map((edu, index) => {
+          const period = `${edu.start_date} - ${edu.end_date || 'Present'}`;
+          const isLast = index === edus.length - 1;
+          return (
+            <div
+              key={`${edu.institution}-${index}`}
+              className={`pb-4 ${isLast ? '' : 'border-b border-terminal-green/20'}`}
+            >
+              <div className="mb-3">
+                <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                  <span className="text-terminal-yellow font-semibold">
+                    {edu.degree} in {edu.area}
+                  </span>
+                  <span className="text-white"> from </span>
+                  <span className="text-terminal-bright-green font-bold">{edu.institution}</span>
                 </div>
-                ${edu.highlights && edu.highlights.length > 0 ? `
-                  <div class="ml-2">
-                    <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Highlights:</div>
-                    <div class="space-y-1">
-                      ${edu.highlights.map(highlight => `
-                        <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                          • ${inlineMd(highlight)}
-                        </div>
-                      `).join('')}
-                    </div>
-                  </div>
-                ` : ''}
-                <div class="ml-2">
-                  ${renderCustomFields(edu, 'education')}
+                <div className="ml-2">
+                  <span className="text-white opacity-80 text-xs">
+                    {edu.location || ''} | {period}
+                  </span>
                 </div>
               </div>
-            `;
-          }).join('')}
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see specific work examples</div>
+              {edu.highlights && edu.highlights.length > 0 && (
+                <div className="ml-2">
+                  <div className="text-terminal-bright-green font-semibold mb-2 text-xs">
+                    Highlights:
+                  </div>
+                  <div className="space-y-1">
+                    {edu.highlights.map((highlight, hi) => (
+                      <div
+                        key={hi}
+                        className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                      >
+                        {'• '}
+                        <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div
+                className="ml-2"
+                dangerouslySetInnerHTML={{ __html: renderCustomFields(edu, 'education') }}
+              />
             </div>
-          </div>
-        </div>
-      </div>
-    `.trim();
-    
-    // Add the entire education box as a single line
-    addLine(educationBox, 'w-full');
-  }, [addLine, portfolioData]);
+          );
+        })}
+        <ExploreMore
+          items={[
+            { cmd: 'experience', suffix: 'to see my professional background' },
+            { cmd: 'skills', suffix: "to see technologies I've mastered" },
+            { cmd: 'projects', suffix: 'to see specific work examples' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showProjects = useCallback(() => {
     if (!portfolioData) {
