@@ -145,13 +145,12 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
         case 'Enter':
           if (e.key === 'Tab' || (e.key === 'Enter' && selectedSuggestion >= 0)) {
             e.preventDefault();
-            setInput(suggestions[selectedSuggestion]);
+            const picked = suggestions[selectedSuggestion];
+            setInput(picked);
             setShowAutocomplete(false);
             if (e.key === 'Enter') {
-              setTimeout(() => {
-                executeCommand(suggestions[selectedSuggestion]);
-                setInput('');
-              }, 50);
+              executeCommand(picked);
+              setInput('');
             }
             return;
           }
@@ -295,9 +294,9 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
         <div className="border-b border-terminal-green/30 p-2 sm:p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <div className="flex space-x-1">
-              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-red"></div>
-              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-yellow"></div>
-              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-terminal-green"></div>
+              <div className="w-3 h-3 rounded-full bg-terminal-red"></div>
+              <div className="w-3 h-3 rounded-full bg-terminal-yellow"></div>
+              <div className="w-3 h-3 rounded-full bg-terminal-green"></div>
             </div>
             <span className="text-xs sm:text-sm truncate">~/portfolio</span>
           </div>
@@ -380,7 +379,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                         aria-selected={index === selectedSuggestion}
                         className={`px-3 py-1 text-xs sm:text-sm cursor-pointer border border-transparent rounded-sm transition-all duration-150 ease-in-out ${
                           index === selectedSuggestion
-                            ? 'border-terminal-green text-terminal-bright-green shadow-[0_0_8px_rgba(55,255,135,0.5)]' // Enhanced selected state
+                            // Selected state — theme-reactive glow via --glow-color-rgb,
+                            // so a Glacier theme pops in cool-white and a Pink theme
+                            // pops in magenta. No more hardcoded CRT green.
+                            ? 'border-terminal-green text-terminal-bright-green shadow-[0_0_10px_rgba(var(--glow-color-rgb),0.55)]'
                             : 'text-terminal-green hover:bg-terminal-green/10'
                         }`}
                         onClick={() => {
