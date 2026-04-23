@@ -5,7 +5,7 @@ Quick guide for maintaining both your portfolio and the template.
 ## 🌿 Two-Branch Setup
 
 - **`main`** = Clean template (no personal data) → Users get this
-- **`personal`** = Your portfolio (with your data) → Deploys to https://subhayu99.github.io
+- **`personal`** = Your portfolio (with your data) → Deploys to https://subhayu.in
 
 ## 📖 Common Tasks
 

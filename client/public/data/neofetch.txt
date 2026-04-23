@@ -30,5 +30,5 @@
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
  Subhayu Kumar Bala — Data & Infra Engineer | AI Systems Specialist
- Portfolio: subhayu99.github.io | GitHub: [subhayu99](https://github.com/subhayu99) | Email: balasubhayu99@gmail.com
+ Portfolio: subhayu.in | GitHub: [subhayu99](https://github.com/subhayu99) | Email: balasubhayu99@gmail.com
 

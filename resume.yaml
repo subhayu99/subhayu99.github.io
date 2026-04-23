@@ -3,8 +3,8 @@ cv:
   location: "Bengaluru, India"
   email: "balasubhayu99@gmail.com"
   phone: "tel:+919382877751"
-  website: "https://subhayu99.github.io"
-  resume_url: "https://subhayu99.github.io/resume.pdf"
+  website: "https://subhayu.in"
+  resume_url: "https://subhayu.in/resume.pdf"
   tagline: "Data & Infrastructure Engineer"
   social_networks:
     - network: "LinkedIn"
@@ -197,7 +197,7 @@ cv:
         highlights:
           - "Created a **zero-setup SQL tool** to quickly analyze data files (CSV, Parquet, Markdown, HTML) via CLI or Python, streamlining repetitive data quality checks without DB overhead."
           - "Built a powerful interactive shell with syntax highlighting and history for data exploration, alongside a standard query mode for piping results into other terminal tools."
-          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**5.2k+ downloads**) with full [documentation](https://subhayu99.github.io/sqlstream)."
+          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**5.2k+ downloads**) with full [documentation](https://subhayu.in/sqlstream)."
 
       - name: "Smart Commit"
         date: "May 2025"
@@ -214,7 +214,7 @@ cv:
         highlights:
           - "Designed and **built a zero-trust secure document system** to solve granular access control challenges where traditional RBAC/ACLs fail."
           - "Implemented a robust cryptographic model featuring **end-to-end encryption (AES-GCM)** and secure key exchange (RSA) to enforce permissions at a data level."
-          - "Built a FastAPI interface for secure document sharing and revocation; project is on [GitHub](https://github.com/subhayu99/DocumentAccessPOC) with detailed [documentation](https://subhayu99.github.io/DocumentAccessPOC/)."
+          - "Built a FastAPI interface for secure document sharing and revocation; project is on [GitHub](https://github.com/subhayu99/DocumentAccessPOC) with detailed [documentation](https://subhayu.in/DocumentAccessPOC/)."
 
       # Website-only personal projects
       - name: "DatasetPipeline"

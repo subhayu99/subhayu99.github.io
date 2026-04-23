@@ -2,7 +2,7 @@
 
 > Create your own interactive terminal-style portfolio in minutes—no coding required!
 
-**Live Demo:** [subhayu99.github.io](https://subhayu99.github.io)
+**Live Demo:** [subhayu.in](https://subhayu.in)
 
 ![Terminal Portfolio Screencast](client/public/screenshots/short-demo.gif)
 
@@ -13,7 +13,7 @@
 This repository uses a **dual-branch strategy**:
 
 - **`main` branch** (you are here) → Clean template with .example files only
-- **`personal` branch** → Maintainer's actual portfolio (deployed to subhayu99.github.io)
+- **`personal` branch** → Maintainer's actual portfolio (deployed to subhayu.in)
 
 **For template users:** You're in the right place! When you click "Use this template", you'll get this clean main branch.
 
@@ -436,6 +436,6 @@ Need help? Have questions?
 
 **Made with ❤️ by developers, for developers**
 
-[View Demo](https://subhayu99.github.io) · [Report Bug](https://github.com/subhayu99/subhayu99.github.io/issues) · [Request Feature](https://github.com/subhayu99/subhayu99.github.io/issues)
+[View Demo](https://subhayu.in) · [Report Bug](https://github.com/subhayu99/subhayu99.github.io/issues) · [Request Feature](https://github.com/subhayu99/subhayu99.github.io/issues)
 
 </div>
