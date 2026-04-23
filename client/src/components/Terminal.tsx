@@ -356,17 +356,29 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
 
           {/* Command Output */}
           <div className="space-y-1 text-xs sm:text-sm lg:text-base">
-            {lines.map((line) => (
-              <div
-                key={line.id}
-                className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(enhanceContent(line.content), {
-                    ADD_ATTR: ["onclick"],
-                  }),
-                }}
-              />
-            ))}
+            {lines.map((line) => {
+              const cls = `${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`;
+              if (typeof line.content === 'string') {
+                // Legacy path: HTML-string content → DOMPurify + dangerouslySetInnerHTML.
+                return (
+                  <div
+                    key={line.id}
+                    className={cls}
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(enhanceContent(line.content), {
+                        ADD_ATTR: ['onclick'],
+                      }),
+                    }}
+                  />
+                );
+              }
+              // Phase D path: ReactNode content rendered directly.
+              return (
+                <div key={line.id} className={cls}>
+                  {line.content}
+                </div>
+              );
+            })}
           </div>
         </div>
 
