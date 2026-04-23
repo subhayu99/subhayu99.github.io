@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
@@ -12,6 +12,7 @@ import { UsageHint } from '../components/tui/UsageHint';
 import { ExploreMore } from '../components/tui/ExploreMore';
 import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
 import { ReplicatePage } from '../components/tui/ReplicatePage';
+import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -168,13 +169,6 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
   const firstRole = cv.sections?.experience?.[0]?.position ?? '';
   const introParagraph = cv.sections?.intro?.[0] ?? '';
 
-  const OverviewRow = ({ label, value }: { label: string; value: ReactNode }) => (
-    <div className="flex">
-      <span className="text-terminal-yellow w-16 font-bold">{label}</span>
-      {typeof value === 'string' ? <span className="text-white">{value}</span> : value}
-    </div>
-  );
-
   const QuickCmd = ({ cmd, label }: { cmd: string; label: string }) => (
     <div className="flex items-center space-x-2">
       <span className="text-terminal-bright-green">→</span>
@@ -190,9 +184,11 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       <div className="mb-3 sm:mb-4">
         {usePre ? (
           <>
-            <pre className="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
-              {styledName}
-            </pre>
+            <div className="hidden sm:block border border-terminal-green/30 rounded-sm px-4 py-2 max-w-4xl overflow-x-auto">
+              <pre className="text-terminal-bright-green text-xs leading-tight">
+                {styledName}
+              </pre>
+            </div>
             <div className="sm:hidden text-terminal-bright-green text-center mb-3">
               <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
               <div className="text-sm">TERMINAL PORTFOLIO</div>
@@ -218,21 +214,21 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
         bodyClassName="p-3 space-y-1 text-xs sm:text-sm"
         className="max-w-none"
       >
-        <OverviewRow label="USER" value={cv.name} />
-        <OverviewRow label="ROLE" value={firstRole} />
-        <OverviewRow label="LOC" value={cv.location ?? ''} />
+        <CompactRow label="USER" value={cv.name} />
+        <CompactRow label="ROLE" value={firstRole} />
+        <CompactRow label="LOC" value={cv.location ?? ''} />
         {cv.website && (
-          <OverviewRow
+          <CompactRow
             label="WEB"
             value={<span className="text-terminal-green">{cv.website}</span>}
           />
         )}
-        <OverviewRow
+        <CompactRow
           label="EMAIL"
           value={<span className="text-terminal-green">{cv.email}</span>}
         />
         {cv.resume_url && (
-          <OverviewRow
+          <CompactRow
             label="RESUME"
             value={
               <span className="text-terminal-green">
@@ -249,7 +245,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
           />
         )}
         {sanitizedPhone && (
-          <OverviewRow
+          <CompactRow
             label="PHONE"
             value={
               <span className="text-terminal-green">
@@ -388,6 +384,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
 
   // TERMINAL Commands (always available)
   { name: 'clear', description: 'Clear the terminal screen', category: 'terminal' },
+  { name: 'history', description: 'Show recent commands (click to re-run)', category: 'terminal' },
   { name: 'ls', description: 'List available commands', category: 'terminal' },
   { name: 'pwd', description: 'Print working directory', category: 'terminal' },
   { name: 'cat', description: 'Display file contents', category: 'terminal' },
@@ -395,7 +392,12 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
 
 export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
-  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [commandHistory, setCommandHistory] = useState<string[]>(() => {
+    // Rehydrate from localStorage so the history command + arrow-key
+    // recall survive a page reload.
+    const stored = storage.getJSON<string[]>(storageConfig.keys.commandHistory);
+    return Array.isArray(stored) ? stored : [];
+  });
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentInput, setCurrentInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -423,6 +425,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return next.length > SCROLLBACK_CAP ? next.slice(-SCROLLBACK_CAP) : next;
     });
   }, []);
+
+  // Persist command history to localStorage whenever it changes so the
+  // `history` command + arrow-key recall work across page reloads.
+  useEffect(() => {
+    storage.setJSON(storageConfig.keys.commandHistory, commandHistory);
+  }, [commandHistory]);
 
 
   const clearTerminal = useCallback(() => {
@@ -508,8 +516,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const CommandRow = ({ cmd }: { cmd: CommandMetadata }) => {
       const showArgs = ['search', 'theme', 'cat'].includes(cmd.name);
       return (
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-3 bg-terminal-green/10">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-4">
+          <div className="sm:col-span-3 bg-terminal-green/10 px-1 sm:px-0">
             <CmdLink cmd={cmd.name} className="text-terminal-yellow">
               {cmd.name}
             </CmdLink>
@@ -521,7 +529,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
               </span>
             ) : null}
           </div>
-          <div className="col-span-9 bg-terminal-green/5">
+          <div className="sm:col-span-9 bg-terminal-green/5 px-1 sm:px-0">
             <span className="text-white">{cmd.description}</span>
           </div>
         </div>
@@ -585,11 +593,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             </div>
           </div>
         </div>
-        <div className="text-terminal-white text-center pt-2 border-t border-terminal-green/20">
+        <div className="text-terminal-white text-center pt-2 border-t border-terminal-green/30">
           Start with <CmdLink cmd="about" className="hover:text-terminal-yellow">about</CmdLink> to
           learn more about me, or try{' '}
           <CmdLink cmd="neofetch" className="hover:text-terminal-yellow">neofetch</CmdLink> for a
-          quick overview!
+          quick overview.
         </div>
       </SectionBox>,
       'w-full',
@@ -623,17 +631,6 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const gh = getUsername(portfolioData, 'GitHub');
     const li = getUsername(portfolioData, 'LinkedIn');
 
-    const LinkRow = ({ label, children }: { label: string; children: ReactNode }) => (
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-3 bg-terminal-green/10">
-          <span className="text-terminal-yellow font-semibold">{label}</span>
-        </div>
-        <div className="col-span-9 bg-terminal-green/5">
-          <span className="text-white">{children}</span>
-        </div>
-      </div>
-    );
-
     addNode(
       <SectionBox
         title="ABOUT ME"
@@ -656,20 +653,20 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           <div className="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
           <div className="space-y-1 ml-2">
             {cv.website ? (
-              <LinkRow label="Portfolio">
+              <LabeledRow label="Portfolio">
                 <a href={cv.website} className="hover:text-terminal-bright-green">
                   {cv.website.replace('https://', '').trim()}
                 </a>{' '}
                 (you are here)
-              </LinkRow>
+              </LabeledRow>
             ) : null}
-            <LinkRow label="Email">
+            <LabeledRow label="Email">
               <a href={`mailto:${cv.email}`} className="hover:text-terminal-bright-green">
                 {cv.email}
               </a>
-            </LinkRow>
+            </LabeledRow>
             {gh && (
-              <LinkRow label="GitHub">
+              <LabeledRow label="GitHub">
                 <a
                   href={`https://github.com/${gh}`}
                   target="_blank"
@@ -678,10 +675,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 >
                   {gh}
                 </a>
-              </LinkRow>
+              </LabeledRow>
             )}
             {li && (
-              <LinkRow label="LinkedIn">
+              <LabeledRow label="LinkedIn">
                 <a
                   href={`https://linkedin.com/in/${li}`}
                   target="_blank"
@@ -690,7 +687,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 >
                   {li}
                 </a>
-              </LinkRow>
+              </LabeledRow>
             )}
           </div>
         </div>
@@ -1092,15 +1089,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const publications = portfolioData.cv.sections.publication;
 
-    const MetaRow = ({ label, value }: { label: string; value: ReactNode }) => (
-      <div className="grid grid-cols-12 gap-1">
-        <div className="col-span-2 bg-terminal-green/10">
-          <span className="text-terminal-yellow font-semibold">{label}</span>
-        </div>
-        <div className="col-span-10 bg-terminal-green/5">
-          <span className="text-white opacity-80">{value}</span>
-        </div>
-      </div>
+    const MetaRow = (props: { label: string; value: ReactNode }) => (
+      <LabeledRow label={props.label} value={props.value} labelCols={2} dense muted />
     );
 
     addNode(
@@ -1323,21 +1313,21 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
                     <div className="flex-1 min-w-0 pb-4">
                       <div className="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 transition-all duration-200 ml-1">
-                        <div className="flex flex-wrap items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-lg">{getIcon(event.type)}</span>
-                            <span
-                              className={`text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold`}
-                            >
-                              {getTypeLabel(event.type)}
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="text-lg">{getIcon(event.type)}</span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold`}
+                          >
+                            {getTypeLabel(event.type)}
+                          </span>
+                          {isOngoing && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-terminal-bright-green/20 text-terminal-bright-green font-semibold animate-pulse">
+                              CURRENT
                             </span>
-                            {isOngoing && (
-                              <span className="text-xs px-2 py-1 rounded-full bg-terminal-bright-green/20 text-terminal-bright-green font-semibold animate-pulse">
-                                CURRENT
-                              </span>
-                            )}
+                          )}
+                          <div className="text-xs text-white/70 font-mono sm:ml-auto">
+                            {duration}
                           </div>
-                          <div className="text-xs text-white/70 font-mono">{duration}</div>
                         </div>
 
                         <div className="mb-2">
@@ -1492,16 +1482,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     });
 
     const highlight = (text: string) => {
-      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      const parts = text.split(regex);
+      // Split on the term (capture group so matches stay as array elements).
+      // Use a case-insensitive equality check rather than regex.test(), which
+      // with the /g flag carries `lastIndex` state and mis-classifies
+      // subsequent parts.
+      const safe = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const splitRegex = new RegExp(`(${safe})`, 'gi');
+      const parts = text.split(splitRegex);
+      const lowerTerm = searchTerm.toLowerCase();
       return parts.map((part, i) =>
-        regex.test(part) ? (
-          <span
+        part.toLowerCase() === lowerTerm ? (
+          <mark
             key={i}
-            className="bg-terminal-yellow/30 text-terminal-bright-green font-semibold"
+            className="bg-terminal-yellow text-terminal-black font-bold rounded-sm px-0.5"
           >
             {part}
-          </span>
+          </mark>
         ) : (
           <span key={i}>{part}</span>
         ),
@@ -1510,13 +1506,14 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox title="SEARCH RESULTS" centerTitle>
-        <div className="bg-terminal-green/5 p-2 rounded">
-          <span className="text-terminal-yellow font-semibold">Search term:</span>
-          <span className="text-white"> "{searchTerm}"</span>
-        </div>
-        <div className="bg-terminal-green/5 p-2 rounded">
+        <div className="bg-terminal-green/5 p-2 rounded flex flex-wrap gap-x-3 gap-y-1">
+          <span>
+            <span className="text-terminal-yellow font-semibold">Search term:</span>
+            <span className="text-white"> "{searchTerm}"</span>
+          </span>
+          <span className="text-terminal-green/60">•</span>
           <span className="text-terminal-bright-green font-semibold">
-            Found {results.length} result(s)
+            {results.length} result{results.length === 1 ? '' : 's'}
           </span>
         </div>
         {results.length === 0 ? (
@@ -1612,11 +1609,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (matchedTheme && themes[matchedTheme.key]) {
       const selectedTheme = themes[matchedTheme.key];
       applyColorTheme(matchedTheme);
-      addNode(
-        <span style={{ color: selectedTheme['--terminal-green'] }}>
-          Switched to {selectedTheme.name}.
-        </span>,
-      );
+      addLine(`Switched to ${selectedTheme.name}.`, 'text-terminal-bright-green');
     } else {
       addLine(
         'Theme not found. Use "theme" to see available themes.',
@@ -1632,15 +1625,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }
     const { cv } = portfolioData;
 
-    const Row = ({ label, value }: { label: string; value: ReactNode }) => (
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-3 bg-terminal-green/10">
-          <span className="text-terminal-yellow font-semibold">{label}</span>
-        </div>
-        <div className="col-span-9 bg-terminal-green/5">
-          <span className="text-white">{value}</span>
-        </div>
-      </div>
+    const Row = (props: { label: string; value: ReactNode }) => (
+      <LabeledRow label={props.label} value={props.value} />
     );
 
     addNode(
@@ -1716,10 +1702,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }
     const role = portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional;
     const Row = ({ label, value }: { label: string; value: string | undefined }) => (
-      <div>
-        <span className="text-terminal-green w-20 inline-block">{label}</span>
-        <span className="text-white">{value ?? '—'}</span>
-      </div>
+      <CompactRow label={label} value={value ?? '—'} labelWidth="w-20" />
     );
     addNode(
       <SectionBox title="WHOAMI" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
@@ -1931,7 +1914,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }
 
     const personalInfo = (
-      <div className="bg-terminal-green/5 p-3 rounded">
+      <div className="border border-terminal-green/30 bg-terminal-green/5 p-3 rounded">
         <div className="text-terminal-yellow font-bold text-lg mb-1">{cv.name}</div>
         <div className="text-terminal-green">
           <span className="text-terminal-yellow">Location:</span>{' '}
@@ -2009,8 +1992,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (location) infoRows.push(['Location', location]);
     if (website) infoRows.push(['Website', website]);
 
-    const topSkills = sections?.technologies?.length
+    // Skills row sits inside a 60-char ASCII border — truncate with an
+    // ellipsis if the CV's top-5 labels would overflow.
+    const rawSkills = sections?.technologies?.length
       ? sections.technologies.slice(0, 5).map((tech) => tech.label).join(', ')
+      : null;
+    const skillsBudget = width - 'Skills: '.length - 2; // account for "│ " prefix + " │" suffix
+    const topSkills = rawSkills
+      ? rawSkills.length > skillsBudget
+        ? rawSkills.slice(0, Math.max(0, skillsBudget - 1)).trimEnd() + '…'
+        : rawSkills
       : null;
 
     const pad = (label: string, value: string) => {
@@ -2069,9 +2060,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       }
       const neofetchContent = await response.text();
 
+      // The stock neofetch files are authored with U+2007 (FIGURE SPACE) as
+      // the column separator. Heavy box-drawing chars like U+2501 don't
+      // render at the same width as figure space in most monospace fonts,
+      // which jags the right edges of the ASCII boxes. Normalise any
+      // Unicode space variant to a regular space inside the <pre>.
+      const normalised = neofetchContent.replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ');
+
       addNode(
-        <pre className="whitespace-pre text-xs sm:text-sm leading-tight overflow-x-auto">
-          {neofetchContent}
+        <pre className="font-mono text-terminal-green whitespace-pre text-xs sm:text-sm leading-tight overflow-x-auto">
+          {normalised}
         </pre>,
       );
     } catch (error) {
@@ -2098,11 +2096,75 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     );
   }, [addNode, getAllCommandNames]);
 
+  const showHistory = useCallback((args: string[]) => {
+    if (args[0] === 'clear') {
+      setCommandHistory([]);
+      setHistoryIndex(-1);
+      storage.remove(storageConfig.keys.commandHistory);
+      addLine('Command history cleared.', 'text-terminal-yellow');
+      return;
+    }
+
+    if (commandHistory.length === 0) {
+      addNode(
+        <SectionBox title="COMMAND HISTORY" centerTitle>
+          <div className="text-terminal-yellow">No commands in history yet.</div>
+          <div className="text-white/70 text-xs">
+            Commands you run are saved to local storage; they'll show up here.
+          </div>
+        </SectionBox>,
+        'w-full',
+      );
+      return;
+    }
+
+    // Oldest-first for a natural "scrollback" read order. commandHistory is
+    // stored newest-first, so reverse a shallow copy.
+    const ordered = [...commandHistory].reverse();
+    const width = String(ordered.length).length;
+
+    addNode(
+      <SectionBox
+        title="COMMAND HISTORY"
+        centerTitle
+        bodyClassName="p-3 space-y-0.5 text-xs sm:text-sm font-mono"
+      >
+        {ordered.map((cmd, i) => (
+          <div key={i} className="flex gap-3 hover:bg-terminal-green/5 rounded px-1">
+            <span
+              className="text-terminal-green/60 tabular-nums text-right"
+              style={{ minWidth: `${width}ch` }}
+            >
+              {i + 1}
+            </span>
+            <CmdLink cmd={cmd} className="text-terminal-yellow">
+              {cmd}
+            </CmdLink>
+          </div>
+        ))}
+        <div className="border-t border-terminal-green/30 pt-2 mt-2 text-xs text-white/70">
+          {ordered.length} of {storageConfig.limits.maxHistoryItems} slots used ·{' '}
+          Type{' '}
+          <CmdLink cmd="history clear" className="text-terminal-yellow">
+            history clear
+          </CmdLink>{' '}
+          to wipe local storage.
+        </div>
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, commandHistory]);
+
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
     
-    addLine(`guest@portfolio:~$ ${command}`, 'text-terminal-green font-bold', true);
-    setCommandHistory(prev => [command, ...prev.slice(0, 49)]);
+    addLine(`guest@portfolio:~$ ${command}`, 'text-terminal-green font-semibold', true);
+    setCommandHistory(prev => {
+      // Collapse duplicates at the top so spamming the same command doesn't
+      // fill history. Cap at `maxHistoryItems` from storage config.
+      const deduped = prev[0] === command ? prev : [command, ...prev];
+      return deduped.slice(0, storageConfig.limits.maxHistoryItems);
+    });
     setHistoryIndex(-1);
     
     const args = command.trim().split(' ');
@@ -2201,6 +2263,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       case 'clear':
         clearTerminal();
         break;
+      case 'history':
+        showHistory(args.slice(1));
+        break;
       default:
         // Check if this is a dynamic section command
         if (portfolioData?.cv?.sections) {
@@ -2219,26 +2284,23 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           </span>,
         );
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
 
+    // `commandHistory` is newest-first ([newest, …, oldest]).
+    // `historyIndex = -1` means "not currently browsing"; Up advances to 0
+    // (newest), Up again goes to 1 (next-newest), capped at oldest.
     let newIndex = historyIndex;
-    
     if (direction === 'up') {
-      newIndex = historyIndex < commandHistory.length - 1 ? historyIndex + 1 : commandHistory.length - 1;
+      newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
     } else {
-      newIndex = historyIndex > 0 ? historyIndex - 1 : -1;
+      newIndex = Math.max(historyIndex - 1, -1);
     }
-    
+
     setHistoryIndex(newIndex);
-    
-    if (newIndex === -1) {
-      return '';
-    } else {
-      return commandHistory[commandHistory.length - 1 - newIndex];
-    }
+    return newIndex === -1 ? '' : commandHistory[newIndex];
   }, [commandHistory, historyIndex, currentInput]);
 
   const getCommandSuggestions = useCallback((input: string) => {
@@ -2264,6 +2326,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     lines,
     executeCommand,
     navigateHistory,
+    // `true` while the user is browsing history via arrow keys. Terminal.tsx
+    // uses this to suppress the autocomplete dropdown — otherwise the first
+    // Up fires history recall, autocomplete opens on the recalled text, and
+    // subsequent Ups get intercepted by the autocomplete navigation.
+    isBrowsingHistory: historyIndex !== -1,
     getCommandSuggestions,
     getAllCommands,
     isTyping,

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
@@ -22,7 +23,9 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   // the old `input.length * 0.6em` estimate.
   const ghostRef = useRef<HTMLSpanElement>(null);
   const autocompleteRef = useRef<HTMLDivElement>(null);
+  const lastAnchoredCommandId = useRef<string | null>(null);
   const [cursorLeft, setCursorLeft] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   // PWA functionality
   const { isInstallable, isInstalled, installApp } = usePWA();
@@ -40,6 +43,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     lines,
     executeCommand,
     navigateHistory,
+    isBrowsingHistory,
     getCommandSuggestions,
     getAllCommands,
     clearTerminal,
@@ -49,16 +53,19 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   // Get current suggestions
   const suggestions = getCommandSuggestions(input);
 
-  // Update autocomplete visibility and reset selection when input changes
+  // Update autocomplete visibility and reset selection when input changes.
+  // Suppressed while browsing history with arrow keys — otherwise a recalled
+  // command (e.g. "skills") opens the autocomplete, and the very next Up
+  // goes into autocomplete navigation rather than continuing history recall.
   useEffect(() => {
-    if (suggestions.length > 0 && input.trim()) {
+    if (!isBrowsingHistory && suggestions.length > 0 && input.trim()) {
       setShowAutocomplete(true);
       setSelectedSuggestion(0);
     } else {
       setShowAutocomplete(false);
       setSelectedSuggestion(0);
     }
-  }, [input, suggestions.length]);
+  }, [input, suggestions.length, isBrowsingHistory]);
 
   // Measure the ghost span to position the blinking cursor precisely.
   // Runs before paint so the cursor never flashes at the wrong spot.
@@ -106,11 +113,32 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     }
   }, [portfolioData]);
 
+  // Anchor newly-run commands to the top of the viewport instead of
+  // yanking to the bottom. User lands on the command they typed + the
+  // start of its output, and scrolls through the rest at their own
+  // pace. Fires once per command (keyed on isCommand line id), so
+  // mid-command addLine/addNode calls don't re-scroll.
   useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    if (!terminalRef.current) return;
+    let lastCmd: typeof lines[number] | undefined;
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (lines[i].isCommand) {
+        lastCmd = lines[i];
+        break;
+      }
     }
-  }, [lines]);
+    if (!lastCmd || lastCmd.id === lastAnchoredCommandId.current) return;
+    const el = terminalRef.current.querySelector<HTMLElement>(
+      `[data-line-id="${CSS.escape(lastCmd.id)}"]`,
+    );
+    if (el) {
+      el.scrollIntoView({
+        block: 'start',
+        behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      });
+    }
+    lastAnchoredCommandId.current = lastCmd.id;
+  }, [lines, prefersReducedMotion]);
 
   // Handle URL command execution (for PWA shortcuts)
   useEffect(() => {
@@ -337,12 +365,16 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           {/* Command Output */}
           <div className="space-y-1 text-xs sm:text-sm lg:text-base">
             {lines.map((line) => (
-              <div
+              <motion.div
                 key={line.id}
+                data-line-id={line.id}
+                initial={prefersReducedMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
                 className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
               >
                 {line.content}
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>

@@ -19,7 +19,7 @@ export function CmdLink({ cmd, children, className = '' }: CmdLinkProps) {
   return (
     <a
       href={`?cmd=${cmd}`}
-      className={`text-terminal-bright-green font-semibold hover:text-terminal-bright-green hover:underline transition-colors duration-200 ${className}`}
+      className={`text-terminal-bright-green font-semibold hover:text-terminal-bright-green hover:underline transition-colors duration-200 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${className}`}
     >
       {children}
     </a>
@@ -43,7 +43,7 @@ export function ExtLink({ href, children, className = '' }: ExtLinkProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`text-terminal-bright-green underline hover:opacity-80 ${className}`}
+      className={`text-terminal-bright-green underline hover:opacity-80 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${className}`}
     >
       {children}
     </a>
