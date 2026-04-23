@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, type ReactNode } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
@@ -6,12 +6,18 @@ import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
 import { inlineMd } from '../lib/tuiMarkdown';
+import { SectionBox } from '../components/tui/SectionBox';
+import { CmdLink } from '../components/tui/TuiLink';
+import { UsageHint } from '../components/tui/UsageHint';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
 export interface TerminalLine {
   id: string;
-  content: string;
+  /** String content goes through DOMPurify + dangerouslySetInnerHTML
+      (legacy path). ReactNode content is rendered directly and is the
+      preferred path for new commands (Phase D migration). */
+  content: string | ReactNode;
   className?: string;
   isCommand?: boolean;
 }
@@ -387,6 +393,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const addLine = useCallback((content: string, className?: string, isCommand = false) => {
     setLines(prev => {
       const next = [...prev, { id: generateId(), content, className, isCommand }];
+      return next.length > SCROLLBACK_CAP ? next.slice(-SCROLLBACK_CAP) : next;
+    });
+  }, []);
+
+  /** Append a ReactNode line — preferred path for new commands (Phase D).
+      Bypasses DOMPurify / dangerouslySetInnerHTML since React escapes
+      everything by default. */
+  const addNode = useCallback((content: ReactNode, className?: string) => {
+    setLines(prev => {
+      const next = [...prev, { id: generateId(), content, className }];
       return next.length > SCROLLBACK_CAP ? next.slice(-SCROLLBACK_CAP) : next;
     });
   }, []);
@@ -1889,29 +1905,30 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const theme = args.join(' ').trim().toLowerCase();
 
     if (!theme) {
-      // Each row's swatch colour comes from the theme's own accentRgb so
-      // the preview matches what actually gets applied, and stays in sync
-      // if the palette is tuned later.
-      const themeRows = colorThemes
-        .map((t) => {
-          const [r, g, b] = t.accentRgb;
-          const padKey = t.key.padEnd(9, ' ');
-          return `<div><span style="color: rgb(${r}, ${g}, ${b})" class="font-semibold">${padKey}</span>- ${t.name}</div>`;
-        })
-        .join('');
-      const themeBox = `
-        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div class="border-b border-terminal-green/30 px-3 py-1">
-            <span class="text-terminal-bright-green text-sm font-bold">AVAILABLE THEMES</span>
+      addNode(
+        <SectionBox title="AVAILABLE THEMES" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
+          {colorThemes.map((t) => {
+            const [r, g, b] = t.accentRgb;
+            return (
+              <div key={t.key}>
+                <span
+                  style={{ color: `rgb(${r}, ${g}, ${b})` }}
+                  className="font-semibold inline-block w-[10ch]"
+                >
+                  {t.key}
+                </span>
+                {' - '}
+                {t.name}
+              </div>
+            );
+          })}
+          <div>
+            <span className="text-terminal-yellow font-semibold inline-block w-[10ch]">reset</span>
+            {' - Reset to default theme'}
           </div>
-          <div class="p-3 space-y-1 text-xs sm:text-sm">
-            ${themeRows}
-            <div><span class="text-terminal-yellow font-semibold">reset    </span>- Reset to default theme</div>
-            <div class="border-t border-terminal-green/30 pt-2 mt-2 text-terminal-yellow">Usage: theme [name]</div>
-          </div>
-        </div>
-      `.trim();
-      addLine(themeBox);
+          <UsageHint usage="theme [name]" />
+        </SectionBox>,
+      );
       return;
     }
 
@@ -1938,100 +1955,91 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     } else {
       addLine('<span class="text-terminal-red">Theme not found. Use "theme" to see available themes.</span>');
     }
-  }, [addLine]);
+  }, [addLine, addNode]);
 
   const showContact = useCallback(() => {
     if (!portfolioData) {
       addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
       return;
     }
-
     const { cv } = portfolioData;
-    
-    // Create the contact content as a single HTML string, matching showAbout and showExperience structure
-    const contactBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">CONTACT INFORMATION</span>
+
+    const Row = ({ label, value }: { label: string; value: ReactNode }) => (
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-3 bg-terminal-green/10">
+          <span className="text-terminal-yellow font-semibold">{label}</span>
         </div>
-        <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">📞 PERSONAL DETAILS</div>
-            <div class="space-y-1 ml-2">
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Name</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">${cv.name}</span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Location</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">${cv.location}</span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Email</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">${cv.email}</span>
-                </div>
-              </div>
-              <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-3 bg-terminal-green/10">
-                  <span class="text-terminal-yellow font-semibold">Phone</span>
-                </div>
-                <div class="col-span-9 bg-terminal-green/5">
-                  <span class="text-white">
-                    <a href="${cv.phone || ""}" class="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer">
-                      ${cv.phone?.replace(/[^\d\+]/g, '')}
-                    </a>
-                    </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
-            <div class="space-y-1 ml-2">
-              ${cv.social_networks?.map(social => {
-                const url = getSocialNetworkUrl(social.network, social.username);
-                return `
-                  <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-3 bg-terminal-green/10">
-                      <span class="text-terminal-yellow font-semibold">${social.network}</span>
-                    </div>
-                    <div class="col-span-9 bg-terminal-green/5">
-                      <span class="text-white">${url}</span>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div class="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
-                Feel free to reach out for collaborations, opportunities, or just to connect!
-              </div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span> to learn more about me</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to see my work</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> for my professional background</div>
-            </div>
-          </div>
+        <div className="col-span-9 bg-terminal-green/5">
+          <span className="text-white">{value}</span>
         </div>
       </div>
-    `.trim();
-    
-    // Add the entire contact box as a single line
-    addLine(contactBox, 'w-full');
-  }, [addLine, portfolioData]);
+    );
+
+    addNode(
+      <SectionBox
+        title="CONTACT INFORMATION"
+        centerTitle
+        bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
+      >
+        <div>
+          <div className="text-terminal-bright-green font-bold mb-2">📞 PERSONAL DETAILS</div>
+          <div className="space-y-1 ml-2">
+            <Row label="Name" value={cv.name} />
+            <Row label="Location" value={cv.location} />
+            <Row label="Email" value={cv.email} />
+            <Row
+              label="Phone"
+              value={
+                cv.phone ? (
+                  <a
+                    href={cv.phone}
+                    className="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer"
+                  >
+                    {cv.phone.replace(/[^\d+]/g, '')}
+                  </a>
+                ) : (
+                  ''
+                )
+              }
+            />
+          </div>
+        </div>
+        <div>
+          <div className="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
+          <div className="space-y-1 ml-2">
+            {cv.social_networks?.map((social) => (
+              <Row
+                key={social.network}
+                label={social.network}
+                value={getSocialNetworkUrl(social.network, social.username)}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="border-t border-terminal-green/30 pt-3">
+          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
+          <div className="space-y-1 ml-2 text-xs">
+            <div className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
+              Feel free to reach out for collaborations, opportunities, or just to connect!
+            </div>
+            <div>
+              <span className="text-white">• </span>
+              Try <CmdLink cmd="about">about</CmdLink> to learn more about me
+            </div>
+            <div>
+              <span className="text-white">• </span>
+              Try <CmdLink cmd="projects">projects</CmdLink> to see my work
+            </div>
+            <div>
+              <span className="text-white">• </span>
+              Try <CmdLink cmd="experience">experience</CmdLink> for my professional background
+            </div>
+          </div>
+        </div>
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showWhoAmI = useCallback(() => {
     if (!portfolioData) {
@@ -2039,20 +2047,21 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
     const role = portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional;
-    const box = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1">
-          <span class="text-terminal-bright-green text-sm font-bold">WHOAMI</span>
-        </div>
-        <div class="p-3 space-y-1 text-xs sm:text-sm">
-          <div><span class="text-terminal-green w-20 inline-block">User</span><span class="text-white">${portfolioData.cv.name}</span></div>
-          <div><span class="text-terminal-green w-20 inline-block">Location</span><span class="text-white">${portfolioData.cv.location}</span></div>
-          <div><span class="text-terminal-green w-20 inline-block">Role</span><span class="text-white">${role}</span></div>
-        </div>
+    const Row = ({ label, value }: { label: string; value: string | undefined }) => (
+      <div>
+        <span className="text-terminal-green w-20 inline-block">{label}</span>
+        <span className="text-white">{value ?? '—'}</span>
       </div>
-    `.trim();
-    addLine(box, 'w-full');
-  }, [addLine, portfolioData]);
+    );
+    addNode(
+      <SectionBox title="WHOAMI" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
+        <Row label="User" value={portfolioData.cv.name} />
+        <Row label="Location" value={portfolioData.cv.location} />
+        <Row label="Role" value={role} />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showCat = useCallback((args: string[]) => {
     const filename = args[0];
@@ -2467,13 +2476,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   }, [addLine, portfolioData]);
 
   const listCommands = useCallback(() => {
-    addLine('<span class="text-terminal-yellow font-bold">Available commands:</span>');
-    addLine('');
     const commands = getAllCommandNames();
-    commands.forEach(cmd => {
-      addLine(`<span class="text-terminal-green">${cmd}</span>`);
-    });
-  }, [addLine, getAllCommandNames]);
+    addNode(
+      <div>
+        <div className="text-terminal-yellow font-bold mb-1">Available commands:</div>
+        <div className="space-y-0.5">
+          {commands.map((cmd) => (
+            <div key={cmd}>
+              <CmdLink cmd={cmd} className="text-terminal-green font-normal">
+                {cmd}
+              </CmdLink>
+            </div>
+          ))}
+        </div>
+      </div>,
+    );
+  }, [addNode, getAllCommandNames]);
 
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
