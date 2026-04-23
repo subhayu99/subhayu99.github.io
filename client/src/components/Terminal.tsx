@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DOMPurify from 'dompurify';
 import { useTerminal } from '../hooks/useTerminal';
@@ -19,6 +19,12 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
   const welcomeMessageShown = useRef(false);
+  // A hidden mirror span we measure to place the cursor precisely.
+  // Pixel-accurate across ligatures, zoom, and font-fallback — unlike
+  // the old `input.length * 0.6em` estimate.
+  const ghostRef = useRef<HTMLSpanElement>(null);
+  const autocompleteRef = useRef<HTMLDivElement>(null);
+  const [cursorLeft, setCursorLeft] = useState(0);
 
   // PWA functionality
   const { isInstallable, isInstalled, installApp } = usePWA();
@@ -55,6 +61,27 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       setSelectedSuggestion(0);
     }
   }, [input, suggestions.length]);
+
+  // Measure the ghost span to position the blinking cursor precisely.
+  // Runs before paint so the cursor never flashes at the wrong spot.
+  useLayoutEffect(() => {
+    if (ghostRef.current) {
+      setCursorLeft(ghostRef.current.offsetWidth);
+    }
+  }, [input]);
+
+  // Close the autocomplete when the user clicks outside it.
+  useEffect(() => {
+    if (!showAutocomplete) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      if (!autocompleteRef.current) return;
+      if (autocompleteRef.current.contains(e.target as Node)) return;
+      if (inputRef.current?.contains(e.target as Node)) return;
+      setShowAutocomplete(false);
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [showAutocomplete]);
 
   // Auto-focus input and scroll to bottom
   useEffect(() => {
@@ -317,8 +344,12 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
         </div>
 
         {/* Terminal Content */}
-        <div 
+        <div
           ref={terminalRef}
+          role="log"
+          aria-label="Terminal output"
+          aria-live="polite"
+          aria-atomic="false"
           className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-terminal cursor-text"
           onClick={handleTerminalClick}
         >
@@ -360,13 +391,26 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                 spellCheck="false"
                 placeholder={!hasTyped ? uiText.input.placeholder : ""}
               />
-              <span className="absolute text-terminal-green blink text-xs sm:text-sm" style={{ left: `${input.length * 0.6}em`, top: '50%', transform: 'translateY(-45%)' }}>
+              {/* Ghost span — invisible mirror of the input text. Its
+                  offsetWidth is what we measure to position the cursor. */}
+              <span
+                ref={ghostRef}
+                aria-hidden="true"
+                className="invisible absolute top-0 left-0 whitespace-pre font-mono text-xs sm:text-sm pointer-events-none"
+              >
+                {input}
+              </span>
+              <span
+                className="absolute text-terminal-green blink text-xs sm:text-sm"
+                style={{ left: `${cursorLeft}px`, top: '50%', transform: 'translateY(-45%)' }}
+              >
                 █
               </span>
               
               {/* Autocomplete Dropdown */}
               {showAutocomplete && suggestions.length > 0 && (
                 <div
+                  ref={autocompleteRef}
                   role="listbox"
                   aria-label="Command suggestions"
                   className="absolute bottom-full left-0 mb-1 bg-terminal-black border border-terminal-green/50 rounded-sm shadow-lg terminal-glow z-10 min-w-full max-w-xs"
