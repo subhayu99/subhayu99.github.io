@@ -15,7 +15,7 @@ interface TriggerRow {
 const TRIGGERS: TriggerRow[] = [
   {
     label: 'Color Theme',
-    desktop: 'press T, or T1–T5',
+    desktop: 'press T',
     mobile: 'shake the device (3 quick shakes)',
   },
   {

@@ -16,7 +16,7 @@ Two categories:
 
 | # | Feature        | Desktop                         | Mobile                                 |
 |---|----------------|---------------------------------|----------------------------------------|
-| 1 | Color theme    | `T`, or `T1`–`T5`               | shake device (3 quick shakes)          |
+| 1 | Color theme    | `T`                             | shake device (3 quick shakes)          |
 | 2 | Snake          | type `snake`                    | long-press "PyPI Downloads" stat (2s) — Python 🐍 |
 | 3 | Reflex         | type `reflex`                   | triple-tap the hero name               |
 | 4 | Infinity Racer | type `racer`                    | long-press "Years Experience" stat (2s)|

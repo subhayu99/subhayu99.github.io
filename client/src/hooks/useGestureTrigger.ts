@@ -119,7 +119,7 @@ export function useGestureTrigger(motionEnabled = false) {
     return () => window.removeEventListener('devicemotion', onMotion);
   }, [motionEnabled, helpActive, themeFlash]);
 
-  // ── Keyboard: T (cycle) / T1-T5 (jump) / "snake" ──
+  // ── Keyboard: T (cycle) / T<N> (jump) / "snake" ──
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -129,8 +129,12 @@ export function useGestureTrigger(motionEnabled = false) {
 
       const key = e.key;
 
-      // T-key theme switching
-      if (key.toLowerCase() === 't' && !tPendingRef.current && !snakeActive && !themeFlash) {
+      // T-key theme switching.
+      // NB: we intentionally do NOT gate on themeFlash — the flash overlay
+      // lingers ~1.4s after a cycle and previously blocked the next T,
+      // giving the shortcut an unwanted cooldown. Rapid T-presses should
+      // cycle rapidly; the flash just re-renders with the new theme.
+      if (key.toLowerCase() === 't' && !tPendingRef.current && !snakeActive) {
         tPendingRef.current = true;
         tTimerRef.current = setTimeout(() => {
           // T alone — cycle to next theme
@@ -181,7 +185,7 @@ export function useGestureTrigger(motionEnabled = false) {
       window.removeEventListener('keydown', handleKey);
       if (tTimerRef.current) clearTimeout(tTimerRef.current);
     };
-  }, [snakeActive, reflexActive, racerActive, helpActive, themeFlash, triggerThemeCycle, triggerThemeJump]);
+  }, [snakeActive, reflexActive, racerActive, helpActive, triggerThemeCycle, triggerThemeJump]);
 
   return {
     themeFlash, snakeActive, reflexActive, racerActive, helpActive,
