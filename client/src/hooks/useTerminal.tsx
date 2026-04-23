@@ -150,143 +150,161 @@ function getProjectsHtml(projectData: Array<Record<string, unknown>>, type: stri
   `.trim();
 }
 
-async function getWelcomeMessageHtml(portfolioData: PortfolioData): Promise<string> {
+async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> {
   const sanitizedPhone = portfolioData.cv.phone?.replace(/[^\d+]/g, '') || '';
   const filePath = apiConfig.endpoints.styledName;
 
   const response = await fetch(filePath);
-
   let styledName = '';
-  if (response.ok) {
-    styledName = await response.text();
-  }
-  // Clean up potential fetch errors (like a 404 returning an HTML page) or empty files.
-  if (!styledName || styledName.trim() === '' || (typeof styledName === 'string' && styledName.startsWith('<!DOCTYPE html>'))) {
+  if (response.ok) styledName = await response.text();
+  if (
+    !styledName ||
+    styledName.trim() === '' ||
+    styledName.startsWith('<!DOCTYPE html>')
+  ) {
     styledName = '';
   }
   const usePre = styledName.trim() !== '';
 
-  // Conditionally generate the HTML for the name display.
-  let nameDisplayHtml = '';
-  if (usePre) {
-    // Case 1: We have a styled name. Show it on large screens (`sm` and up)
-    // and show a simple fallback on extra-small screens.
-    nameDisplayHtml = `
-      <pre class="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">${styledName}</pre>
-      <div class="sm:hidden text-terminal-bright-green text-center mb-3">
-        <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
-        <div class="text-sm">TERMINAL PORTFOLIO</div>
-      </div>
-    `;
-  } else {
-    // Case 2: No styled name. Show the simple name on ALL screen sizes.
-    // The `sm:hidden` class is removed to make it always visible.
-    nameDisplayHtml = `
-      <div class="text-terminal-bright-green text-center mb-3">
-        <div class="text-lg font-bold">${portfolioData.cv.name.toUpperCase()}</div>
-        <div class="text-sm">TERMINAL PORTFOLIO</div>
-      </div>
-    `;
-  }
+  const cv = portfolioData.cv;
+  const firstRole = cv.sections?.experience?.[0]?.position ?? '';
+  const introParagraph = cv.sections?.intro?.[0] ?? '';
 
-  return `
-    <div class="mb-4 sm:mb-6">
-      <div class="mb-3 sm:mb-4">
-        ${nameDisplayHtml}
-      </div>
-      <div class="mb-4">
-        <p class="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
-        <p class="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
-          ${portfolioData.cv.sections?.intro?.[0] ?? ''}
-        </p>
-      </div>
+  const OverviewRow = ({ label, value }: { label: string; value: ReactNode }) => (
+    <div className="flex">
+      <span className="text-terminal-yellow w-16 font-bold">{label}</span>
+      {typeof value === 'string' ? <span className="text-white">{value}</span> : value}
+    </div>
+  );
 
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
-        <div class="border-b border-terminal-green/30 px-3 py-1">
-          <span class="text-terminal-bright-green text-sm font-bold">QUICK OVERVIEW</span>
-        </div>
-        <div class="p-3 space-y-1 text-xs sm:text-sm">
-          <div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">USER</span>
-            <span class="text-white">${portfolioData.cv.name}</span>
+  const QuickCmd = ({ cmd, label }: { cmd: string; label: string }) => (
+    <div className="flex items-center space-x-2">
+      <span className="text-terminal-bright-green">→</span>
+      <CmdLink cmd={cmd} className="text-terminal-yellow">
+        {cmd}
+      </CmdLink>
+      <span className="text-white/80">{label}</span>
+    </div>
+  );
+
+  return (
+    <div className="mb-4 sm:mb-6">
+      <div className="mb-3 sm:mb-4">
+        {usePre ? (
+          <>
+            <pre className="text-terminal-bright-green text-xs leading-tight overflow-x-auto hidden sm:block">
+              {styledName}
+            </pre>
+            <div className="sm:hidden text-terminal-bright-green text-center mb-3">
+              <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
+              <div className="text-sm">TERMINAL PORTFOLIO</div>
+            </div>
+          </>
+        ) : (
+          <div className="text-terminal-bright-green text-center mb-3">
+            <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
+            <div className="text-sm">TERMINAL PORTFOLIO</div>
           </div>
-          <div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">ROLE</span>
-            <span class="text-white">${portfolioData.cv.sections?.experience?.[0]?.position ?? ''}</span>
-          </div>
-          <div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">LOC</span>
-            <span class="text-white">${portfolioData.cv.location}</span>
-          </div>
-          ${portfolioData.cv.website ? `<div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">WEB</span>
-            <span class="text-terminal-green">${portfolioData.cv.website}</span>
-          </div>` : ''}
-          <div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">EMAIL</span>
-            <span class="text-terminal-green">${portfolioData.cv.email}</span>
-          </div>
-          ${portfolioData.cv.resume_url ? `<div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">RESUME</span>
-            <span class="text-terminal-green"><a href="${portfolioData.cv.resume_url}" class="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer" target="_blank" rel="noopener noreferrer">resume.pdf</a></span>
-          </div>` : ''}
-          <div class="flex">
-            <span class="text-terminal-yellow w-16 font-bold">PHONE</span>
-            <span class="text-terminal-green"><a href="tel:${sanitizedPhone}" class="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer">${sanitizedPhone}</a></span>
-          </div>
-        </div>
+        )}
+      </div>
+      <div className="mb-4">
+        <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
+        <p
+          className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: inlineMd(introParagraph) }}
+        />
       </div>
 
-      <div class="mb-4">
-        <p class="text-terminal-green mb-2 text-sm sm:text-base">
+      <SectionBox
+        title="QUICK OVERVIEW"
+        bodyClassName="p-3 space-y-1 text-xs sm:text-sm"
+        className="max-w-none"
+      >
+        <OverviewRow label="USER" value={cv.name} />
+        <OverviewRow label="ROLE" value={firstRole} />
+        <OverviewRow label="LOC" value={cv.location ?? ''} />
+        {cv.website && (
+          <OverviewRow
+            label="WEB"
+            value={<span className="text-terminal-green">{cv.website}</span>}
+          />
+        )}
+        <OverviewRow
+          label="EMAIL"
+          value={<span className="text-terminal-green">{cv.email}</span>}
+        />
+        {cv.resume_url && (
+          <OverviewRow
+            label="RESUME"
+            value={
+              <span className="text-terminal-green">
+                <a
+                  href={cv.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
+                >
+                  resume.pdf
+                </a>
+              </span>
+            }
+          />
+        )}
+        {sanitizedPhone && (
+          <OverviewRow
+            label="PHONE"
+            value={
+              <span className="text-terminal-green">
+                <a
+                  href={`tel:${sanitizedPhone}`}
+                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
+                >
+                  {sanitizedPhone}
+                </a>
+              </span>
+            }
+          />
+        )}
+      </SectionBox>
+
+      <div className="mb-4">
+        <p className="text-terminal-green mb-2 text-sm sm:text-base">
           🚀 Start exploring with these core commands (or click them):
         </p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span>
-            <span class="text-white/80">learn more about me</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span>
-            <span class="text-white/80">view technical expertise</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span>
-            <span class="text-white/80">see professional work</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span>
-            <span class="text-white/80">see professional projects</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=personal" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">personal</a></span>
-            <span class="text-white/80">see personal projects</span>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-terminal-bright-green">→</span>
-            <span class="text-terminal-yellow font-bold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span>
-            <span class="text-white/80">display contact details</span>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+          <QuickCmd cmd="about" label="learn more about me" />
+          <QuickCmd cmd="skills" label="view technical expertise" />
+          <QuickCmd cmd="experience" label="see professional work" />
+          <QuickCmd cmd="projects" label="see professional projects" />
+          <QuickCmd cmd="personal" label="see personal projects" />
+          <QuickCmd cmd="contact" label="display contact details" />
         </div>
       </div>
 
-      <div class="text-xs sm:text-sm space-y-2">
-        <div class="flex items-center space-x-2 text-terminal-green/80">
+      <div className="text-xs sm:text-sm space-y-2">
+        <div className="flex items-center space-x-2 text-terminal-green/80">
           <span>💡</span>
-          <span>Type <span class="font-bold text-terminal-bright-green"><a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a></span> for all commands</span>
+          <span>
+            Type{' '}
+            <CmdLink cmd="help" className="font-bold hover:text-terminal-yellow">
+              help
+            </CmdLink>{' '}
+            for all commands
+          </span>
         </div>
-        <div class="flex items-center space-x-2 text-terminal-green/40 text-xs">
+        <div className="flex items-center space-x-2 text-terminal-green/40 text-xs">
           <span>✨</span>
-          <span>Like this portfolio? Type <span class="text-terminal-green/60"><a href="?cmd=replicate" class="hover:text-terminal-green hover:underline transition-colors duration-200">replicate</a></span> to create your own in ~5 min</span>
+          <span>
+            Like this portfolio? Type{' '}
+            <CmdLink cmd="replicate" className="text-terminal-green/60 hover:text-terminal-green">
+              replicate
+            </CmdLink>{' '}
+            to create your own in ~5 min
+          </span>
         </div>
       </div>
     </div>
-  `.trim();
+  );
 }
 
 // Command Registry Types and Definitions
@@ -463,89 +481,122 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const showWelcomeMessage = useCallback(async () => {
     if (portfolioData) {
-      const welcomeHtml = await getWelcomeMessageHtml(portfolioData);
-      addLine(welcomeHtml, 'welcome-message'); // Add the entire block as one "line"
+      const node = await getWelcomeNode(portfolioData);
+      addNode(node, 'welcome-message');
     }
-  }, [addLine, portfolioData]);
+  }, [addNode, portfolioData]);
 
   const showHelp = useCallback(() => {
-    // Get available commands and group by category
     const availableCommands = getAvailableCommands();
     const commandsByCategory: Record<string, CommandMetadata[]> = {
       information: [],
       professional: [],
       contact: [],
       tools: [],
-      terminal: []
+      terminal: [],
     };
-
-    // Group commands by category
-    availableCommands.forEach(cmd => {
+    availableCommands.forEach((cmd) => {
       commandsByCategory[cmd.category].push(cmd);
     });
 
-    // Category display config
     const categoryConfig = {
       information: { emoji: '📋', label: 'INFORMATION' },
       professional: { emoji: '💼', label: 'PROFESSIONAL' },
       contact: { emoji: '📧', label: 'CONTACT' },
       tools: { emoji: '🔧', label: 'TOOLS' },
-      terminal: { emoji: '⌨️', label: 'TERMINAL' }
-    };
+      terminal: { emoji: '⌨️', label: 'TERMINAL' },
+    } as const;
 
-    // Generate command HTML for each category
-    const generateCategoryHtml = (category: string, commands: CommandMetadata[]) => {
-      if (commands.length === 0) return '';
-      const config = categoryConfig[category as keyof typeof categoryConfig];
-      const commandsHtml = commands.map(cmd => {
-        const argHint = ['search', 'theme', 'cat'].includes(cmd.name) ? '<span class="text-white"> [...]</span>' : '';
-        const aliasHint = cmd.aliases?.length
-          ? ` <span class="text-terminal-green/70 text-[10px]">(${cmd.aliases.join(', ')})</span>`
-          : '';
-        return `<div class="grid grid-cols-12 gap-4"><div class="col-span-3 bg-terminal-green/10"><span class="text-terminal-yellow font-semibold"><a href="?cmd=${cmd.name}" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">${cmd.name}</a></span>${argHint}${aliasHint}</div><div class="col-span-9 bg-terminal-green/5"><span class="text-white">${cmd.description}</span></div></div>`;
-      }).join('\n              ');
-
-      return `
-          <div>
-            <div class="text-terminal-bright-green font-bold mb-2">${config.emoji} ${config.label}</div>
-            <div class="space-y-1 ml-2">
-              ${commandsHtml}
-            </div>
-          </div>`;
-    };
-
-    // Build help box HTML
-    const helpBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">AVAILABLE COMMANDS</span>
-        </div>
-        <div class="p-3 space-y-3 text-xs sm:text-sm">
-          ${generateCategoryHtml('information', commandsByCategory.information)}
-          ${generateCategoryHtml('professional', commandsByCategory.professional)}
-          ${generateCategoryHtml('contact', commandsByCategory.contact)}
-          ${generateCategoryHtml('tools', commandsByCategory.tools)}
-          ${generateCategoryHtml('terminal', commandsByCategory.terminal)}
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Tab</span> for auto-completion</div>
-              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to navigate command history</div>
-              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+C</span> to interrupt current operation</div>
-              <div><span class="text-white">•</span> Use <span class="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear screen quickly</div>
-              <div><span class="text-white">•</span> Click anywhere on the terminal to focus input</div>
-            </div>
+    const CommandRow = ({ cmd }: { cmd: CommandMetadata }) => {
+      const showArgs = ['search', 'theme', 'cat'].includes(cmd.name);
+      return (
+        <div className="grid grid-cols-12 gap-4">
+          <div className="col-span-3 bg-terminal-green/10">
+            <CmdLink cmd={cmd.name} className="text-terminal-yellow">
+              {cmd.name}
+            </CmdLink>
+            {showArgs && <span className="text-white"> [...]</span>}
+            {cmd.aliases?.length ? (
+              <span className="text-terminal-green/70 text-[10px]">
+                {' '}
+                ({cmd.aliases.join(', ')})
+              </span>
+            ) : null}
           </div>
-          <div class="text-terminal-white text-center pt-2 border-t border-terminal-green/20">
-            Start with \`<a href="?cmd=about" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">about</a>\` to learn more about me, or try \`<a href="?cmd=neofetch" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">neofetch</a>\` for a quick overview!
+          <div className="col-span-9 bg-terminal-green/5">
+            <span className="text-white">{cmd.description}</span>
           </div>
         </div>
-      </div>
-    `.trim();
+      );
+    };
 
-    // Add the entire help box as a single line
-    addLine(helpBox, 'w-full');
-  }, [addLine, getAvailableCommands]);
+    const Category = ({ cat }: { cat: keyof typeof categoryConfig }) => {
+      const cmds = commandsByCategory[cat];
+      if (!cmds.length) return null;
+      const { emoji, label } = categoryConfig[cat];
+      return (
+        <div>
+          <div className="text-terminal-bright-green font-bold mb-2">
+            {emoji} {label}
+          </div>
+          <div className="space-y-1 ml-2">
+            {cmds.map((cmd) => (
+              <CommandRow key={cmd.name} cmd={cmd} />
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    addNode(
+      <SectionBox
+        title="AVAILABLE COMMANDS"
+        centerTitle
+        bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
+      >
+        <Category cat="information" />
+        <Category cat="professional" />
+        <Category cat="contact" />
+        <Category cat="tools" />
+        <Category cat="terminal" />
+        <div className="border-t border-terminal-green/30 pt-3">
+          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
+          <div className="space-y-1 ml-2 text-xs">
+            <div>
+              <span className="text-white">• </span>Use{' '}
+              <span className="text-terminal-bright-green font-semibold">Tab</span> for
+              auto-completion
+            </div>
+            <div>
+              <span className="text-white">• </span>Use{' '}
+              <span className="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to
+              navigate command history
+            </div>
+            <div>
+              <span className="text-white">• </span>Use{' '}
+              <span className="text-terminal-bright-green font-semibold">Ctrl+C</span> to
+              interrupt current operation
+            </div>
+            <div>
+              <span className="text-white">• </span>Use{' '}
+              <span className="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear
+              screen quickly
+            </div>
+            <div>
+              <span className="text-white">• </span>Click anywhere on the terminal to focus input
+            </div>
+          </div>
+        </div>
+        <div className="text-terminal-white text-center pt-2 border-t border-terminal-green/20">
+          Start with <CmdLink cmd="about" className="hover:text-terminal-yellow">about</CmdLink> to
+          learn more about me, or try{' '}
+          <CmdLink cmd="neofetch" className="hover:text-terminal-yellow">neofetch</CmdLink> for a
+          quick overview!
+        </div>
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addNode, getAvailableCommands]);
 
   const openResumePdf = useCallback(() => {
     if (portfolioData) {
@@ -1017,129 +1068,158 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       addLine(`No data available for section: ${sectionName}`, 'text-terminal-yellow');
       return;
     }
-
-    // Format section name for display (e.g., "certifications" -> "CERTIFICATIONS")
     const displayTitle = sectionName.replace(/_/g, ' ').toUpperCase();
 
-    const sectionBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">${displayTitle}</span>
-        </div>
-        <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${sectionData.map((entry, index) => {
-            // Handle text entries (simple strings)
-            if (typeof entry === 'string') {
-              return `
-                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="text-white text-xs">${entry}</div>
-                </div>
-              `;
-            }
-
-            // Handle object entries
-            const item = entry as Record<string, unknown>;
-
-            // Render based on detected entry type
-            if ('company' in item && 'position' in item) {
-              // Experience-like entry
-              const period = formatExperiencePeriod(item.start_date as string, item.end_date as string | undefined);
-              return `
-                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="mb-3">
-                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                      <span class="text-terminal-yellow font-semibold">${item.position}</span>
-                      <span class="text-white"> @ </span>
-                      <span class="text-terminal-bright-green font-bold">${item.company}</span>
-                    </div>
-                    ${item.location ? `<div class="ml-2"><span class="text-white opacity-80 text-xs">${item.location} | ${period}</span></div>` : `<div class="ml-2"><span class="text-white opacity-80 text-xs">${period}</span></div>`}
-                  </div>
-                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
-                    <div class="ml-2">
-                      <div class="text-terminal-bright-green font-semibold mb-2 text-xs">Key Achievements:</div>
-                      <div class="space-y-1">
-                        ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
-                        `).join('')}
-                      </div>
-                    </div>
-                  ` : ''}
-                  ${renderCustomFields(item, 'experience')}
-                </div>
-              `;
-            } else if ('institution' in item && 'area' in item) {
-              // Education-like entry
-              return `
-                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="mb-3">
-                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                      <span class="text-terminal-bright-green font-bold">${item.institution}</span>
-                    </div>
-                    <div class="ml-2 space-y-1">
-                      <div><span class="text-terminal-yellow font-semibold">${item.degree || ''} ${item.area}</span></div>
-                      ${item.start_date ? `<div class="text-white opacity-80 text-xs">${item.start_date} - ${item.end_date || 'Present'}</div>` : ''}
-                    </div>
-                  </div>
-                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
-                    <div class="ml-2">
-                      <div class="space-y-1">
-                        ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
-                        `).join('')}
-                      </div>
-                    </div>
-                  ` : ''}
-                  ${renderCustomFields(item, 'education')}
-                </div>
-              `;
-            } else if ('name' in item) {
-              // Project-like entry (NormalEntry - covers certifications, awards, etc.)
-              return `
-                <div class="border-b border-terminal-green/20 pb-4 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="mb-3">
-                    <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                      <span class="text-terminal-bright-green font-bold">${item.name}</span>
-                      ${item.date ? `<span class="text-white opacity-60 text-xs ml-2">(${item.date})</span>` : ''}
-                    </div>
-                  </div>
-                  ${item.highlights && Array.isArray(item.highlights) && (item.highlights as unknown[]).length > 0 ? `
-                    <div class="ml-2">
-                      <div class="space-y-1">
-                        ${(item.highlights as string[]).map(h => `
-                          <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">• ${inlineMd(h)}</div>
-                        `).join('')}
-                      </div>
-                    </div>
-                  ` : ''}
-                  ${renderCustomFields(item, 'projects')}
-                </div>
-              `;
-            } else if ('label' in item && 'details' in item) {
-              // OneLineEntry (like technologies)
-              return `
-                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="flex gap-2">
-                    <span class="text-terminal-yellow font-semibold min-w-[100px]">${item.label}:</span>
-                    <span class="text-white">${item.details}</span>
-                  </div>
-                  ${renderCustomFields(item, 'technologies')}
-                </div>
-              `;
-            } else {
-              // Unknown entry type - render as JSON for debugging
-              return `
-                <div class="border-b border-terminal-green/20 pb-2 ${index === sectionData.length - 1 ? 'border-b-0 pb-0' : ''}">
-                  <div class="text-white text-xs font-mono bg-terminal-green/5 p-2 rounded">${JSON.stringify(item, null, 2)}</div>
-                </div>
-              `;
-            }
-          }).join('')}
+    const Highlights = ({
+      items,
+      label,
+    }: {
+      items: string[];
+      label?: string;
+    }) => (
+      <div className="ml-2">
+        {label && (
+          <div className="text-terminal-bright-green font-semibold mb-2 text-xs">{label}</div>
+        )}
+        <div className="space-y-1">
+          {items.map((h, hi) => (
+            <div
+              key={hi}
+              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+            >
+              {'• '}
+              <span dangerouslySetInnerHTML={{ __html: inlineMd(h) }} />
+            </div>
+          ))}
         </div>
       </div>
-    `.trim();
+    );
 
-    addLine(sectionBox, 'w-full');
-  }, [addLine, portfolioData, formatExperiencePeriod]);
+    const renderEntry = (entry: unknown, index: number) => {
+      const isLast = index === sectionData.length - 1;
+      const baseCls = `pb-4 ${isLast ? '' : 'border-b border-terminal-green/20'}`;
+
+      if (typeof entry === 'string') {
+        return (
+          <div key={index} className={`pb-2 ${isLast ? '' : 'border-b border-terminal-green/20'}`}>
+            <div className="text-white text-xs">{entry}</div>
+          </div>
+        );
+      }
+
+      const item = entry as Record<string, unknown>;
+      const highlights = Array.isArray(item.highlights) ? (item.highlights as string[]) : [];
+
+      if ('company' in item && 'position' in item) {
+        const period = formatExperiencePeriod(
+          item.start_date as string,
+          item.end_date as string | undefined,
+        );
+        return (
+          <div key={index} className={baseCls}>
+            <div className="mb-3">
+              <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                <span className="text-terminal-yellow font-semibold">{item.position as string}</span>
+                <span className="text-white"> @ </span>
+                <span className="text-terminal-bright-green font-bold">{item.company as string}</span>
+              </div>
+              <div className="ml-2">
+                <span className="text-white opacity-80 text-xs">
+                  {item.location ? `${item.location} | ${period}` : period}
+                </span>
+              </div>
+            </div>
+            {highlights.length > 0 && <Highlights items={highlights} label="Key Achievements:" />}
+            <span
+              dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'experience') }}
+            />
+          </div>
+        );
+      }
+      if ('institution' in item && 'area' in item) {
+        return (
+          <div key={index} className={baseCls}>
+            <div className="mb-3">
+              <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                <span className="text-terminal-bright-green font-bold">{item.institution as string}</span>
+              </div>
+              <div className="ml-2 space-y-1">
+                <div>
+                  <span className="text-terminal-yellow font-semibold">
+                    {(item.degree as string) || ''} {item.area as string}
+                  </span>
+                </div>
+                {item.start_date ? (
+                  <div className="text-white opacity-80 text-xs">
+                    {item.start_date as string} - {(item.end_date as string) || 'Present'}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            {highlights.length > 0 && <Highlights items={highlights} />}
+            <span
+              dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'education') }}
+            />
+          </div>
+        );
+      }
+      if ('name' in item) {
+        return (
+          <div key={index} className={baseCls}>
+            <div className="mb-3">
+              <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                <span className="text-terminal-bright-green font-bold">{item.name as string}</span>
+                {item.date ? (
+                  <span className="text-white opacity-60 text-xs ml-2">({item.date as string})</span>
+                ) : null}
+              </div>
+            </div>
+            {highlights.length > 0 && <Highlights items={highlights} />}
+            <span
+              dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'projects') }}
+            />
+          </div>
+        );
+      }
+      if ('label' in item && 'details' in item) {
+        return (
+          <div key={index} className={`pb-2 ${isLast ? '' : 'border-b border-terminal-green/20'}`}>
+            <div className="flex gap-2">
+              <span className="text-terminal-yellow font-semibold min-w-[100px]">
+                {item.label as string}:
+              </span>
+              <span
+                className="text-white"
+                dangerouslySetInnerHTML={{ __html: inlineMd(item.details as string) }}
+              />
+            </div>
+            <span
+              dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'technologies') }}
+            />
+          </div>
+        );
+      }
+      // Unknown entry — render JSON for debugging
+      return (
+        <div key={index} className={`pb-2 ${isLast ? '' : 'border-b border-terminal-green/20'}`}>
+          <div className="text-white text-xs font-mono bg-terminal-green/5 p-2 rounded whitespace-pre">
+            {JSON.stringify(item, null, 2)}
+          </div>
+        </div>
+      );
+    };
+
+    addNode(
+      <SectionBox
+        title={displayTitle}
+        centerTitle
+        bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
+      >
+        {sectionData.map(renderEntry)}
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showSkills = useCallback(() => {
     if (!portfolioData) {
@@ -1366,72 +1446,69 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const publications = portfolioData.cv.sections.publication;
 
-    // Create the publications content as a single HTML string, matching showAbout/showExperience structure
-    const publicationsBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">RESEARCH PUBLICATIONS</span>
+    const MetaRow = ({ label, value }: { label: string; value: ReactNode }) => (
+      <div className="grid grid-cols-12 gap-1">
+        <div className="col-span-2 bg-terminal-green/10">
+          <span className="text-terminal-yellow font-semibold">{label}</span>
         </div>
-        <div class="p-3 space-y-4 text-xs sm:text-sm">
-          ${publications.map((pub, index) => `
-            <div class="border-b border-terminal-green/20 pb-4 ${index === publications.length - 1 ? 'border-b-0 pb-0' : ''}">
-              <div class="mb-3">
-              <div class="bg-terminal-green/5 p-2 rounded mb-2">
-                <span class="text-terminal-bright-green font-semibold">${pub.title}</span>
-              </div>
-              <div class="ml-2 space-y-1">
-                <div class="grid grid-cols-12 gap-1">
-                  <div class="col-span-2 bg-terminal-green/10">
-                    <span class="text-terminal-yellow font-semibold">Authors</span>
-                  </div>
-                  <div class="col-span-10 bg-terminal-green/5">
-                    <span class="text-white opacity-80">${pub.authors.join(', ')}</span>
-                  </div>
-                </div>
-                <div class="grid grid-cols-12 gap-1">
-                  <div class="col-span-2 bg-terminal-green/10">
-                    <span class="text-terminal-yellow font-semibold">Journal</span>
-                  </div>
-                  <div class="col-span-10 bg-terminal-green/5">
-                    <span class="text-white opacity-80">${pub.journal}</span>
-                  </div>
-                </div>
-                <div class="grid grid-cols-12 gap-1">
-                  <div class="col-span-2 bg-terminal-green/10">
-                    <span class="text-terminal-yellow font-semibold">Date</span>
-                  </div>
-                  <div class="col-span-10 bg-terminal-green/5">
-                    <span class="text-white opacity-80">${pub.date}</span>
-                  </div>
-                </div>
-                ${pub.doi ? `
-                  <div class="grid grid-cols-12 gap-1">
-                    <div class="col-span-2 bg-terminal-green/10">
-                      <span class="text-terminal-yellow font-semibold">DOI</span>
-                    </div>
-                    <div class="col-span-10 bg-terminal-green/5">
-                      https://doi.org/${pub.doi}
-                    </div>
-                  </div>
-                ` : ''}
-              </div>
-            </div>
-          `).join('')}
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to view practical applications</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=contact" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">contact</a></span> to discuss research collaboration</div>
-            </div>
-          </div>
+        <div className="col-span-10 bg-terminal-green/5">
+          <span className="text-white opacity-80">{value}</span>
         </div>
       </div>
-    `.trim();
-    
-    // Add the entire publications box as a single line
-    addLine(publicationsBox, 'w-full');
-  }, [addLine, portfolioData]);
+    );
+
+    addNode(
+      <SectionBox
+        title="RESEARCH PUBLICATIONS"
+        centerTitle
+        bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
+      >
+        {publications.map((pub, index) => {
+          const isLast = index === publications.length - 1;
+          return (
+            <div
+              key={`${pub.title}-${index}`}
+              className={`pb-4 ${isLast ? '' : 'border-b border-terminal-green/20'}`}
+            >
+              <div className="mb-3">
+                <div className="bg-terminal-green/5 p-2 rounded mb-2">
+                  <span className="text-terminal-bright-green font-semibold">{pub.title}</span>
+                </div>
+                <div className="ml-2 space-y-1">
+                  <MetaRow label="Authors" value={pub.authors?.join(', ')} />
+                  <MetaRow label="Journal" value={pub.journal} />
+                  <MetaRow label="Date" value={pub.date} />
+                  {pub.doi && (
+                    <MetaRow
+                      label="DOI"
+                      value={
+                        <a
+                          href={`https://doi.org/${pub.doi}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-terminal-bright-green underline"
+                        >
+                          https://doi.org/{pub.doi}
+                        </a>
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <ExploreMore
+          items={[
+            { cmd: 'experience', suffix: 'to see my professional background' },
+            { cmd: 'projects', suffix: 'to view practical applications' },
+            { cmd: 'contact', suffix: 'to discuss research collaboration' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showTimeline = useCallback(() => {
     if (!portfolioData) {
