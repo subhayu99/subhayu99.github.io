@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiConfig } from '../../config';
+import { SectionBox } from './SectionBox';
 import { ExtLink } from './TuiLink';
 
 export function ReplicatePage() {
@@ -7,21 +8,18 @@ export function ReplicatePage() {
 
   return (
     <>
-      <div className="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div className="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span className="text-terminal-bright-green text-lg font-bold">
-            🎨 CREATE YOUR OWN TERMINAL PORTFOLIO
-          </span>
-        </div>
-        <div className="p-4 space-y-4 text-sm">
-          <AiConverterSection onOpenModal={() => setModalOpen(true)} />
-          <EasyModeSection />
-          <AdvancedModeSection />
-          <CTASection />
-          <QuickLinks />
-          <Footer />
-        </div>
-      </div>
+      <SectionBox
+        title="CREATE YOUR OWN TERMINAL PORTFOLIO"
+        centerTitle
+        bodyClassName="p-4 space-y-4 text-sm"
+      >
+        <AiConverterSection onOpenModal={() => setModalOpen(true)} />
+        <EasyModeSection />
+        <AdvancedModeSection />
+        <CTASection />
+        <QuickLinks />
+        <Footer />
+      </SectionBox>
       {modalOpen && <AIPromptModal onClose={() => setModalOpen(false)} />}
     </>
   );
@@ -59,7 +57,7 @@ function AiConverterSection({ onOpenModal }: { onOpenModal: () => void }) {
         <button
           type="button"
           onClick={onOpenModal}
-          className="bg-terminal-bright-green/20 hover:bg-terminal-bright-green/30 border border-terminal-bright-green/50 px-4 py-2 rounded text-terminal-bright-green font-semibold transition-all duration-200 hover:scale-105 cursor-pointer"
+          className="bg-terminal-bright-green/20 hover:bg-terminal-bright-green/30 border border-terminal-bright-green/50 px-4 py-2 rounded text-terminal-bright-green font-semibold transition-all duration-200 hover:scale-105 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
         >
           📋 Get AI Conversion Prompt
         </button>
@@ -377,7 +375,7 @@ function AIPromptModal({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="text-terminal-bright-green hover:text-terminal-bright-green text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-terminal-bright-green/20 rounded transition-all"
+            className="text-terminal-bright-green hover:text-terminal-bright-green text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-terminal-bright-green/20 rounded transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
           >
             ×
           </button>
@@ -424,18 +422,21 @@ function AIPromptModal({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={copyPrompt}
               disabled={!promptText}
-              className={`border px-4 py-2 rounded font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`border px-4 py-2 rounded font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${
                 copied
-                  ? 'bg-terminal-green/30 border-terminal-green/50 text-terminal-bright-green'
-                  : 'bg-terminal-bright-green/20 hover:bg-terminal-bright-green/30 border-terminal-bright-green/50 text-terminal-bright-green'
+                  ? 'bg-terminal-green/40 border-terminal-green text-terminal-bright-green shadow-[0_0_12px_rgba(var(--glow-color-rgb),0.4)] scale-[1.02]'
+                  : 'bg-terminal-bright-green/20 hover:bg-terminal-bright-green/30 border-terminal-bright-green/50 text-terminal-bright-green hover:scale-[1.02]'
               }`}
             >
-              {copied ? '✓ Copied!' : '📋 Copy Prompt'}
+              <span aria-hidden="true" className="inline-block mr-1 transition-transform duration-150">
+                {copied ? '✓' : '📋'}
+              </span>
+              {copied ? 'Copied!' : 'Copy Prompt'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="bg-terminal-red/20 hover:bg-terminal-red/30 border border-terminal-red/50 px-4 py-2 rounded text-terminal-red font-semibold transition-all"
+              className="bg-terminal-red/20 hover:bg-terminal-red/30 border border-terminal-red/50 px-4 py-2 rounded text-terminal-red font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-red"
             >
               Close
             </button>

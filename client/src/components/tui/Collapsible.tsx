@@ -45,8 +45,11 @@ export function CollapsibleGroup({
         <button
           type="button"
           onClick={toggleAll}
-          className="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
+          className="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
         >
+          <span aria-hidden="true" className="mr-1">
+            {allOpen ? '⌃' : '⌄'}
+          </span>
           {allOpen ? 'Collapse All' : 'Expand All'}
         </button>
       }
@@ -84,11 +87,18 @@ function CollapsibleItem({ header, children, isOpen, onToggle }: CollapsibleItem
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="w-full cursor-pointer hover:bg-terminal-green/10 transition-colors p-3 text-left"
+        className="w-full cursor-pointer hover:bg-terminal-green/10 transition-colors p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green rounded"
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">{header}</div>
-          <div className="text-terminal-bright-green ml-2">{isOpen ? '▼' : '▶'}</div>
+          <div
+            aria-hidden="true"
+            className={`text-terminal-bright-green ml-2 transition-transform duration-150 ${
+              isOpen ? 'rotate-90' : ''
+            }`}
+          >
+            ▶
+          </div>
         </div>
       </button>
       {isOpen && (
