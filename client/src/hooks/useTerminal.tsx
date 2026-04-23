@@ -7,17 +7,19 @@ import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfi
 import { renderCustomFields } from '../lib/fieldRenderer';
 import { inlineMd } from '../lib/tuiMarkdown';
 import { SectionBox } from '../components/tui/SectionBox';
-import { CmdLink } from '../components/tui/TuiLink';
+import { CmdLink, ExtLink } from '../components/tui/TuiLink';
 import { UsageHint } from '../components/tui/UsageHint';
 import { ExploreMore } from '../components/tui/ExploreMore';
+import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
+import { ReplicatePage } from '../components/tui/ReplicatePage';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
 export interface TerminalLine {
   id: string;
-  /** String content goes through DOMPurify + dangerouslySetInnerHTML
-      (legacy path). ReactNode content is rendered directly and is the
-      preferred path for new commands (Phase D migration). */
+  /** Plain-text strings are rendered via React's default escaping;
+      ReactNode content is rendered directly. No HTML strings reach
+      the DOM anymore — every command emits JSX. */
   content: string | ReactNode;
   className?: string;
   isCommand?: boolean;
@@ -91,63 +93,59 @@ const formatDateForDisplay = (dateStr: string): string => {
   });
 };
 
-const getCollapsibleId = (type: string, index: number): string => `${type}-collapsible-${index}`;
+function getProjectsNode(
+  projectData: Array<Record<string, unknown>>,
+  type: string,
+): ReactNode {
+  const items: CollapsibleItemData[] = projectData.map((project, index) => ({
+    id: `${type}-${index}`,
+    header: (
+      <>
+        <span className="text-terminal-yellow font-semibold">
+          {project.name as string}
+        </span>
+        <span className="text-white opacity-60 text-xs ml-2">
+          {project.date as string}
+        </span>
+      </>
+    ),
+    content: (
+      <>
+        <div className="space-y-1">
+          {((project.highlights as string[]) || []).map((highlight, i) => (
+            <div
+              key={i}
+              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+              dangerouslySetInnerHTML={{ __html: `• ${inlineMd(highlight)}` }}
+            />
+          ))}
+        </div>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: renderCustomFields(project, 'projects'),
+          }}
+        />
+      </>
+    ),
+  }));
 
-function getProjectsHtml(projectData: Array<Record<string, unknown>>, type: string): string {
-  return `
-    <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-      <div class="border-b border-terminal-green/30 px-3 py-1">
-        <div class="flex items-center justify-between">
-          <span class="text-terminal-bright-green text-sm font-bold">${type.toUpperCase()} PROJECTS</span>
-          <button 
-            onclick="toggleAllCollapsibles('${type}')" 
-            class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
-            id="expand-all-btn"
-          >
-            Expand All
-          </button>
+  return (
+    <CollapsibleGroup
+      title={`${type.toUpperCase()} PROJECTS`}
+      items={items}
+      footer={
+        <div className="mt-4">
+          <ExploreMore
+            items={[
+              { cmd: 'experience', suffix: 'to see my professional background' },
+              { cmd: 'skills', suffix: "to see technologies I've mastered" },
+              { cmd: 'timeline', suffix: 'for a chronological career overview' },
+            ]}
+          />
         </div>
-      </div>
-      <div class="p-3 space-y-2 text-xs sm:text-sm">
-        ${projectData.map((project, index) => {
-          const projectId = getCollapsibleId(type, index);
-          return `
-            <div class="border border-terminal-green/20 rounded">
-              <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${projectId}')">
-                <div class="flex items-center justify-between">
-                  <div class="flex-1">
-                    <span class="text-terminal-yellow font-semibold">${project.name as string}</span>
-                    <span class="text-white opacity-60 text-xs ml-2">${project.date as string}</span>
-                  </div>
-                  <div class="text-terminal-bright-green ml-2">
-                    <span id="${projectId}-icon">▶</span>
-                  </div>
-                </div>
-              </div>
-              <div id="${projectId}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                <div class="space-y-1">
-                  ${(project.highlights as string[] || []).map(highlight => `
-                    <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                      • ${inlineMd(highlight)}
-                    </div>
-                  `).join('')}
-                </div>
-                ${renderCustomFields(project, 'projects')}
-              </div>
-            </div>
-          `;
-        }).join('')}
-        <div class="border-t border-terminal-green/30 pt-3 mt-4">
-          <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-          <div class="space-y-1 ml-2 text-xs">
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to see my professional background</div>
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see technologies I've mastered</div>
-            <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=timeline" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">timeline</a></span> for a chronological career overview</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `.trim();
+      }
+    />
+  );
 }
 
 async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> {
@@ -416,9 +414,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     });
   }, []);
 
-  /** Append a ReactNode line — preferred path for new commands (Phase D).
-      Bypasses DOMPurify / dangerouslySetInnerHTML since React escapes
-      everything by default. */
+  /** Append a ReactNode line. React escapes everything by default; any
+      legacy HTML rendering happens via scoped `dangerouslySetInnerHTML`
+      inside individual command nodes, with trusted CV data as input. */
   const addNode = useCallback((content: ReactNode, className?: string) => {
     setLines(prev => {
       const next = [...prev, { id: generateId(), content, className }];
@@ -613,358 +611,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   }, [portfolioData]);
 
   const showReplicate = useCallback(() => {
-    const replicateBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-lg font-bold">🎨 CREATE YOUR OWN TERMINAL PORTFOLIO</span>
-        </div>
-        <div class="p-4 space-y-4 text-sm">
-
-          <!-- AI-Powered Resume Converter -->
-          <div class="border border-terminal-cyan/40 rounded p-3 bg-terminal-cyan/10">
-            <div class="text-terminal-cyan font-bold text-base mb-2 flex items-center gap-2">
-              <span>🔄 AI-POWERED RESUME CONVERTER</span>
-              <span class="text-xs bg-terminal-cyan/30 px-2 py-0.5 rounded">⚡ Fastest method</span>
-            </div>
-            <div class="text-terminal-green mb-3">
-              <strong>Already have a resume?</strong> Convert it to YAML format using AI in ~2 minutes. No manual typing!
-            </div>
-            <div class="space-y-2 ml-3 text-sm">
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-cyan font-bold">1.</span>
-                <span class="text-white">Click the button below to get the AI conversion prompt</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-cyan font-bold">2.</span>
-                <span class="text-white">Copy the prompt and paste it into ChatGPT/Claude/Gemini</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-cyan font-bold">3.</span>
-                <span class="text-white">Attach or paste your existing resume (PDF, text, or LinkedIn)</span>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-cyan font-bold">4.</span>
-                <span class="text-white">AI generates perfect YAML - save as </span>
-                <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
-              </div>
-            </div>
-            <div class="mt-3 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-              <button
-                id="open-ai-prompt-modal"
-                class="bg-terminal-cyan/20 hover:bg-terminal-cyan/30 border border-terminal-cyan/50 px-4 py-2 rounded text-terminal-bright-cyan font-semibold transition-all duration-200 hover:scale-105 cursor-pointer">
-                📋 Get AI Conversion Prompt
-              </button>
-              <div class="text-xs text-terminal-cyan/70">
-                Works with any AI assistant (ChatGPT, Claude, Gemini)
-              </div>
-            </div>
-            <div class="mt-3 pt-3 border-t border-terminal-cyan/20 text-xs text-terminal-green flex flex-wrap items-center gap-3">
-              <span>⚡ ~2 minutes</span>
-              <span>🤖 AI-powered</span>
-              <span>💯 Perfect formatting</span>
-              <span>📝 Supports any resume format</span>
-            </div>
-          </div>
-
-          <!-- Easy Mode Section -->
-          <div class="border border-terminal-yellow/30 rounded p-3 bg-terminal-yellow/5">
-            <div class="text-terminal-bright-yellow font-bold text-base mb-3 flex items-center gap-2">
-              <span>🌟 EASY MODE</span>
-              <span class="text-xs bg-terminal-yellow/20 px-2 py-0.5 rounded">Zero-code setup</span>
-            </div>
-            <div class="text-terminal-green mb-3">
-              <strong>True zero-code deployment!</strong> Everything auto-generates - just upload your resume YAML.
-            </div>
-            <div class="space-y-2 ml-3">
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-yellow font-bold">1.</span>
-                <div>
-                  <span class="text-white">Create </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
-                  <span class="text-white"> (use </span>
-                  <a href="https://app.rendercv.com" target="_blank" rel="noopener noreferrer"
-                     class="text-terminal-bright-green hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                    RenderCV
-                  </a>
-                  <span class="text-white"> or AI - see above)</span>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-yellow font-bold">2.</span>
-                <div>
-                  <span class="text-white">Click </span>
-                  <a href="https://github.com/subhayu99/subhayu99.github.io/generate" target="_blank" rel="noopener noreferrer"
-                     class="text-terminal-bright-green hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                    "Use this template"
-                  </a>
-                  <span class="text-white"> → Name it </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">yourusername.github.io</code>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-yellow font-bold">3.</span>
-                <div>
-                  <span class="text-white">Enable GitHub Actions & Pages: </span>
-                  <span class="text-terminal-bright-yellow">Settings → Pages → Deploy from Actions</span>
-                  <div class="text-terminal-yellow/70 text-xs mt-1">⚠️ Do this BEFORE uploading resume to avoid errors!</div>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-yellow font-bold">4.</span>
-                <div>
-                  <span class="text-white">Upload your </span>
-                  <code class="text-terminal-bright-green bg-black/30 px-1">resume.yaml</code>
-                  <span class="text-white"> to the repo - deployment starts automatically!</span>
-                </div>
-              </div>
-            </div>
-            <div class="mt-3 p-2 bg-black/30 rounded border border-terminal-green/30">
-              <div class="text-terminal-bright-green font-bold text-xs mb-1">✨ Auto-Generated Features:</div>
-              <div class="text-terminal-green/80 text-xs space-y-0.5 ml-2">
-                <div>• ASCII art name banner (from your name)</div>
-                <div>• PWA manifest.json (installable app)</div>
-                <div>• PDF resume (formatted and downloadable)</div>
-                <div>• Neofetch banner (if custom file not provided)</div>
-              </div>
-            </div>
-            <div class="mt-3 pt-3 border-t border-terminal-yellow/20 text-xs text-terminal-green flex items-center justify-between">
-              <span>⏱️ Time: ~5 min</span>
-              <span>✨ Auto-Generated</span>
-              <span>💰 Free Forever</span>
-              <span>💻 Zero Code</span>
-            </div>
-          </div>
-
-          <!-- Advanced Mode Section -->
-          <div class="border border-terminal-blue/30 rounded p-3 bg-terminal-blue/5">
-            <div class="text-terminal-bright-blue font-bold text-base mb-3">
-              🔧 ADVANCED MODE
-            </div>
-            <div class="text-terminal-green mb-3">
-              Full control over themes, commands, and features. Requires npm/git knowledge.
-            </div>
-            <div class="space-y-2 ml-3">
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-blue font-bold">1.</span>
-                <div>
-                  <span class="text-white">Clone the template and install dependencies:</span>
-                  <div class="bg-black/50 rounded p-2 mt-1 font-mono text-xs text-terminal-green">
-                    git clone https://github.com/subhayu99/subhayu99.github.io.git<br/>
-                    cd subhayu99.github.io<br/>
-                    npm install
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-blue font-bold">2.</span>
-                <div>
-                  <span class="text-white">Copy and customize config files:</span>
-                  <div class="bg-black/50 rounded p-2 mt-1 font-mono text-xs text-terminal-green">
-                    cp template.config.yaml.example template.config.yaml<br/>
-                    cp .env.example .env<br/>
-                    cp client/public/manifest.json.example client/public/manifest.json
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-blue font-bold">3.</span>
-                <div>
-                  <span class="text-white">Add your resume and customize themes/commands</span>
-                  <div class="text-terminal-green/70 text-xs mt-1">✓ See ADVANCED.md for customization guide</div>
-                </div>
-              </div>
-              <div class="flex items-start gap-2">
-                <span class="text-terminal-blue font-bold">4.</span>
-                <div>
-                  <span class="text-white">Deploy to GitHub Pages</span>
-                  <div class="text-terminal-green/70 text-xs mt-1">✓ Push to GitHub and enable Actions</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Get Started CTA -->
-          <div class="border border-terminal-bright-green/40 rounded p-3 bg-terminal-green/5 text-center">
-            <div class="text-terminal-bright-green font-bold text-base mb-2">🚀 Ready to Create Your Portfolio?</div>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <a href="https://github.com/subhayu99/subhayu99.github.io/generate" target="_blank" rel="noopener noreferrer"
-                 class="inline-block bg-terminal-green/20 hover:bg-terminal-green/30 border border-terminal-green text-terminal-bright-green font-bold px-4 py-2 rounded transition-all duration-200 hover:scale-105">
-                ⚡ Get Started Now
-              </a>
-              <span class="text-terminal-green/70 text-xs">~5 minutes • Zero coding required</span>
-            </div>
-          </div>
-
-          <!-- Quick Links Section -->
-          <div class="border-t border-terminal-green/30 pt-3 mt-3">
-            <div class="text-terminal-bright-green font-bold mb-2">📚 Documentation & Help</div>
-            <div class="grid grid-cols-2 gap-2 text-xs ml-3">
-              <div>
-                <a href="https://github.com/subhayu99/subhayu99.github.io#readme" target="_blank" rel="noopener noreferrer"
-                   class="text-terminal-yellow hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                  📖 Easy Mode Guide
-                </a>
-              </div>
-              <div>
-                <a href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/ADVANCED.md" target="_blank" rel="noopener noreferrer"
-                   class="text-terminal-yellow hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                  🔧 Advanced Customization
-                </a>
-              </div>
-              <div>
-                <a href="https://app.rendercv.com" target="_blank" rel="noopener noreferrer"
-                   class="text-terminal-yellow hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                  🎨 RenderCV Builder
-                </a>
-              </div>
-              <div>
-                <a href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/TROUBLESHOOTING.md" target="_blank" rel="noopener noreferrer"
-                   class="text-terminal-yellow hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                  🛟 Troubleshooting
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="text-center text-xs text-terminal-green/70 border-t border-terminal-green/20 pt-3 space-y-1">
-            <div>⚡ Built with ❤️ by developers, for developers</div>
-            <div class="flex items-center justify-center gap-4">
-              <a href="https://github.com/subhayu99/subhayu99.github.io" target="_blank" rel="noopener noreferrer"
-                 class="text-terminal-yellow hover:text-terminal-bright-yellow hover:underline transition-colors duration-200">
-                ⭐ Star on GitHub
-              </a>
-              <span>•</span>
-              <span>🤖 AI-Assisted Setup</span>
-              <span>•</span>
-              <span>✨ Auto-Generated</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    addLine(replicateBox);
-
-    // Add event listener for AI prompt modal after DOM renders
-    setTimeout(() => {
-      const openModalBtn = document.getElementById('open-ai-prompt-modal');
-      if (openModalBtn) {
-        openModalBtn.addEventListener('click', async () => {
-          // Fetch the AI prompt
-          try {
-            const response = await fetch(`${apiConfig.basePath}/ai-resume-prompt.txt`);
-            if (!response.ok) throw new Error('Failed to fetch prompt');
-            const promptText = await response.text();
-
-            // Create modal
-            const modal = document.createElement('div');
-            modal.id = 'ai-prompt-modal';
-            modal.innerHTML = `
-              <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" id="modal-overlay">
-                <div class="bg-terminal-bg border-2 border-terminal-cyan rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-                  <!-- Header -->
-                  <div class="border-b border-terminal-cyan/50 px-4 py-3 flex items-center justify-between bg-terminal-cyan/10">
-                    <div class="flex items-center gap-3">
-                      <span class="text-terminal-cyan font-bold text-lg">🤖 AI Resume Conversion Prompt</span>
-                      <span class="text-xs bg-terminal-cyan/30 px-2 py-1 rounded text-terminal-cyan">Ready to Copy</span>
-                    </div>
-                    <button id="close-modal" class="text-terminal-cyan hover:text-terminal-bright-cyan text-2xl font-bold w-8 h-8 flex items-center justify-center hover:bg-terminal-cyan/20 rounded transition-all">
-                      ×
-                    </button>
-                  </div>
-
-                  <!-- Content -->
-                  <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                    <div class="text-terminal-green text-sm space-y-2">
-                      <p><strong>How to use this prompt:</strong></p>
-                      <ol class="list-decimal list-inside space-y-1 ml-2">
-                        <li>Copy the prompt below using the button</li>
-                        <li>Open ChatGPT, Claude, or Gemini</li>
-                        <li>Paste the prompt</li>
-                        <li>Attach or paste your existing resume (PDF, text, LinkedIn profile, etc.)</li>
-                        <li>AI will generate perfect YAML - save it as <code class="bg-black/50 px-1 rounded text-terminal-bright-green">resume.yaml</code></li>
-                      </ol>
-                    </div>
-
-                    <!-- Prompt Display -->
-                    <div class="bg-black/50 rounded border border-terminal-cyan/30 p-4 overflow-x-auto">
-                      <pre class="text-terminal-green text-xs leading-relaxed font-mono whitespace-pre-wrap">${promptText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-                    </div>
-                  </div>
-
-                  <!-- Footer -->
-                  <div class="border-t border-terminal-cyan/50 px-4 py-3 bg-terminal-cyan/5 flex flex-col sm:flex-row gap-2 items-center justify-between">
-                    <div class="text-xs text-terminal-cyan/70">
-                      Prompt size: ${(promptText.length / 1024).toFixed(1)} KB
-                    </div>
-                    <div class="flex gap-2">
-                      <button id="copy-prompt-btn" class="bg-terminal-cyan/20 hover:bg-terminal-cyan/30 border border-terminal-cyan/50 px-4 py-2 rounded text-terminal-bright-cyan font-semibold transition-all">
-                        📋 Copy Prompt
-                      </button>
-                      <button id="close-modal-btn" class="bg-terminal-red/20 hover:bg-terminal-red/30 border border-terminal-red/50 px-4 py-2 rounded text-terminal-red font-semibold transition-all">
-                        Close
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            // Prevent body scroll
-            document.body.style.overflow = 'hidden';
-
-            // Copy button handler
-            const copyBtn = document.getElementById('copy-prompt-btn');
-            copyBtn?.addEventListener('click', async () => {
-              try {
-                await navigator.clipboard.writeText(promptText);
-                copyBtn.textContent = '✓ Copied!';
-                copyBtn.classList.add('bg-terminal-green/30', 'border-terminal-green/50', 'text-terminal-bright-green');
-                setTimeout(() => {
-                  copyBtn.textContent = '📋 Copy Prompt';
-                  copyBtn.classList.remove('bg-terminal-green/30', 'border-terminal-green/50', 'text-terminal-bright-green');
-                }, 2000);
-              } catch (err) {
-                console.error('Failed to copy:', err);
-                copyBtn.textContent = '❌ Copy Failed';
-                setTimeout(() => {
-                  copyBtn.textContent = '📋 Copy Prompt';
-                }, 2000);
-              }
-            });
-
-            // Close modal handlers
-            const closeModal = () => {
-              modal.remove();
-              document.body.style.overflow = '';
-            };
-
-            document.getElementById('close-modal')?.addEventListener('click', closeModal);
-            document.getElementById('close-modal-btn')?.addEventListener('click', closeModal);
-            document.getElementById('modal-overlay')?.addEventListener('click', (e) => {
-              if ((e.target as HTMLElement)?.id === 'modal-overlay') closeModal();
-            });
-
-            // Escape key to close
-            const escHandler = (e: KeyboardEvent) => {
-              if (e.key === 'Escape') {
-                closeModal();
-                document.removeEventListener('keydown', escHandler);
-              }
-            };
-            document.addEventListener('keydown', escHandler);
-
-          } catch (error) {
-            console.error('Failed to load AI prompt:', error);
-            alert('Failed to load the AI conversion prompt. Please try again or check your connection.');
-          }
-        });
-      }
-    }, 100);
-  }, [addLine]);
+    addNode(<ReplicatePage />, 'w-full');
+  }, [addNode]);
 
   const showAbout = useCallback(() => {
     if (!portfolioData) {
@@ -1413,12 +1061,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
 
-    // Create the projects content as a single HTML string with collapsible functionality
-    const projectsBox = getProjectsHtml(portfolioData.cv.sections.professional_projects, 'professional');
-
-    // Add the entire projects box as a single line
-    addLine(projectsBox, 'w-full');
-  }, [addLine, portfolioData]);
+    addNode(
+      getProjectsNode(portfolioData.cv.sections.professional_projects, 'professional'),
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showPersonalProjects = useCallback(() => {
     if (!portfolioData) {
@@ -1431,12 +1078,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
 
-    // Create the projects content as a single HTML string with collapsible functionality
-    const projectsBox = getProjectsHtml(portfolioData.cv.sections.personal_projects, 'personal');
-
-    // Add the entire projects box as a single line
-    addLine(projectsBox, 'w-full');
-  }, [addLine, portfolioData]);
+    addNode(
+      getProjectsNode(portfolioData.cv.sections.personal_projects, 'personal'),
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showPublications = useCallback(() => {
     if (!portfolioData?.cv.sections?.publication || portfolioData.cv.sections.publication.length === 0) {
@@ -1610,154 +1256,132 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return bEndDate.getTime() - aEndDate.getTime();
     }).reverse();
 
-    // Create the timeline HTML
-    const timelineBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-5xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">CAREER TIMELINE</span>
+    const getIcon = (type: string) => {
+      switch (type) {
+        case 'education': return '🎓';
+        case 'experience': return '💼';
+        case 'project': return '🚀';
+        case 'publication': return '📝';
+        default: return '•';
+      }
+    };
+
+    const getTypeColor = (type: string) => {
+      switch (type) {
+        case 'education': return 'text-terminal-bright-green';
+        case 'experience': return 'text-terminal-yellow';
+        case 'project': return 'text-terminal-green';
+        case 'publication': return 'text-terminal-white';
+        default: return 'text-white';
+      }
+    };
+
+    const getTypeLabel = (type: string) => {
+      switch (type) {
+        case 'education': return uiText.timeline.education;
+        case 'experience': return uiText.timeline.work;
+        case 'project': return uiText.timeline.project;
+        case 'publication': return uiText.timeline.research;
+        default: return type.toUpperCase();
+      }
+    };
+
+    const stats = [
+      { value: portfolioData.cv.sections?.experience?.length ?? 0, label: 'Positions' },
+      { value: portfolioData.cv.sections?.education?.length ?? 0, label: 'Degrees' },
+      {
+        value:
+          (portfolioData.cv.sections?.professional_projects?.length ?? 0) +
+          (portfolioData.cv.sections?.personal_projects?.length ?? 0),
+        label: 'Projects',
+      },
+      { value: portfolioData.cv.sections?.publication?.length ?? 0, label: 'Publications' },
+    ];
+
+    addNode(
+      <div className="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-5xl">
+        <div className="border-b border-terminal-green/30 px-3 py-1 text-center">
+          <span className="text-terminal-bright-green text-sm font-bold">CAREER TIMELINE</span>
         </div>
-        <div class="p-4">
-          <div class="relative">
-            <!-- Timeline line -->
-            <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terminal-bright-green via-terminal-green to-terminal-green/30"></div>
-            
-            <!-- Timeline events -->
-            <div class="space-y-6">
-              ${timelineEvents.map((event, index) => {
+        <div className="p-4">
+          <div className="relative">
+            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terminal-bright-green via-terminal-green to-terminal-green/30" />
+
+            <div className="space-y-6">
+              {timelineEvents.map((event, index) => {
                 const isOngoing = event.status === 'ongoing';
-                const duration = event.endDateStr ? 
-                  `${formatDateForDisplay(event.dateStr)} - ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}` :
-                  formatDateForDisplay(event.dateStr);
-                
-                const getIcon = (type: string) => {
-                  switch (type) {
-                    case 'education': return '🎓';
-                    case 'experience': return '💼';
-                    case 'project': return '🚀';
-                    case 'publication': return '📝';
-                    default: return '•';
-                  }
-                };
-
-                const getTypeColor = (type: string) => {
-                  switch (type) {
-                    case 'education': return 'text-blue-400';
-                    case 'experience': return 'text-terminal-bright-green';
-                    case 'project': return 'text-purple-400';
-                    case 'publication': return 'text-yellow-400';
-                    default: return 'text-white';
-                  }
-                };
-
-                const getTypeLabel = (type: string) => {
-                  switch (type) {
-                    case 'education': return uiText.timeline.education;
-                    case 'experience': return uiText.timeline.work;
-                    case 'project': return uiText.timeline.project;
-                    case 'publication': return uiText.timeline.research;
-                    default: return type.toUpperCase();
-                  }
-                };
-
-                return `
-                  <div class="relative flex items-start space-x-4 group">
-                    <!-- Timeline dot -->
-                    <div class="relative z-10">
-                      <div class="w-4 h-4 rounded-full bg-terminal-green border-2 border-terminal-bright-green 
-                                  ${isOngoing ? 'animate-pulse shadow-lg shadow-terminal-green/50' : ''} 
-                                  group-hover:scale-125 transition-transform duration-200"></div>
+                const duration = event.endDateStr
+                  ? `${formatDateForDisplay(event.dateStr)} - ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}`
+                  : formatDateForDisplay(event.dateStr);
+                return (
+                  <div key={index} className="relative flex items-start space-x-4 group">
+                    <div className="relative z-10">
+                      <div
+                        className={`w-4 h-4 rounded-full bg-terminal-green border-2 border-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-lg shadow-terminal-green/50' : ''} group-hover:scale-125 transition-transform duration-200`}
+                      />
                     </div>
-                    
-                    <!-- Event content -->
-                    <div class="flex-1 min-w-0 pb-4">
-                      <div class="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 
-                                  group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 
-                                  transition-all duration-200 ml-1">
-                        
-                        <!-- Event header -->
-                        <div class="flex flex-wrap items-center justify-between mb-2">
-                          <div class="flex items-center space-x-2">
-                            <span class="text-lg">${getIcon(event.type)}</span>
-                            <span class="text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold">
-                              ${getTypeLabel(event.type)}
+
+                    <div className="flex-1 min-w-0 pb-4">
+                      <div className="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 transition-all duration-200 ml-1">
+                        <div className="flex flex-wrap items-center justify-between mb-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-lg">{getIcon(event.type)}</span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold`}
+                            >
+                              {getTypeLabel(event.type)}
                             </span>
-                            ${isOngoing ? '<span class="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-400 font-semibold animate-pulse">CURRENT</span>' : ''}
+                            {isOngoing && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-terminal-bright-green/20 text-terminal-bright-green font-semibold animate-pulse">
+                                CURRENT
+                              </span>
+                            )}
                           </div>
-                          <div class="text-xs text-white/70 font-mono">
-                            ${duration}
-                          </div>
+                          <div className="text-xs text-white/70 font-mono">{duration}</div>
                         </div>
-                        
-                        <!-- Event details -->
-                        <div class="mb-2">
-                          <h3 class="text-terminal-bright-green font-semibold text-sm mb-1">
-                            ${event.title}
+
+                        <div className="mb-2">
+                          <h3 className="text-terminal-bright-green font-semibold text-sm mb-1">
+                            {event.title}
                           </h3>
-                          ${event.subtitle ? `
-                            <p class="text-terminal-yellow text-xs mb-1">
-                              ${event.subtitle}
-                            </p>
-                          ` : ''}
-                          ${event.description ? `
-                            <p class="text-white/70 text-xs">
-                              ${event.description}
-                            </p>
-                          ` : ''}
+                          {event.subtitle && (
+                            <p className="text-terminal-yellow text-xs mb-1">{event.subtitle}</p>
+                          )}
+                          {event.description && (
+                            <p className="text-white/70 text-xs">{event.description}</p>
+                          )}
                         </div>
-                        
-                        <!-- Progress indicator for ongoing items -->
-                        ${isOngoing ? `
-                          <div class="mt-2">
-                            <div class="h-1 bg-terminal-green/20 rounded-full overflow-hidden">
-                              <div class="h-full bg-gradient-to-r from-terminal-green to-terminal-bright-green 
-                                          animate-pulse rounded-full"></div>
+
+                        {isOngoing && (
+                          <div className="mt-2">
+                            <div className="h-1 bg-terminal-green/20 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-terminal-green to-terminal-bright-green animate-pulse rounded-full" />
                             </div>
                           </div>
-                        ` : ''}
+                        )}
                       </div>
                     </div>
                   </div>
-                `;
-              }).join('')}
+                );
+              })}
             </div>
-            
-            <!-- Timeline stats -->
-            <div class="mt-8 border-t border-terminal-green/30 pt-4">
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-terminal-bright-green font-bold text-lg">
-                    ${portfolioData.cv.sections?.experience?.length ?? 0}
+
+            <div className="mt-8 border-t border-terminal-green/30 pt-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                {stats.map((s) => (
+                  <div key={s.label} className="bg-terminal-green/5 rounded-lg p-3">
+                    <div className="text-terminal-bright-green font-bold text-lg">{s.value}</div>
+                    <div className="text-white/70 text-xs">{s.label}</div>
                   </div>
-                  <div class="text-white/70 text-xs">Positions</div>
-                </div>
-                <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-terminal-bright-green font-bold text-lg">
-                    ${portfolioData.cv.sections?.education?.length ?? 0}
-                  </div>
-                  <div class="text-white/70 text-xs">Degrees</div>
-                </div>
-                <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-terminal-bright-green font-bold text-lg">
-                    ${(portfolioData.cv.sections?.professional_projects?.length ?? 0) + (portfolioData.cv.sections?.personal_projects?.length ?? 0)}
-                  </div>
-                  <div class="text-white/70 text-xs">Projects</div>
-                </div>
-                <div class="bg-terminal-green/5 rounded-lg p-3">
-                  <div class="text-terminal-bright-green font-bold text-lg">
-                    ${portfolioData.cv.sections?.publication?.length || 0}
-                  </div>
-                  <div class="text-white/70 text-xs">Publications</div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
-    `.trim();
-
-    // Add the entire timeline box as a single line
-    addLine(timelineBox, 'w-full');
-  }, [addLine, portfolioData]);
+      </div>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showSearch = useCallback((args: string[]) => {
     if (!portfolioData) {
@@ -1767,243 +1391,175 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const searchTerm = args.join(' ').toLowerCase();
     if (!searchTerm) {
-      const usageBox = `
-        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow">
-          <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-            <span class="text-terminal-bright-green text-sm font-bold">SEARCH USAGE</span>
-          </div>
-          <div class="p-3 space-y-3 text-xs sm:text-sm">
-            <div>
-              <div class="text-terminal-yellow font-bold mb-2">📋 USAGE</div>
-              <div class="ml-2 space-y-1">
-                <div class="text-white bg-terminal-green/5 p-2 rounded">
-                  <span class="text-terminal-bright-green font-semibold">search</span> <span class="text-terminal-yellow">[term]</span>
-                </div>
-              </div>
-            </div>
-            <div>
-              <div class="text-terminal-yellow font-bold mb-2">💡 EXAMPLES</div>
-              <div class="ml-2 space-y-1">
-                <div class="text-white bg-terminal-green/5 p-2 rounded">
-                  <span class="text-terminal-bright-green">search</span> python
-                </div>
-                <div class="text-white bg-terminal-green/5 p-2 rounded">
-                  <span class="text-terminal-bright-green">search</span> react
-                </div>
-                <div class="text-white bg-terminal-green/5 p-2 rounded">
-                  <span class="text-terminal-bright-green">search</span> machine learning
-                </div>
+      addNode(
+        <SectionBox title="SEARCH USAGE" centerTitle>
+          <div>
+            <div className="text-terminal-yellow font-bold mb-2">📋 USAGE</div>
+            <div className="ml-2 space-y-1">
+              <div className="text-white bg-terminal-green/5 p-2 rounded">
+                <span className="text-terminal-bright-green font-semibold">search</span>{' '}
+                <span className="text-terminal-yellow">[term]</span>
               </div>
             </div>
           </div>
-        </div>
-      `.trim();
-      
-      addLine(usageBox, 'w-full');
+          <div>
+            <div className="text-terminal-yellow font-bold mb-2">💡 EXAMPLES</div>
+            <div className="ml-2 space-y-1">
+              {['python', 'react', 'machine learning'].map((ex) => (
+                <div key={ex} className="text-white bg-terminal-green/5 p-2 rounded">
+                  <span className="text-terminal-bright-green">search</span> {ex}
+                </div>
+              ))}
+            </div>
+          </div>
+        </SectionBox>,
+        'w-full',
+      );
       return;
     }
 
-    const results: Array<{category: string, title: string, content: string}> = [];
+    type MatchRow = { label: string; text: string };
+    type ResultGroup = { category: string; title: string; rows: MatchRow[] };
+
+    const matches = (s: string | undefined) =>
+      !!s && s.toLowerCase().includes(searchTerm);
+
     const { cv } = portfolioData;
+    const results: ResultGroup[] = [];
 
-    // Helper function to highlight search terms
-    const highlightMatch = (text: string, term: string): string => {
-      const regex = new RegExp(`(${term})`, 'gi');
-      return text.replace(regex, '<span class="bg-terminal-yellow/30 text-terminal-bright-green font-semibold">$1</span>');
-    };
-
-    // Search in intro/about section
     cv.sections?.intro?.forEach((intro, i) => {
-      if (intro.toLowerCase().includes(searchTerm)) {
+      if (matches(intro)) {
         results.push({
           category: 'About',
           title: `Introduction ${i + 1}`,
-          content: highlightMatch(intro, searchTerm)
+          rows: [{ label: '', text: intro }],
         });
       }
     });
 
-    // Search in technologies/skills
-    cv.sections?.technologies?.forEach(tech => {
-      if (tech.label.toLowerCase().includes(searchTerm) || tech.details.toLowerCase().includes(searchTerm)) {
-        const matchedContent = [];
-        if (tech.label.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Technology: ${highlightMatch(tech.label, searchTerm)}`);
-        }
-        if (tech.details.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Details: ${highlightMatch(tech.details, searchTerm)}`);
-        }
-        results.push({
-          category: 'Skills',
-          title: tech.label,
-          content: matchedContent.join('<br>')
-        });
-      }
+    cv.sections?.technologies?.forEach((tech) => {
+      const rows: MatchRow[] = [];
+      if (matches(tech.label)) rows.push({ label: 'Technology', text: tech.label });
+      if (matches(tech.details)) rows.push({ label: 'Details', text: tech.details });
+      if (rows.length) results.push({ category: 'Skills', title: tech.label, rows });
     });
 
-    // Search in experience
-    cv.sections?.experience?.forEach(exp => {
-      const matchedContent = [];
-      
-      if (exp.company.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Company: ${highlightMatch(exp.company, searchTerm)}`);
-      }
-      if (exp.position.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Position: ${highlightMatch(exp.position, searchTerm)}`);
-      }
-      if (exp.location?.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Location: ${highlightMatch(exp.location!, searchTerm)}`);
-      }
-      
-      // Check highlights for matches
-      exp.highlights.forEach((highlight, index) => {
-        if (highlight.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Highlight ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
-        }
+    cv.sections?.experience?.forEach((exp) => {
+      const rows: MatchRow[] = [];
+      if (matches(exp.company)) rows.push({ label: 'Company', text: exp.company });
+      if (matches(exp.position)) rows.push({ label: 'Position', text: exp.position });
+      if (matches(exp.location)) rows.push({ label: 'Location', text: exp.location! });
+      exp.highlights.forEach((h, i) => {
+        if (matches(h)) rows.push({ label: `Highlight ${i + 1}`, text: h });
       });
-      
-      if (matchedContent.length > 0) {
+      if (rows.length) {
         results.push({
           category: 'Experience',
           title: `${exp.position} at ${exp.company}`,
-          content: matchedContent.join('<br>')
+          rows,
         });
       }
     });
 
-    // Search in education
-    cv.sections?.education?.forEach(edu => {
-      const matchedContent = [];
-      
-      if (edu.institution.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Institution: ${highlightMatch(edu.institution, searchTerm)}`);
-      }
-      if (edu.degree.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Degree: ${highlightMatch(edu.degree, searchTerm)}`);
-      }
-      if (edu.area.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Major: ${highlightMatch(edu.area, searchTerm)}`);
-      }
-      if (edu.location?.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Location: ${highlightMatch(edu.location || "", searchTerm)}`);
-      }
-      
-      // Check highlights for matches
-      edu.highlights?.forEach((highlight, index) => {
-        if (highlight.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Highlight ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
-        }
+    cv.sections?.education?.forEach((edu) => {
+      const rows: MatchRow[] = [];
+      if (matches(edu.institution)) rows.push({ label: 'Institution', text: edu.institution });
+      if (matches(edu.degree)) rows.push({ label: 'Degree', text: edu.degree });
+      if (matches(edu.area)) rows.push({ label: 'Major', text: edu.area });
+      if (matches(edu.location)) rows.push({ label: 'Location', text: edu.location ?? '' });
+      edu.highlights?.forEach((h, i) => {
+        if (matches(h)) rows.push({ label: `Highlight ${i + 1}`, text: h });
       });
-      
-      if (matchedContent.length > 0) {
+      if (rows.length) {
         results.push({
           category: 'Education',
           title: `${edu.degree} in ${edu.area} from ${edu.institution}`,
-          content: matchedContent.join('<br>')
+          rows,
         });
       }
     });
 
-    // Search in professional projects
-    cv.sections?.professional_projects?.forEach(proj => {
-      const matchedContent = [];
-      
-      if (proj.name.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Project: ${highlightMatch(proj.name, searchTerm)}`);
-      }
-      
-      // Check highlights for matches
-      proj.highlights.forEach((highlight, index) => {
-        if (highlight.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Detail ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
-        }
+    (['professional_projects', 'personal_projects'] as const).forEach((key) => {
+      const cat = key === 'professional_projects' ? 'Professional Projects' : 'Personal Projects';
+      cv.sections?.[key]?.forEach((proj) => {
+        const rows: MatchRow[] = [];
+        if (matches(proj.name)) rows.push({ label: 'Project', text: proj.name });
+        proj.highlights.forEach((h, i) => {
+          if (matches(h)) rows.push({ label: `Detail ${i + 1}`, text: h });
+        });
+        if (rows.length) results.push({ category: cat, title: proj.name, rows });
       });
-      
-      if (matchedContent.length > 0) {
-        results.push({
-          category: 'Professional Projects',
-          title: proj.name,
-          content: matchedContent.join('<br>')
-        });
-      }
     });
 
-    // Search in personal projects
-    cv.sections?.personal_projects?.forEach(proj => {
-      const matchedContent = [];
-      
-      if (proj.name.toLowerCase().includes(searchTerm)) {
-        matchedContent.push(`Project: ${highlightMatch(proj.name, searchTerm)}`);
-      }
-      
-      // Check highlights for matches
-      proj.highlights.forEach((highlight, index) => {
-        if (highlight.toLowerCase().includes(searchTerm)) {
-          matchedContent.push(`Detail ${index + 1}: ${highlightMatch(highlight, searchTerm)}`);
-        }
-      });
-      
-      if (matchedContent.length > 0) {
-        results.push({
-          category: 'Personal Projects',
-          title: proj.name,
-          content: matchedContent.join('<br>')
-        });
-      }
-    });
+    const highlight = (text: string) => {
+      const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      const parts = text.split(regex);
+      return parts.map((part, i) =>
+        regex.test(part) ? (
+          <span
+            key={i}
+            className="bg-terminal-yellow/30 text-terminal-bright-green font-semibold"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      );
+    };
 
-    // Create the search results box
-    const searchBox = `
-      <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-        <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span class="text-terminal-bright-green text-sm font-bold">SEARCH RESULTS</span>
+    addNode(
+      <SectionBox title="SEARCH RESULTS" centerTitle>
+        <div className="bg-terminal-green/5 p-2 rounded">
+          <span className="text-terminal-yellow font-semibold">Search term:</span>
+          <span className="text-white"> "{searchTerm}"</span>
         </div>
-        <div class="p-3 space-y-3 text-xs sm:text-sm">
-          <div class="bg-terminal-green/5 p-2 rounded">
-            <span class="text-terminal-yellow font-semibold">Search term:</span>
-            <span class="text-white"> "${searchTerm}"</span>
-          </div>
-          <div class="bg-terminal-green/5 p-2 rounded">
-            <span class="text-terminal-bright-green font-semibold">Found ${results.length} result(s)</span>
-          </div>
-          ${results.length === 0 ? `
-            <div class="border border-terminal-yellow/30 rounded p-3 text-center">
-              <div class="text-terminal-yellow font-semibold mb-2">No results found</div>
-              <div class="text-white opacity-80 text-xs">
-                Try searching for technologies, company names, or project keywords
-              </div>
+        <div className="bg-terminal-green/5 p-2 rounded">
+          <span className="text-terminal-bright-green font-semibold">
+            Found {results.length} result(s)
+          </span>
+        </div>
+        {results.length === 0 ? (
+          <div className="border border-terminal-yellow/30 rounded p-3 text-center">
+            <div className="text-terminal-yellow font-semibold mb-2">No results found</div>
+            <div className="text-white opacity-80 text-xs">
+              Try searching for technologies, company names, or project keywords
             </div>
-          ` : `
-            <div class="space-y-3">
-              ${results.map((result, index) => `
-                <div class="border border-terminal-green/20 rounded p-3 ${index < results.length - 1 ? 'border-b border-terminal-green/30' : ''}">
-                  <div class="mb-2">
-                    <span class="text-terminal-bright-green font-semibold text-xs">[${result.category.toUpperCase()}]</span>
-                    <span class="text-terminal-yellow font-semibold ml-2">${result.title}</span>
-                  </div>
-                  <div class="text-white text-xs opacity-80 bg-terminal-green/5 p-2 rounded leading-relaxed">
-                    ${result.content}
-                  </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {results.map((result, i) => (
+              <div key={i} className="border border-terminal-green/20 rounded p-3">
+                <div className="mb-2">
+                  <span className="text-terminal-bright-green font-semibold text-xs">
+                    [{result.category.toUpperCase()}]
+                  </span>
+                  <span className="text-terminal-yellow font-semibold ml-2">{result.title}</span>
                 </div>
-              `).join('')}
-            </div>
-          `}
-          <div class="border-t border-terminal-green/30 pt-3">
-            <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-            <div class="space-y-1 ml-2 text-xs">
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> to see all technologies</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> to view work history</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> to explore all projects</div>
-              <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=help" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">help</a></span> for all available commands</div>
-            </div>
+                <div className="text-white text-xs opacity-80 bg-terminal-green/5 p-2 rounded leading-relaxed">
+                  {result.rows.map((row, j) => (
+                    <div key={j}>
+                      {row.label && <>{row.label}: </>}
+                      {highlight(row.text)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-    `.trim();
-    
-    // Add the entire search box as a single line
-    addLine(searchBox, 'w-full');
-  }, [addLine, portfolioData, formatExperiencePeriod]);
+        )}
+        <ExploreMore
+          items={[
+            { cmd: 'skills', suffix: 'to see all technologies' },
+            { cmd: 'experience', suffix: 'to view work history' },
+            { cmd: 'projects', suffix: 'to explore all projects' },
+            { cmd: 'help', suffix: 'for all available commands' },
+          ]}
+        />
+      </SectionBox>,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showTheme = useCallback((args: string[]) => {
     // Accept either the key ("matrix") or the full name ("matrix green"),
@@ -2042,7 +1598,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       storage.remove(storageConfig.keys.theme);
       localStorage.removeItem('gui-color-theme');
       applyColorTheme(colorThemes[0]);
-      addLine('<span class="text-terminal-yellow">Theme reset.</span>');
+      addLine('Theme reset.', 'text-terminal-yellow');
       return;
     }
 
@@ -2055,11 +1611,17 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     if (matchedTheme && themes[matchedTheme.key]) {
       const selectedTheme = themes[matchedTheme.key];
-      // Apply first, announce once. One line, period — no ceremony.
       applyColorTheme(matchedTheme);
-      addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switched to ${selectedTheme.name}.</span>`);
+      addNode(
+        <span style={{ color: selectedTheme['--terminal-green'] }}>
+          Switched to {selectedTheme.name}.
+        </span>,
+      );
     } else {
-      addLine('<span class="text-terminal-red">Theme not found. Use "theme" to see available themes.</span>');
+      addLine(
+        'Theme not found. Use "theme" to see available themes.',
+        'text-terminal-red',
+      );
     }
   }, [addLine, addNode]);
 
@@ -2172,321 +1734,261 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const showCat = useCallback((args: string[]) => {
     const filename = args[0];
     if (!filename) {
-      const usageBox = `
-        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div class="border-b border-terminal-green/30 px-3 py-1 text-center">
-            <span class="text-terminal-bright-green text-sm font-bold">CAT COMMAND</span>
-          </div>
-          <div class="p-3 space-y-2 text-xs sm:text-sm">
-            <div class="text-terminal-yellow font-semibold">Usage: cat [filename]</div>
-            <div class="text-white">Available files: resume.txt</div>
-          </div>
-        </div>
-      `.trim();
-      
-      addLine(usageBox, 'w-full');
+      addNode(
+        <SectionBox title="CAT COMMAND" centerTitle bodyClassName="p-3 space-y-2 text-xs sm:text-sm">
+          <div className="text-terminal-yellow font-semibold">Usage: cat [filename]</div>
+          <div className="text-white">Available files: resume.txt</div>
+        </SectionBox>,
+        'w-full',
+      );
       return;
     }
 
-    if (filename === 'resume.txt') {
-      if (!portfolioData) {
-        addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
-        return;
-      }
-
-      const { cv } = portfolioData;
-      
-      const resumeBox = `
-        <div class="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div class="border-b border-terminal-green/30 px-3 py-1">
-            <div class="flex items-center justify-between">
-              <span class="text-terminal-bright-green text-sm font-bold">RESUME.TXT</span>
-              <button 
-                onclick="toggleAllCollapsibles('resume')" 
-                class="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow"
-                id="expand-all-btn"
-              >
-                Expand All
-              </button>
-            </div>
+    if (filename !== 'resume.txt') {
+      addNode(
+        <div className="border border-terminal-red/50 rounded-sm mb-4 terminal-glow max-w-4xl">
+          <div className="border-b border-terminal-red/30 px-3 py-1 text-center">
+            <span className="text-terminal-red text-sm font-bold">ERROR</span>
           </div>
-          <div class="p-3 space-y-2 text-xs sm:text-sm font-mono">
-            <!-- Personal Info - Always visible -->
-            <div class="bg-terminal-green/5 p-3 rounded">
-              <div class="text-terminal-yellow font-bold text-lg mb-1">${cv.name}</div>
-              <div class="text-terminal-green">
-                <span class="text-terminal-yellow">Location:</span> <span class="text-terminal-green">${cv.location}</span>
-              </div>
-              <div class="text-terminal-green">
-                <span class="text-terminal-yellow">Email:</span> <span class="text-terminal-green">${cv.email}</span>
-              </div>
-              <div class="text-terminal-green">
-                <span class="text-terminal-yellow">Phone:</span> <a href="${cv.phone || ""}" class="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer">
-                  ${cv.phone?.replace(/[^\d\+]/g, '')}
-                </a>
-              </div>
-              ${cv.social_networks?.length > 0 ? `
-                <div class="text-terminal-green">
-                  ${cv.social_networks?.map(social => `
-                    <div><span class="text-terminal-yellow">${social.network}:</span> <span class="text-terminal-green">${getSocialNetworkUrl(social.network, social.username)}</span></div>
-                  `).join('')}
-                </div>
-              ` : ''}
-            </div>
-
-            ${cv.sections?.intro?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 0)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">About</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 0)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 0)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-1">
-                    ${cv.sections?.intro?.map(line => `
-                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                        ${line}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${cv.sections?.technologies?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 1)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Technologies</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 1)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 1)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-1">
-                    ${cv.sections?.technologies?.map(tech => `
-                      <div class="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded">
-                        <span class="text-terminal-yellow font-semibold">• ${tech.label}</span>
-                        <span class="text-white"> - ${tech.details}</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${cv.sections?.experience?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 2)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Experience</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 2)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 2)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-3">
-                    ${cv.sections?.experience?.map(exp => {
-                      const endDate = exp.end_date || uiText.labels.present;
-                      return `
-                        <div class="bg-terminal-green/5 p-3 rounded">
-                          <div class="mb-2">
-                            <span class="text-terminal-yellow font-semibold">${exp.position}</span>
-                            <span class="text-white"> @ </span>
-                            <span class="text-terminal-green font-bold">${exp.company}</span>
-                          </div>
-                          <div class="text-terminal-green mb-2">${exp.location} | ${exp.start_date} - ${endDate}</div>
-                          ${exp.highlights?.length > 0 ? `
-                            <div class="space-y-1">
-                              ${exp.highlights.map(highlight => `
-                                <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                  • ${inlineMd(highlight)}
-                                </div>
-                              `).join('')}
-                            </div>
-                          ` : ''}
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${cv.sections?.education?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 3)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Education</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 3)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 3)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-3">
-                    ${cv.sections?.education?.map(edu => `
-                      <div class="bg-terminal-green/5 p-3 rounded">
-                        <div class="text-terminal-yellow font-semibold">${edu.degree} in ${edu.area} from ${edu.institution}</div>
-                        <div class="text-terminal-green">${edu.location || ""}</div>
-                        <div class="text-terminal-green">${edu.start_date} - ${edu.end_date || 'Present'}</div>
-                        ${edu.highlights?.length > 0 ? `
-                          <div class="space-y-1 mt-2">
-                            ${edu.highlights?.map(highlight => `
-                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${inlineMd(highlight)}
-                              </div>
-                            `).join('')}
-                          </div>
-                        ` : ''}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${cv.sections?.professional_projects?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 4)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Professional Projects</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 4)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 4)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-3">
-                    ${cv.sections?.professional_projects?.map(project => `
-                      <div class="bg-terminal-green/5 p-3 rounded">
-                        <div class="mb-2">
-                          <span class="text-terminal-yellow font-semibold">${project.name}</span>
-                          <span class="text-terminal-green ml-2">(${project.date})</span>
-                        </div>
-                        ${project.highlights?.length > 0 ? `
-                          <div class="space-y-1">
-                            ${project.highlights.map(highlight => `
-                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${inlineMd(highlight)}
-                              </div>
-                            `).join('')}
-                          </div>
-                        ` : ''}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${cv.sections?.personal_projects?.length > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 5)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Personal Projects</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 5)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 5)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-3">
-                    ${cv.sections?.personal_projects?.map(project => `
-                      <div class="bg-terminal-green/5 p-3 rounded">
-                        <div class="mb-2">
-                          <span class="text-terminal-yellow font-semibold">${project.name}</span>
-                          <span class="text-terminal-green ml-2">(${project.date})</span>
-                        </div>
-                        ${project.highlights?.length > 0 ? `
-                          <div class="space-y-1">
-                            ${project.highlights.map(highlight => `
-                              <div class="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded">
-                                • ${inlineMd(highlight)}
-                              </div>
-                            `).join('')}
-                          </div>
-                        ` : ''}
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            ${(cv.sections?.publication?.length || 0) > 0 ? `
-              <div class="border border-terminal-green/20 rounded">
-                <div class="cursor-pointer hover:bg-terminal-green/10 transition-colors p-3" onclick="toggleCollapsible('${getCollapsibleId('resume', 6)}')">
-                  <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                      <span class="text-terminal-yellow font-semibold">Publications</span>
-                    </div>
-                    <div class="text-terminal-bright-green ml-2">
-                      <span id="${getCollapsibleId('resume', 6)}-icon">▶</span>
-                    </div>
-                  </div>
-                </div>
-                <div id="${getCollapsibleId('resume', 6)}" class="hidden border-t border-terminal-green/20 p-3 pt-2">
-                  <div class="space-y-3">
-                    ${cv.sections?.publication?.map(pub => `
-                      <div class="bg-terminal-green/5 p-3 rounded">
-                        <div class="text-terminal-yellow font-semibold mb-1">${pub.title}</div>
-                        <div class="text-terminal-green">${pub.authors.join(', ')}</div>
-                        <div class="text-terminal-green">${pub.journal} (${pub.date})</div>
-                        ${pub.doi ? `<div class="text-terminal-green">DOI: ${pub.doi}</div>` : ''}
-                      </div>
-                    `).join('') || ''}
-                  </div>
-                </div>
-              </div>
-            ` : ''}
-
-            <div class="border-t border-terminal-green/30 pt-3">
-              <div class="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-              <div class="space-y-1 ml-2 text-xs">
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=about" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">about</a></span> for a formatted introduction</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=experience" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">experience</a></span> for detailed work history</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=projects" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">projects</a></span> for interactive project showcase</div>
-                <div><span class="text-white">•</span> Try <span class="text-terminal-bright-green font-semibold"><a href="?cmd=skills" class="hover:text-terminal-bright-green hover:underline transition-colors duration-200">skills</a></span> for technology breakdown</div>
-              </div>
-            </div>
+          <div className="p-3 text-xs sm:text-sm">
+            <span className="text-terminal-red">cat: {filename}: No such file or directory</span>
           </div>
-        </div>
-      `.trim();
-      
-      addLine(resumeBox, 'w-full');
-    } else {
-      const errorBox = `
-        <div class="border border-terminal-red/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div class="border-b border-terminal-red/30 px-3 py-1 text-center">
-            <span class="text-terminal-red text-sm font-bold">ERROR</span>
-          </div>
-          <div class="p-3 text-xs sm:text-sm">
-            <span class="text-terminal-red">cat: ${filename}: No such file or directory</span>
-          </div>
-        </div>
-      `.trim();
-      
-      addLine(errorBox, 'w-full');
+        </div>,
+        'w-full',
+      );
+      return;
     }
-  }, [addLine, portfolioData]);
+
+    if (!portfolioData) {
+      addLine(uiText.messages.error.portfolioNotLoaded, 'text-terminal-red');
+      return;
+    }
+
+    const { cv } = portfolioData;
+
+    const Bullet = ({ html }: { html: string }) => (
+      <div
+        className="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded"
+        dangerouslySetInnerHTML={{ __html: `• ${html}` }}
+      />
+    );
+
+    const items: CollapsibleItemData[] = [];
+
+    if (cv.sections?.intro?.length) {
+      items.push({
+        id: 'about',
+        header: <span className="text-terminal-yellow font-semibold">About</span>,
+        content: (
+          <div className="space-y-1">
+            {cv.sections.intro.map((line, i) => (
+              <div
+                key={i}
+                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                dangerouslySetInnerHTML={{ __html: inlineMd(line) }}
+              />
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (cv.sections?.technologies?.length) {
+      items.push({
+        id: 'technologies',
+        header: <span className="text-terminal-yellow font-semibold">Technologies</span>,
+        content: (
+          <div className="space-y-1">
+            {cv.sections.technologies.map((tech, i) => (
+              <div
+                key={i}
+                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+              >
+                <span className="text-terminal-yellow font-semibold">• {tech.label}</span>
+                <span className="text-white">
+                  {' '}- <span dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }} />
+                </span>
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    if (cv.sections?.experience?.length) {
+      items.push({
+        id: 'experience',
+        header: <span className="text-terminal-yellow font-semibold">Experience</span>,
+        content: (
+          <div className="space-y-3">
+            {cv.sections.experience.map((exp, i) => {
+              const endDate = exp.end_date || uiText.labels.present;
+              return (
+                <div key={i} className="bg-terminal-green/5 p-3 rounded">
+                  <div className="mb-2">
+                    <span className="text-terminal-yellow font-semibold">{exp.position}</span>
+                    <span className="text-white"> @ </span>
+                    <span className="text-terminal-green font-bold">{exp.company}</span>
+                  </div>
+                  <div className="text-terminal-green mb-2">
+                    {exp.location} | {exp.start_date} - {endDate}
+                  </div>
+                  {exp.highlights?.length > 0 && (
+                    <div className="space-y-1">
+                      {exp.highlights.map((h, j) => (
+                        <Bullet key={j} html={inlineMd(h)} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ),
+      });
+    }
+
+    if (cv.sections?.education?.length) {
+      items.push({
+        id: 'education',
+        header: <span className="text-terminal-yellow font-semibold">Education</span>,
+        content: (
+          <div className="space-y-3">
+            {cv.sections.education.map((edu, i) => (
+              <div key={i} className="bg-terminal-green/5 p-3 rounded">
+                <div className="text-terminal-yellow font-semibold">
+                  {edu.degree} in {edu.area} from {edu.institution}
+                </div>
+                <div className="text-terminal-green">{edu.location || ''}</div>
+                <div className="text-terminal-green">
+                  {edu.start_date} - {edu.end_date || 'Present'}
+                </div>
+                {(edu.highlights?.length ?? 0) > 0 && (
+                  <div className="space-y-1 mt-2">
+                    {edu.highlights?.map((h, j) => (
+                      <Bullet key={j} html={inlineMd(h)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    const projectSections: Array<['professional_projects' | 'personal_projects', string, string]> = [
+      ['professional_projects', 'professional', 'Professional Projects'],
+      ['personal_projects', 'personal', 'Personal Projects'],
+    ];
+    projectSections.forEach(([key, id, label]) => {
+      const projects = cv.sections?.[key];
+      if (!projects?.length) return;
+      items.push({
+        id,
+        header: <span className="text-terminal-yellow font-semibold">{label}</span>,
+        content: (
+          <div className="space-y-3">
+            {projects.map((project, i) => (
+              <div key={i} className="bg-terminal-green/5 p-3 rounded">
+                <div className="mb-2">
+                  <span className="text-terminal-yellow font-semibold">{project.name}</span>
+                  <span className="text-terminal-green ml-2">({project.date})</span>
+                </div>
+                {project.highlights?.length > 0 && (
+                  <div className="space-y-1">
+                    {project.highlights.map((h, j) => (
+                      <Bullet key={j} html={inlineMd(h)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    });
+
+    if ((cv.sections?.publication?.length ?? 0) > 0) {
+      items.push({
+        id: 'publications',
+        header: <span className="text-terminal-yellow font-semibold">Publications</span>,
+        content: (
+          <div className="space-y-3">
+            {cv.sections!.publication!.map((pub, i) => (
+              <div key={i} className="bg-terminal-green/5 p-3 rounded">
+                <div className="text-terminal-yellow font-semibold mb-1">{pub.title}</div>
+                <div className="text-terminal-green">{pub.authors.join(', ')}</div>
+                <div className="text-terminal-green">
+                  {pub.journal} ({pub.date})
+                </div>
+                {pub.doi && <div className="text-terminal-green">DOI: {pub.doi}</div>}
+              </div>
+            ))}
+          </div>
+        ),
+      });
+    }
+
+    const personalInfo = (
+      <div className="bg-terminal-green/5 p-3 rounded">
+        <div className="text-terminal-yellow font-bold text-lg mb-1">{cv.name}</div>
+        <div className="text-terminal-green">
+          <span className="text-terminal-yellow">Location:</span>{' '}
+          <span className="text-terminal-green">{cv.location}</span>
+        </div>
+        <div className="text-terminal-green">
+          <span className="text-terminal-yellow">Email:</span>{' '}
+          <span className="text-terminal-green">{cv.email}</span>
+        </div>
+        {cv.phone && (
+          <div className="text-terminal-green">
+            <span className="text-terminal-yellow">Phone:</span>{' '}
+            <a
+              href={`tel:${cv.phone.replace(/[^\d+]/g, '')}`}
+              className="text-terminal-bright-green hover:underline hover:text-terminal-yellow cursor-pointer"
+            >
+              {cv.phone.replace(/[^\d+]/g, '')}
+            </a>
+          </div>
+        )}
+        {(cv.social_networks?.length ?? 0) > 0 && (
+          <div className="text-terminal-green">
+            {cv.social_networks?.map((social, i) => (
+              <div key={i}>
+                <span className="text-terminal-yellow">{social.network}:</span>{' '}
+                <span className="text-terminal-green">
+                  {getSocialNetworkUrl(social.network, social.username)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+
+    addNode(
+      <CollapsibleGroup
+        title="RESUME.TXT"
+        preamble={personalInfo}
+        items={items}
+        bodyClassName="p-3 space-y-2 text-xs sm:text-sm font-mono"
+        footer={
+          <div className="mt-2">
+            <ExploreMore
+              items={[
+                { cmd: 'about', suffix: 'for a formatted introduction' },
+                { cmd: 'experience', suffix: 'for detailed work history' },
+                { cmd: 'projects', suffix: 'for interactive project showcase' },
+                { cmd: 'skills', suffix: 'for technology breakdown' },
+              ]}
+            />
+          </div>
+        }
+      />,
+      'w-full',
+    );
+  }, [addLine, addNode, portfolioData]);
 
   const showNeofetchFallback = useCallback(() => {
     if (!portfolioData) {
@@ -2495,50 +1997,61 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const { name, email, phone, location, website, sections } = portfolioData.cv;
 
-    // Build ASCII border
     const width = 60;
     const border = '─'.repeat(width);
-
-    addLine('');
-    addLine(`<span>┌${border}┐</span>`);
-
-    // Name (centered and bold)
     const nameLine = name.toUpperCase();
     const nameSpacing = ' '.repeat(Math.max(0, Math.floor((width - nameLine.length) / 2)));
-    addLine(`<span>│${nameSpacing}<span class="text-terminal-yellow font-bold">${nameLine}</span>${' '.repeat(width - nameLine.length - nameSpacing.length)}│</span>`);
+    const nameTrailing = ' '.repeat(Math.max(0, width - nameLine.length - nameSpacing.length));
 
-    addLine(`<span>├${border}┤</span>`);
+    const infoRows: Array<[string, string]> = [];
+    if (email) infoRows.push(['Email', email]);
+    if (phone) infoRows.push(['Phone', phone]);
+    if (location) infoRows.push(['Location', location]);
+    if (website) infoRows.push(['Website', website]);
 
-    // Contact info
-    const addInfoLine = (label: string, value: string | undefined) => {
-      if (value) {
-        const line = `${label}: ${value}`;
-        const padding = ' '.repeat(Math.max(0, width - line.length));
-        addLine(`<span>│ <span class="text-terminal-green">${label}:</span> ${value}${padding}│</span>`);
-      }
+    const topSkills = sections?.technologies?.length
+      ? sections.technologies.slice(0, 5).map((tech) => tech.label).join(', ')
+      : null;
+
+    const pad = (label: string, value: string) => {
+      const line = `${label}: ${value}`;
+      return ' '.repeat(Math.max(0, width - line.length));
     };
 
-    if (email) addInfoLine('Email', email);
-    if (phone) addInfoLine('Phone', phone);
-    if (location) addInfoLine('Location', location);
-    if (website) addInfoLine('Website', website);
-
-    addLine(`<span>├${border}┤</span>`);
-
-    // Top skills (first 5)
-    if (sections?.technologies && sections.technologies.length > 0) {
-      const topSkills = sections.technologies.slice(0, 5).map(tech => tech.label).join(', ');
-      const skillsLabel = 'Skills';
-      const line = `${skillsLabel}: ${topSkills}`;
-      const padding = ' '.repeat(Math.max(0, width - line.length));
-      addLine(`<span>│ <span class="text-terminal-green">${skillsLabel}:</span> ${topSkills}${padding}│</span>`);
-    }
-
-    addLine(`<span>└${border}┘</span>`);
-    addLine('');
-    addLine('<span class="text-terminal-dim">💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt</span>');
-    addLine('');
-  }, [addLine, portfolioData]);
+    addNode(
+      <div className="font-mono whitespace-pre text-terminal-green text-xs sm:text-sm leading-tight">
+        <div>{'\u00A0'}</div>
+        <div>┌{border}┐</div>
+        <div>
+          │{nameSpacing}
+          <span className="text-terminal-yellow font-bold">{nameLine}</span>
+          {nameTrailing}│
+        </div>
+        <div>├{border}┤</div>
+        {infoRows.map(([label, value]) => (
+          <div key={label}>
+            │ <span className="text-terminal-green">{label}:</span> {value}
+            {pad(label, value)}│
+          </div>
+        ))}
+        {topSkills && (
+          <>
+            <div>├{border}┤</div>
+            <div>
+              │ <span className="text-terminal-green">Skills:</span> {topSkills}
+              {pad('Skills', topSkills)}│
+            </div>
+          </>
+        )}
+        <div>└{border}┘</div>
+        <div>{'\u00A0'}</div>
+        <div className="text-terminal-dim">
+          💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt
+        </div>
+        <div>{'\u00A0'}</div>
+      </div>,
+    );
+  }, [addNode, portfolioData]);
 
   const showNeofetch = useCallback(async () => {
     if (!portfolioData) {
@@ -2546,40 +2059,26 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
 
-    // Check screen size
     const isMobile = window.innerWidth < apiConfig.responsive.neofetchMobileBreakpoint;
 
     try {
-      // Select file based on screen size
       const filePath = isMobile ? apiConfig.endpoints.neofetchSmall : apiConfig.endpoints.neofetch;
-
       const response = await fetch(filePath);
       if (!response.ok) {
         throw new Error(`Failed to load ${filePath}: ${response.status}`);
       }
-      
       const neofetchContent = await response.text();
-      
-      // Split the content by lines and add each line
-      const lines = neofetchContent.split('\n');
 
-      lines.forEach(line => {
-        // Wrap each line in monospace span if it's not empty
-        if (line.trim() === '') {
-          addLine('');
-        } else {
-          // Convert spaces to   for proper HTML display
-          const htmlLine = line.replace(/ /g, ' ');
-          addLine(`<span>${htmlLine}</span>`);
-        }
-      });
-      
+      addNode(
+        <pre className="whitespace-pre text-xs sm:text-sm leading-tight overflow-x-auto">
+          {neofetchContent}
+        </pre>,
+      );
     } catch (error) {
       console.error('Error loading neofetch content:', error);
-      // Fallback: Generate simple banner from resume data
       showNeofetchFallback();
     }
-  }, [addLine, portfolioData]);
+  }, [addLine, addNode, portfolioData, showNeofetchFallback]);
 
   const listCommands = useCallback(() => {
     const commands = getAllCommandNames();
@@ -2713,9 +2212,14 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         }
         // Command not found
         addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
-        addLine(`Type \`<a href="?cmd=help" class="hover:text-terminal-yellow hover:underline transition-colors duration-200">help</a>\` or click on a command above to get started.`, 'text-terminal-yellow');
+        addNode(
+          <span className="text-terminal-yellow">
+            Type <code className="font-mono"><CmdLink cmd="help" className="text-terminal-yellow">help</CmdLink></code>{' '}
+            or click on a command above to get started.
+          </span>,
+        );
     }
-  }, [addLine, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;

@@ -70,75 +70,7 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      let allExpanded = false;
-      const collapsibleIdJoiner = '-collapsible-';
-      const expandAllBtnId = 'expand-all-btn';
-      
-      window.toggleCollapsible = function(id) {
-        const content = document.getElementById(id);
-        const icon = document.getElementById(id + '-icon');
-        
-        if (content.classList.contains('hidden')) {
-          content.classList.remove('hidden');
-          icon.textContent = '▼';
-        } else {
-          content.classList.add('hidden');
-          icon.textContent = '▶';
-        }
-        
-        // Update the expand all button state
-        updateExpandAllButton();
-      };
-      
-      window.toggleAllCollapsibles = function(type) {
-        const expandAllBtn = document.getElementById(expandAllBtnId);
-        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
-        
-        if (allExpanded) {
-          // Collapse all
-          elements.forEach(element => {
-            const elementId = element.id;
-            const icon = document.getElementById(elementId + '-icon');
-            element.classList.add('hidden');
-            icon.textContent = '▶';
-          });
-          allExpanded = false;
-          expandAllBtn.textContent = 'Expand All';
-        } else {
-          // Expand all
-          elements.forEach(element => {
-            const elementId = element.id;
-            const icon = document.getElementById(elementId + '-icon');
-            element.classList.remove('hidden');
-            icon.textContent = '▼';
-          });
-          allExpanded = true;
-          expandAllBtn.textContent = 'Collapse All';
-        }
-      };
 
-      function updateExpandAllButton(type) {
-        const expandAllBtn = document.getElementById(expandAllBtnId);
-        const elements = document.querySelectorAll(`[id^="${type}${collapsibleIdJoiner}"]:not([id$="-icon"])`);
-        let expandedCount = 0;
-        
-        elements.forEach(element => {
-          if (!element.classList.contains('hidden')) {
-            expandedCount++;
-          }
-        });
-        
-        if (expandedCount === elements.length) {
-          allExpanded = true;
-          expandAllBtn.textContent = 'Collapse All';
-        } else {
-          allExpanded = false;
-          expandAllBtn.textContent = 'Expand All';
-        }
-      }
-    </script>
-    
     <!-- PWA Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {

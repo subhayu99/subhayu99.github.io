@@ -1,9 +1,7 @@
 import { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import DOMPurify from 'dompurify';
 import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
-import { enhanceContent, getLinkUrl } from '../lib/linkRenderer';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { getPromptString, uiText, apiConfig } from '../config';
 
@@ -250,39 +248,21 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       return;
     }
 
-    // Traverse up from the clicked element to find an interactive element
+    // Traverse up looking for an interactive element; if we find one,
+    // let the browser handle its click and skip focusing the input.
     let currentElement: HTMLElement | null = target;
     while (currentElement && currentElement !== e.currentTarget) {
-      // Handle custom data-link links
-      if (currentElement.dataset.link) {
-        e.preventDefault();
-        e.stopPropagation();
-        const url = getLinkUrl(currentElement.dataset.link);
-        if (url) {
-          if (url.startsWith('mailto:')) {
-            window.location.href = url;
-          } else {
-            window.open(url, '_blank');
-          }
-        }
-        return; // Link handled, do not focus input
-      }
-
-      // Check for standard interactive elements or elements with inline JS handlers
       if (
         currentElement.tagName === 'A' ||
         currentElement.tagName === 'BUTTON' ||
-        currentElement.hasAttribute('onclick')
+        currentElement.tagName === 'INPUT' ||
+        currentElement.tagName === 'TEXTAREA'
       ) {
-        // This is an interactive element (like a link or collapsible).
-        // Let the browser handle the click and do not focus the terminal input.
         return;
       }
-
       currentElement = currentElement.parentElement;
     }
 
-    // If no interactive element was found in the ancestry, focus the input.
     inputRef.current?.focus();
   };
 
@@ -356,29 +336,14 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
 
           {/* Command Output */}
           <div className="space-y-1 text-xs sm:text-sm lg:text-base">
-            {lines.map((line) => {
-              const cls = `${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`;
-              if (typeof line.content === 'string') {
-                // Legacy path: HTML-string content → DOMPurify + dangerouslySetInnerHTML.
-                return (
-                  <div
-                    key={line.id}
-                    className={cls}
-                    dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(enhanceContent(line.content), {
-                        ADD_ATTR: ['onclick'],
-                      }),
-                    }}
-                  />
-                );
-              }
-              // Phase D path: ReactNode content rendered directly.
-              return (
-                <div key={line.id} className={cls}>
-                  {line.content}
-                </div>
-              );
-            })}
+            {lines.map((line) => (
+              <div
+                key={line.id}
+                className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
+              >
+                {line.content}
+              </div>
+            ))}
           </div>
         </div>
 
