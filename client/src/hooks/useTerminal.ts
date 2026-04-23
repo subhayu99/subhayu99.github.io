@@ -1885,16 +1885,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   }, [addLine, portfolioData, formatExperiencePeriod]);
 
   const showTheme = useCallback((args: string[]) => {
-    const theme = args[0];
+    // Accept either the key ("matrix") or the full name ("matrix green"),
+    // case-insensitive, so users don't have to memorise the short keys.
+    const theme = args.join(' ').trim().toLowerCase();
 
     if (!theme) {
       addLine('<span class="text-terminal-bright-green">Available Themes:</span>');
       addLine('');
       addLine('<span class="text-terminal-green">matrix</span>    - Classic green on black (default)');
       addLine('<span class="text-blue-400">blue</span>      - Blue cyberpunk theme');
+      addLine('<span class="text-cyan-400">cyan</span>      - Phosphor CRT cyan');
       addLine('<span class="text-purple-400">purple</span>    - Purple hacker theme');
+      addLine('<span class="text-pink-400">pink</span>      - Synthwave magenta');
       addLine('<span class="text-orange-400">amber</span>     - Vintage amber terminal');
+      addLine('<span class="text-yellow-400">yellow</span>    - Commodore phosphor yellow');
       addLine('<span class="text-red-400">red</span>       - Red alert theme');
+      addLine('<span class="text-slate-200">glacier</span>   - Monochrome ice');
       addLine('<span class="text-terminal-yellow">reset</span>     - Reset to default theme');
       addLine('');
       addLine('<span class="text-terminal-yellow">Usage: theme [name]</span>');
@@ -1909,10 +1915,15 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
 
-    // Find matching theme in unified palette
-    const matchedTheme = colorThemes.find(t => t.key === theme);
-    if (matchedTheme && themes[theme]) {
-      const selectedTheme = themes[theme];
+    // Match by key OR full name (e.g. "matrix" or "matrix green"),
+    // case-insensitive. Fall back to a tolerant contains-match so
+    // "phosphor" alone still finds "Phosphor Cyan".
+    const matchedTheme =
+      colorThemes.find((t) => t.key.toLowerCase() === theme || t.name.toLowerCase() === theme) ??
+      colorThemes.find((t) => t.name.toLowerCase().includes(theme));
+
+    if (matchedTheme && themes[matchedTheme.key]) {
+      const selectedTheme = themes[matchedTheme.key];
       addLine(`<span style="color: ${selectedTheme['--terminal-green']}">Switching to ${selectedTheme.name} theme...</span>`);
 
       // Apply to both GUI and terminal CSS variables
@@ -2591,11 +2602,14 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
     const commands = getAllCommandNames();
-    const themeSubCommands = ['matrix', 'blue', 'purple', 'amber', 'red', 'reset']
-    const subCommands = ['cat resume.txt', ...themeSubCommands.map(color => `theme ${color}`)];
-    var matched = commands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+    // Source theme subcommands from the palette itself so new themes show
+    // up automatically. `reset` is kept as an explicit sentinel.
+    const themeSubCommands = [...colorThemes.map((t) => t.key), 'reset'];
+    const subCommands = ['cat resume.txt', ...themeSubCommands.map((color) => `theme ${color}`)];
+    const lower = input.toLowerCase();
+    var matched = commands.filter((cmd) => cmd.startsWith(lower));
     if (matched.length === 0) {
-      matched = subCommands.filter(cmd => cmd.startsWith(input.toLowerCase()));
+      matched = subCommands.filter((cmd) => cmd.startsWith(lower));
     }
     return matched;
   }, [getAllCommandNames]);

@@ -13,14 +13,23 @@ export interface ColorTheme {
   name: string;
   accentRgb: readonly [number, number, number];
   accentHoverRgb: readonly [number, number, number];
+  /** Override the default 100% / 50% HSL derivation — used for
+      low-chroma palettes (purple, glacier) that would otherwise wash
+      out or look cartoonish in the terminal. */
+  terminalSat?: number;
+  terminalLight?: number;
 }
 
 export const colorThemes: ColorTheme[] = [
-  { key: 'matrix',  name: 'Matrix Green',   accentRgb: [0, 255, 0],     accentHoverRgb: [0, 200, 0] },
-  { key: 'blue',    name: 'Cyberpunk Blue',  accentRgb: [0, 191, 255],   accentHoverRgb: [0, 150, 200] },
-  { key: 'purple',  name: 'Hacker Purple',   accentRgb: [147, 112, 219], accentHoverRgb: [120, 90, 180] },
-  { key: 'amber',   name: 'Vintage Amber',   accentRgb: [255, 165, 0],   accentHoverRgb: [200, 130, 0] },
-  { key: 'red',     name: 'Red Alert',       accentRgb: [255, 0, 0],     accentHoverRgb: [200, 0, 0] },
+  { key: 'matrix',  name: 'Matrix Green',     accentRgb: [0, 255, 0],     accentHoverRgb: [0, 200, 0] },
+  { key: 'blue',    name: 'Cyberpunk Blue',   accentRgb: [0, 191, 255],   accentHoverRgb: [0, 150, 200] },
+  { key: 'cyan',    name: 'Phosphor Cyan',    accentRgb: [0, 255, 255],   accentHoverRgb: [0, 200, 200] },
+  { key: 'purple',  name: 'Hacker Purple',    accentRgb: [147, 112, 219], accentHoverRgb: [120, 90, 180], terminalSat: 60, terminalLight: 65 },
+  { key: 'pink',    name: 'Synthwave Pink',   accentRgb: [255, 20, 147],  accentHoverRgb: [210, 20, 130] },
+  { key: 'amber',   name: 'Vintage Amber',    accentRgb: [255, 120, 0],   accentHoverRgb: [210, 95, 0] },
+  { key: 'yellow',  name: 'Commodore Yellow', accentRgb: [255, 221, 0],   accentHoverRgb: [210, 180, 0] },
+  { key: 'red',     name: 'Red Alert',        accentRgb: [255, 0, 0],     accentHoverRgb: [200, 0, 0] },
+  { key: 'glacier', name: 'Glacier',          accentRgb: [220, 235, 250], accentHoverRgb: [170, 190, 210], terminalSat: 25, terminalLight: 85 },
 ];
 
 /** HSL string for a given hue at full saturation (terminal vars need HSL) */
@@ -58,8 +67,8 @@ export function applyColorTheme(theme: ColorTheme) {
 
   // Terminal variables — derive HSL from the RGB accent
   const hue = rgbToHue(r, g, b);
-  const sat = theme.key === 'purple' ? 60 : 100;
-  const light = theme.key === 'purple' ? 65 : 50;
+  const sat = theme.terminalSat ?? 100;
+  const light = theme.terminalLight ?? 50;
   root.setProperty('--terminal-green', hsl(hue, sat, light));
   root.setProperty('--terminal-bright-green', hsl(hue, sat, light + 10));
   root.setProperty('--border', hsl(hue, sat, 20));
