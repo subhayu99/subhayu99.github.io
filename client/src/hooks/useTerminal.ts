@@ -380,13 +380,15 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const generateId = () => `line-${++lineIdCounter.current}`;
 
+  // Cap scrollback so the DOM doesn't grow unbounded on long sessions.
+  // 500 lines is ~30 screens of output — well beyond typical use.
+  const SCROLLBACK_CAP = 500;
+
   const addLine = useCallback((content: string, className?: string, isCommand = false) => {
-    setLines(prev => [...prev, { 
-      id: generateId(), 
-      content, 
-      className,
-      isCommand 
-    }]);
+    setLines(prev => {
+      const next = [...prev, { id: generateId(), content, className, isCommand }];
+      return next.length > SCROLLBACK_CAP ? next.slice(-SCROLLBACK_CAP) : next;
+    });
   }, []);
 
 
