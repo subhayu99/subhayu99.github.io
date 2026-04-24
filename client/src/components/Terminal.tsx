@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
-import { uiText, apiConfig, getSavedTheme } from '../config';
+import { uiText, apiConfig, getSavedTheme, colorThemes } from '../config';
 import { StatusBar } from './tui/StatusBar';
 import { CommandPalette } from './tui/CommandPalette';
 import { TerminalLinkProvider } from './tui/LinkRegistry';
@@ -120,19 +120,95 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, [showAutocomplete]);
 
-  // Ctrl+K / Cmd+K opens the command palette from anywhere in the TUI.
-  // Captured at the window level so it works when focus is in a link
-  // or a button inside a Block output.
+  // Global keyboard shortcuts. Implemented at the window level so they
+  // still fire when focus is on a link / button inside a Block.
+  //
+  // Letter shortcuts (t/g/m) use Alt as the modifier because bare
+  // letters collide with typing commands — pressing `m` to trigger
+  // matrix while the input is focused would eat the first letter of
+  // `matrix` as a command name. Alt prevents that collision while
+  // keeping the shortcut muscle-memory-friendly.
+  //
+  // Non-letter prefixes (?, /, :) are safe as bare keys because they
+  // never start a TUI command word.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      const mod = e.ctrlKey || e.metaKey;
+
+      // Ctrl+K / Cmd+K — command palette toggle. Always fires.
+      if (mod && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
         setPaletteOpen((p) => !p);
+        return;
+      }
+
+      // Ctrl+L — clear the terminal. Browser binding this to location
+      // bar is why the input-level handler didn't fire reliably;
+      // capturing here with preventDefault wins.
+      if (mod && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault();
+        clearTerminal();
+        return;
+      }
+
+      // Alt-letter shortcuts. Match lower-or-upper case.
+      if (e.altKey && !mod) {
+        const k = e.key.toLowerCase();
+        if (k === 't') {
+          e.preventDefault();
+          const current = getSavedTheme();
+          const idx = colorThemes.findIndex((th) => th.key === current.key);
+          const next = colorThemes[(idx + 1) % colorThemes.length];
+          executeCommand(`theme ${next.key}`);
+          return;
+        }
+        if (k === 'g') {
+          e.preventDefault();
+          executeCommand('gui');
+          return;
+        }
+        if (k === 'm') {
+          e.preventDefault();
+          executeCommand('matrix');
+          return;
+        }
+      }
+
+      // Non-letter bare-key prefixes — safe because they never start a
+      // command word. Activate regardless of input focus; on focus they
+      // still get to seed the input helpfully.
+      if (!mod && !e.altKey) {
+        if (e.key === '?') {
+          e.preventDefault();
+          executeCommand('help');
+          return;
+        }
+        if (e.key === '/') {
+          e.preventDefault();
+          inputRef.current?.focus();
+          setInput('search ');
+          return;
+        }
+        if (e.key === ':') {
+          // Only seed `:` when the input is empty — otherwise the user
+          // might be trying to type `:` mid-text.
+          const target = e.target as HTMLElement | null;
+          const isEditable =
+            target instanceof HTMLInputElement ||
+            target instanceof HTMLTextAreaElement ||
+            target?.isContentEditable;
+          if (!isEditable || !input) {
+            e.preventDefault();
+            inputRef.current?.focus();
+            setInput(':');
+            return;
+          }
+        }
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [clearTerminal, executeCommand, input]);
 
   // Auto-focus input and scroll to bottom
   useEffect(() => {
@@ -208,19 +284,30 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     welcomeMessageShown.current = true; // Mark as shown
   }, [urlCommand, isLoading, portfolioData, executeCommand, clearCommand, showWelcomeMessage, bootDone]);
 
-  // Idle matrix rain: after 30s of no input / pointer activity, the
-  // screensaver kicks in. Any interaction dismisses it instantly and
-  // resets the timer. The `matrix` command also triggers it directly
-  // (handled in useTerminal; listens for a state signal here).
+  // Idle matrix rain:
+  //   - After 30s of no activity the screensaver activates.
+  //   - Any interaction WHILE ACTIVE dismisses it.
+  //   - Interaction while idle just resets the 30s timer (does not
+  //     spuriously set active=false; earlier version did, which racing
+  //     with the `matrix` command caused the rain to vanish the same
+  //     frame it was summoned).
+  //   - The `matrix` command manually triggers it via onTriggerMatrix.
+  const matrixActiveRef = useRef(false);
+  matrixActiveRef.current = matrixActive;
   useEffect(() => {
     const IDLE_MS = 30_000;
     let t: ReturnType<typeof setTimeout>;
-    const schedule = () => {
-      setMatrixActive(false);
+    const resetTimer = () => {
       clearTimeout(t);
       t = setTimeout(() => setMatrixActive(true), IDLE_MS);
     };
-    schedule();
+    const handle = () => {
+      if (matrixActiveRef.current) {
+        setMatrixActive(false);
+      }
+      resetTimer();
+    };
+    resetTimer();
     const evts: (keyof WindowEventMap)[] = [
       'keydown',
       'pointerdown',
@@ -228,10 +315,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       'wheel',
       'touchstart',
     ];
-    evts.forEach((e) => window.addEventListener(e, schedule, { passive: true }));
+    evts.forEach((e) => window.addEventListener(e, handle, { passive: true }));
     return () => {
       clearTimeout(t);
-      evts.forEach((e) => window.removeEventListener(e, schedule));
+      evts.forEach((e) => window.removeEventListener(e, handle));
     };
   }, []);
 
@@ -378,22 +465,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       case 'Enter':
         e.preventDefault();
         if (input.trim()) {
-          // Vim-motion link open: `o N` / `g N` / `open N` routes to
-          // the numbered-link registry, not to executeCommand. Falls
-          // through to executeCommand when the input doesn't match.
-          const openMatch = input.trim().match(/^(?:o|g|open)\s+(\d+)$/i);
-          if (openMatch) {
-            const n = parseInt(openMatch[1], 10);
-            const link = linkRegistry.resolve(n);
-            if (link) {
-              window.open(link.href, '_blank', 'noopener,noreferrer');
-            } else {
-              executeCommand(`echo "no link #${n} in view"`);
-            }
-            setInput('');
-            setShowAutocomplete(false);
-            break;
-          }
+          // `o N` / `g N` / `open N` are handled as first-class commands
+          // inside useTerminal's executeCommand — they route through the
+          // link registry there, so history + prompt echo + exit codes
+          // all behave normally.
           executeCommand(input);
           setInput('');
         }
@@ -501,6 +576,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       {/* Shared film-grain atmosphere — also used by the GUI so both
            views share one noise floor. Paused on reduced-motion. */}
       <div className="film-grain" aria-hidden="true" />
+      {/* Idle matrix-rain screensaver — positioned on the outer shell
+           (not the scrolling output pane) so it overlays the full
+           terminal viewport regardless of scroll position. */}
+      <IdleMatrixRain active={matrixActive} />
       <div className="flex flex-col h-full">
         {/* Terminal Header — traffic-light dots keep the retro chrome,
              and the path segment now reflects the Starship-style dir. */}
@@ -555,9 +634,6 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
               }}
             />
           )}
-          {/* Idle matrix-rain screensaver — overlays output while idle. */}
-          <IdleMatrixRain active={matrixActive} />
-
           {/* Command Output. TerminalLinkProvider is scoped to this
               subtree so every NumberedLink inside any Block registers
               with the same terminal-wide numbering sequence. */}

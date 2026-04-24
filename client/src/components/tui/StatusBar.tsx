@@ -43,7 +43,11 @@ export function StatusBar({
         <MetaSegment label="history" value={String(historyCount)} className="hidden sm:inline-flex" />
       </div>
 
-      {/* Hint row — key chips */}
+      {/* Hint row — key chips. All wired at window level so they work
+          even when focus is on a link or button. Alt+letter is used
+          for t/g/m so pressing those letters doesn't eat the first
+          char of a command. Non-letter keys (?, /, :) are safe as
+          bare since they never start a command word. */}
       <div className="flex items-center gap-x-2 sm:gap-x-3 overflow-x-auto scrollbar-hide whitespace-nowrap">
         <Hint chip="?" label="help" />
         <Hint chip="/" label="search" />
@@ -51,8 +55,9 @@ export function StatusBar({
         <Hint chip="⌃R" label="recall" />
         <Hint chip="⌃K" label="palette" />
         <Hint chip="o N" label="open link" />
-        <Hint chip="t" label="theme" />
-        <Hint chip="g" label="gui" />
+        <Hint chip="⌥T" label="theme" />
+        <Hint chip="⌥G" label="gui" />
+        <Hint chip="⌥M" label="matrix" />
         <Hint chip="⌃L" label="clear" />
       </div>
     </footer>
