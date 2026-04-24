@@ -6,6 +6,7 @@ import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
 import { inlineMd } from '../lib/tuiMarkdown';
+import { Block } from '../components/tui/Block';
 import { SectionBox } from '../components/tui/SectionBox';
 import { CmdLink, ExtLink } from '../components/tui/TuiLink';
 import { UsageHint } from '../components/tui/UsageHint';
@@ -1246,20 +1247,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return bEndDate.getTime() - aEndDate.getTime();
     }).reverse();
 
-    const getIcon = (type: string) => {
-      switch (type) {
-        case 'education': return '🎓';
-        case 'experience': return '💼';
-        case 'project': return '🚀';
-        case 'publication': return '📝';
-        default: return '•';
-      }
-    };
-
     const getTypeColor = (type: string) => {
       switch (type) {
         case 'education': return 'text-terminal-bright-green';
-        case 'experience': return 'text-terminal-yellow';
+        case 'experience': return 'text-tui-accent-dim';
         case 'project': return 'text-terminal-green';
         case 'publication': return 'text-terminal-white';
         default: return 'text-white';
@@ -1289,86 +1280,70 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     ];
 
     addNode(
-      <div className="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-5xl">
-        <div className="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span className="text-terminal-bright-green text-sm font-bold">CAREER TIMELINE</span>
-        </div>
-        <div className="p-4">
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terminal-bright-green via-terminal-green to-terminal-green/30" />
+      <Block title="// timeline" wide>
+        <div className="relative">
+          <div className="absolute left-8 top-0 bottom-0 w-px bg-tui-accent-dim/50" />
 
-            <div className="space-y-6">
-              {timelineEvents.map((event, index) => {
-                const isOngoing = event.status === 'ongoing';
-                const duration = event.endDateStr
-                  ? `${formatDateForDisplay(event.dateStr)} - ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}`
-                  : formatDateForDisplay(event.dateStr);
-                return (
-                  <div key={index} className="relative flex items-start space-x-4 group">
-                    <div className="relative z-10">
-                      <div
-                        className={`w-4 h-4 rounded-full bg-terminal-green border-2 border-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-lg shadow-terminal-green/50' : ''} group-hover:scale-125 transition-transform duration-200`}
-                      />
-                    </div>
+          <div className="space-y-5">
+            {timelineEvents.map((event, index) => {
+              const isOngoing = event.status === 'ongoing';
+              const duration = event.endDateStr
+                ? `${formatDateForDisplay(event.dateStr)} — ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}`
+                : formatDateForDisplay(event.dateStr);
+              return (
+                <div key={index} className="relative flex items-start space-x-4 group">
+                  <div className="relative z-10 pt-1">
+                    <div
+                      className={`w-3 h-3 bg-terminal-black border border-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-[0_0_8px_rgba(var(--glow-color-rgb),0.6)]' : ''}`}
+                    />
+                  </div>
 
-                    <div className="flex-1 min-w-0 pb-4">
-                      <div className="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 transition-all duration-200 ml-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-lg">{getIcon(event.type)}</span>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold`}
-                          >
-                            {getTypeLabel(event.type)}
-                          </span>
-                          {isOngoing && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-terminal-bright-green/20 text-terminal-bright-green font-semibold animate-pulse">
-                              CURRENT
-                            </span>
-                          )}
-                          <div className="text-xs text-white/70 font-mono sm:ml-auto">
-                            {duration}
-                          </div>
-                        </div>
-
-                        <div className="mb-2">
-                          <h3 className="text-terminal-bright-green font-semibold text-sm mb-1">
-                            {event.title}
-                          </h3>
-                          {event.subtitle && (
-                            <p className="text-terminal-yellow text-xs mb-1">{event.subtitle}</p>
-                          )}
-                          {event.description && (
-                            <p className="text-white/70 text-xs">{event.description}</p>
-                          )}
-                        </div>
-
+                  <div className="flex-1 min-w-0 pb-2">
+                    <div className="border-l-2 border-tui-accent-dim/40 pl-3 group-hover:border-terminal-bright-green transition-colors duration-150">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1 text-xs font-mono">
+                        <span className={`${getTypeColor(event.type)} uppercase tracking-wide`}>
+                          {getTypeLabel(event.type).toLowerCase()}
+                        </span>
                         {isOngoing && (
-                          <div className="mt-2">
-                            <div className="h-1 bg-terminal-green/20 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-terminal-green to-terminal-bright-green animate-pulse rounded-full" />
-                            </div>
-                          </div>
+                          <span className="text-terminal-bright-green animate-pulse">
+                            · current
+                          </span>
+                        )}
+                        <span className="text-tui-muted sm:ml-auto tabular-nums">
+                          {duration}
+                        </span>
+                      </div>
+
+                      <div className="mb-1">
+                        <h3 className="text-terminal-bright-green text-sm">
+                          {event.title}
+                        </h3>
+                        {event.subtitle && (
+                          <p className="text-tui-accent-dim text-xs">{event.subtitle}</p>
+                        )}
+                        {event.description && (
+                          <p className="text-white/70 text-xs">{event.description}</p>
                         )}
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div className="mt-8 border-t border-terminal-green/30 pt-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                {stats.map((s) => (
-                  <div key={s.label} className="bg-terminal-green/5 rounded-lg p-3">
-                    <div className="text-terminal-bright-green font-bold text-lg">{s.value}</div>
-                    <div className="text-white/70 text-xs">{s.label}</div>
-                  </div>
-                ))}
-              </div>
+          <div className="mt-6 border-t border-tui-accent-dim/30 pt-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {stats.map((s) => (
+                <div key={s.label} className="border-l-2 border-tui-accent-dim/40 pl-2">
+                  <div className="text-terminal-bright-green text-lg tabular-nums">{s.value}</div>
+                  <div className="text-tui-muted text-xs uppercase tracking-wide">{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>,
+      </Block>,
       'w-full',
     );
   }, [addLine, addNode, portfolioData]);
@@ -1670,25 +1645,17 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             ))}
           </div>
         </div>
-        <div className="border-t border-terminal-green/30 pt-3">
-          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-          <div className="space-y-1 ml-2 text-xs">
-            <div className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
-              Feel free to reach out for collaborations, opportunities, or just to connect!
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="about">about</CmdLink> to learn more about me
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="projects">projects</CmdLink> to see my work
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="experience">experience</CmdLink> for my professional background
-            </div>
+        <div className="border-t border-tui-accent-dim/30 pt-3">
+          <div className="text-white/80 leading-relaxed text-xs mb-3 border-l-2 border-tui-accent-dim/50 pl-3">
+            open to collaborations, new work, or a slow coffee chat.
           </div>
+          <ExploreMore
+            items={[
+              { cmd: 'about', suffix: 'to learn more about me' },
+              { cmd: 'projects', suffix: 'to see my work' },
+              { cmd: 'experience', suffix: 'for my professional background' },
+            ]}
+          />
         </div>
       </SectionBox>,
       'w-full',
@@ -1728,17 +1695,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }
 
     if (filename !== 'resume.txt') {
-      addNode(
-        <div className="border border-terminal-red/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div className="border-b border-terminal-red/30 px-3 py-1 text-center">
-            <span className="text-terminal-red text-sm font-bold">ERROR</span>
-          </div>
-          <div className="p-3 text-xs sm:text-sm">
-            <span className="text-terminal-red">cat: {filename}: No such file or directory</span>
-          </div>
-        </div>,
-        'w-full',
-      );
+      // Unix-literal — no bespoke red box. Matches the terse tone of
+      // every other shell error ("bash: foo: command not found").
+      addLine(`cat: ${filename}: No such file or directory`, 'text-tui-error');
       return;
     }
 
@@ -2081,18 +2040,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const listCommands = useCallback(() => {
     const commands = getAllCommandNames();
     addNode(
-      <div>
-        <div className="text-terminal-yellow font-bold mb-1">Available commands:</div>
-        <div className="space-y-0.5">
+      <Block title="// ls">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-0.5 text-xs sm:text-sm font-mono">
           {commands.map((cmd) => (
-            <div key={cmd}>
-              <CmdLink cmd={cmd} className="text-terminal-green font-normal">
-                {cmd}
-              </CmdLink>
-            </div>
+            <CmdLink key={cmd} cmd={cmd} className="text-terminal-green font-normal">
+              {cmd}
+            </CmdLink>
           ))}
         </div>
-      </div>,
+        <div className="pt-2 mt-2 border-t border-tui-accent-dim/30 text-xs text-tui-muted">
+          {commands.length} commands · try <CmdLink cmd="help" className="text-tui-accent-dim">help</CmdLink> for descriptions
+        </div>
+      </Block>,
+      'w-full',
     );
   }, [addNode, getAllCommandNames]);
 
