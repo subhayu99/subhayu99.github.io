@@ -203,7 +203,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
         )}
       </div>
       <div className="mb-4">
-        <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
+        <p className="text-terminal-green mb-2 text-sm sm:text-base">{uiText.welcome.greeting}</p>
         <p
           className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed"
           dangerouslySetInnerHTML={{ __html: inlineMd(introParagraph) }}
@@ -263,39 +263,31 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       </SectionBox>
 
       <div className="mb-4">
-        <p className="text-terminal-green mb-2 text-sm sm:text-base">
-          🚀 Start exploring with these core commands (or click them):
+        <p className="text-tui-accent-dim mb-2 text-xs sm:text-sm">
+          // quick tiles
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-          <QuickCmd cmd="about" label="learn more about me" />
-          <QuickCmd cmd="skills" label="view technical expertise" />
-          <QuickCmd cmd="experience" label="see professional work" />
-          <QuickCmd cmd="projects" label="see professional projects" />
-          <QuickCmd cmd="personal" label="see personal projects" />
-          <QuickCmd cmd="contact" label="display contact details" />
+          <QuickCmd cmd="about" label="background" />
+          <QuickCmd cmd="skills" label="technical expertise" />
+          <QuickCmd cmd="experience" label="work history" />
+          <QuickCmd cmd="projects" label="professional work" />
+          <QuickCmd cmd="personal" label="personal projects" />
+          <QuickCmd cmd="contact" label="get in touch" />
         </div>
       </div>
 
-      <div className="text-xs sm:text-sm space-y-2">
-        <div className="flex items-center space-x-2 text-terminal-green/80">
-          <span>💡</span>
-          <span>
-            Type{' '}
-            <CmdLink cmd="help" className="font-bold hover:text-terminal-yellow">
-              help
-            </CmdLink>{' '}
-            for all commands
-          </span>
+      <div className="text-xs space-y-1 text-tui-muted">
+        <div>
+          type{' '}
+          <CmdLink cmd="help">help</CmdLink>{' '}
+          for all commands
         </div>
-        <div className="flex items-center space-x-2 text-terminal-green/40 text-xs">
-          <span>✨</span>
-          <span>
-            Like this portfolio? Type{' '}
-            <CmdLink cmd="replicate" className="text-terminal-green/60 hover:text-terminal-green">
-              replicate
-            </CmdLink>{' '}
-            to create your own in ~5 min
-          </span>
+        <div className="text-tui-muted/70">
+          like this portfolio? type{' '}
+          <CmdLink cmd="replicate" className="text-tui-muted">
+            replicate
+          </CmdLink>{' '}
+          to fork it in ~5 min
         </div>
       </div>
     </div>
@@ -507,11 +499,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     });
 
     const categoryConfig = {
-      information: { emoji: '📋', label: 'INFORMATION' },
-      professional: { emoji: '💼', label: 'PROFESSIONAL' },
-      contact: { emoji: '📧', label: 'CONTACT' },
-      tools: { emoji: '🔧', label: 'TOOLS' },
-      terminal: { emoji: '⌨️', label: 'TERMINAL' },
+      information: { label: 'information' },
+      professional: { label: 'professional' },
+      contact: { label: 'contact' },
+      tools: { label: 'tools' },
+      terminal: { label: 'terminal' },
     } as const;
 
     const CommandRow = ({ cmd }: { cmd: CommandMetadata }) => {
@@ -540,11 +532,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const Category = ({ cat }: { cat: keyof typeof categoryConfig }) => {
       const cmds = commandsByCategory[cat];
       if (!cmds.length) return null;
-      const { emoji, label } = categoryConfig[cat];
+      const { label } = categoryConfig[cat];
       return (
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">
-            {emoji} {label}
+          <div className="text-tui-accent-dim text-xs mb-2">
+            // {label}
           </div>
           <div className="space-y-1 ml-2">
             {cmds.map((cmd) => (
@@ -566,39 +558,34 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         <Category cat="contact" />
         <Category cat="tools" />
         <Category cat="terminal" />
-        <div className="border-t border-terminal-green/30 pt-3">
-          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-          <div className="space-y-1 ml-2 text-xs">
+        <div className="border-t border-tui-accent-dim/30 pt-3">
+          <div className="text-tui-accent-dim text-xs mb-2">// tips</div>
+          <div className="space-y-0.5 ml-1 text-xs text-white/80">
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Tab</span> for
-              auto-completion
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">tab</span> for auto-completion
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to
-              navigate command history
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">↑↓</span> to navigate command history
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Ctrl+C</span> to
-              interrupt current operation
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+c</span> to clear input
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear
-              screen quickly
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+l</span> to clear screen
             </div>
             <div>
-              <span className="text-white">• </span>Click anywhere on the terminal to focus input
+              <span className="text-tui-accent-dim">· </span>
+              click anywhere to focus input
             </div>
           </div>
         </div>
-        <div className="text-terminal-white text-center pt-2 border-t border-terminal-green/30">
-          Start with <CmdLink cmd="about" className="hover:text-terminal-yellow">about</CmdLink> to
-          learn more about me, or try{' '}
-          <CmdLink cmd="neofetch" className="hover:text-terminal-yellow">neofetch</CmdLink> for a
-          quick overview.
+        <div className="text-white/70 pt-2 border-t border-tui-accent-dim/30 text-xs">
+          start with <CmdLink cmd="about">about</CmdLink>{' '}
+          — or try <CmdLink cmd="neofetch">neofetch</CmdLink> for a quick overview.
         </div>
       </SectionBox>,
       'w-full',
@@ -639,20 +626,20 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
-          <div className="space-y-2 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// intro</div>
+          <div className="space-y-2 ml-1">
             {(cv.sections?.intro ?? []).map((paragraph, i) => (
               <div
                 key={i}
-                className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded"
+                className="text-white leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
                 dangerouslySetInnerHTML={{ __html: inlineMd(paragraph) }}
               />
             ))}
           </div>
         </div>
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
-          <div className="space-y-1 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// links</div>
+          <div className="space-y-1 ml-1">
             {cv.website ? (
               <LabeledRow label="Portfolio">
                 <a href={cv.website} className="hover:text-terminal-bright-green">
@@ -1357,27 +1344,27 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const searchTerm = args.join(' ').toLowerCase();
     if (!searchTerm) {
       addNode(
-        <SectionBox title="SEARCH USAGE" centerTitle>
+        <Block title="// search">
           <div>
-            <div className="text-terminal-yellow font-bold mb-2">📋 USAGE</div>
-            <div className="ml-2 space-y-1">
-              <div className="text-white bg-terminal-green/5 p-2 rounded">
-                <span className="text-terminal-bright-green font-semibold">search</span>{' '}
-                <span className="text-terminal-yellow">[term]</span>
+            <div className="text-tui-accent-dim text-xs mb-2">// usage</div>
+            <div className="ml-1">
+              <div className="text-white border-l-2 border-tui-accent-dim/40 pl-3 py-1">
+                <span className="text-terminal-bright-green">search</span>{' '}
+                <span className="text-tui-accent-dim">[term]</span>
               </div>
             </div>
           </div>
           <div>
-            <div className="text-terminal-yellow font-bold mb-2">💡 EXAMPLES</div>
-            <div className="ml-2 space-y-1">
+            <div className="text-tui-accent-dim text-xs mb-2">// examples</div>
+            <div className="ml-1 space-y-0.5">
               {['python', 'react', 'machine learning'].map((ex) => (
-                <div key={ex} className="text-white bg-terminal-green/5 p-2 rounded">
+                <div key={ex} className="text-white/80 border-l-2 border-tui-accent-dim/40 pl-3 py-0.5 text-xs">
                   <span className="text-terminal-bright-green">search</span> {ex}
                 </div>
               ))}
             </div>
           </div>
-        </SectionBox>,
+        </Block>,
         'w-full',
       );
       return;
@@ -1611,8 +1598,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">📞 PERSONAL DETAILS</div>
-          <div className="space-y-1 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// personal</div>
+          <div className="space-y-1 ml-1">
             <Row label="Name" value={cv.name} />
             <Row label="Location" value={cv.location} />
             <Row label="Email" value={cv.email} />
@@ -1634,8 +1621,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           </div>
         </div>
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
-          <div className="space-y-1 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// social</div>
+          <div className="space-y-1 ml-1">
             {cv.social_networks?.map((social) => (
               <Row
                 key={social.network}
@@ -1668,15 +1655,30 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
     const role = portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional;
+    const firstCompany = portfolioData.cv.sections?.experience?.[0]?.company;
     const Row = ({ label, value }: { label: string; value: string | undefined }) => (
-      <CompactRow label={label} value={value ?? '—'} labelWidth="w-20" />
+      <CompactRow label={label} value={value ?? '—'} labelWidth="w-24" />
     );
+    // Rough uptime: time since the page loaded (session duration).
+    const uptimeSec = Math.floor(performance.now() / 1000);
+    const uptimeStr =
+      uptimeSec < 60
+        ? `${uptimeSec}s`
+        : uptimeSec < 3600
+          ? `${Math.floor(uptimeSec / 60)}m ${uptimeSec % 60}s`
+          : `${Math.floor(uptimeSec / 3600)}h ${Math.floor((uptimeSec % 3600) / 60)}m`;
     addNode(
-      <SectionBox title="WHOAMI" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
-        <Row label="User" value={portfolioData.cv.name} />
-        <Row label="Location" value={portfolioData.cv.location} />
-        <Row label="Role" value={role} />
-      </SectionBox>,
+      <Block title="// whoami">
+        <div className="space-y-1 font-mono">
+          <Row label="user" value={portfolioData.cv.name?.toLowerCase().replace(/\s+/g, '')} />
+          <Row label="display" value={portfolioData.cv.name} />
+          <Row label="role" value={role} />
+          {firstCompany && <Row label="company" value={firstCompany} />}
+          <Row label="location" value={portfolioData.cv.location} />
+          <Row label="shell" value="nagoya · portfolio tui v2.0" />
+          <Row label="uptime" value={uptimeStr} />
+        </div>
+      </Block>,
       'w-full',
     );
   }, [addLine, addNode, portfolioData]);
@@ -1685,10 +1687,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const filename = args[0];
     if (!filename) {
       addNode(
-        <SectionBox title="CAT COMMAND" centerTitle bodyClassName="p-3 space-y-2 text-xs sm:text-sm">
-          <div className="text-terminal-yellow font-semibold">Usage: cat [filename]</div>
-          <div className="text-white">Available files: resume.txt</div>
-        </SectionBox>,
+        <Block title="// cat">
+          <div className="text-tui-accent-dim text-xs mb-1">// usage</div>
+          <div className="text-white text-xs border-l-2 border-tui-accent-dim/40 pl-3 mb-2">
+            cat <span className="text-tui-accent-dim">[filename]</span>
+          </div>
+          <div className="text-tui-accent-dim text-xs mb-1">// available</div>
+          <div className="text-white text-xs border-l-2 border-tui-accent-dim/40 pl-3">
+            resume.txt
+          </div>
+        </Block>,
         'w-full',
       );
       return;
@@ -1697,7 +1705,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (filename !== 'resume.txt') {
       // Unix-literal — no bespoke red box. Matches the terse tone of
       // every other shell error ("bash: foo: command not found").
-      addLine(`cat: ${filename}: No such file or directory`, 'text-tui-error');
+      addLine(`cat: ${filename}: no such file or directory`, 'text-tui-error');
       return;
     }
 
@@ -1710,8 +1718,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const Bullet = ({ html }: { html: string }) => (
       <div
-        className="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded"
-        dangerouslySetInnerHTML={{ __html: `• ${html}` }}
+        className="text-white text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
+        dangerouslySetInnerHTML={{ __html: `· ${html}` }}
       />
     );
 
@@ -1996,7 +2004,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         <div>└{border}┘</div>
         <div>{'\u00A0'}</div>
         <div className="text-tui-muted">
-          💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt
+          tip: create a custom banner by adding client/public/data/neofetch.txt
         </div>
         <div>{'\u00A0'}</div>
       </div>,
@@ -2208,7 +2216,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         break;
       case 'gui':
         if (onSwitchToGUI) {
-          addLine('Switching to GUI view...', 'text-terminal-yellow');
+          addLine('switching to gui…', 'text-tui-accent-dim');
           // One paint to flush the banner, then hand off — no arbitrary delay.
           requestAnimationFrame(() => onSwitchToGUI());
         } else {

@@ -161,11 +161,11 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   // Handle offline/online status
   useEffect(() => {
     const handleOffline = () => {
-      executeCommand('echo "⚠️  You are offline. Some features may be unavailable."');
+      executeCommand('echo "[offline] some features unavailable."');
     };
 
     const handleOnline = () => {
-      executeCommand('echo "✅ You are back online!"');
+      executeCommand('echo "[online] connection restored."');
     };
 
     window.addEventListener('offline', handleOffline);
@@ -336,18 +336,18 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
             <span className="text-xs sm:text-sm truncate">~/portfolio</span>
           </div>
           <div className="flex items-center space-x-2 text-xs opacity-60">
-            {isInstalled && <span className="hidden sm:block">PWA</span>}
+            {isInstalled && <span className="hidden sm:block font-mono">pwa</span>}
             {isInstallable && (
               <button
                 onClick={installApp}
-                className="text-terminal-green hover:text-terminal-bright-green transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-                title="Install app"
-                aria-label="Install app as PWA"
+                className="text-tui-accent-dim hover:text-terminal-bright-green transition-colors px-2 py-1 min-h-[36px] flex items-center justify-center text-xs font-mono border border-tui-accent-dim/40 hover:border-terminal-bright-green"
+                title="install app"
+                aria-label="install app as pwa"
               >
-                📱
+                [install]
               </button>
             )}
-            <span className="hidden sm:block">Terminal Portfolio v2.0</span>
+            <span className="hidden sm:block font-mono">terminal portfolio v2.0</span>
           </div>
         </div>
 
