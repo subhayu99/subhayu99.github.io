@@ -656,8 +656,14 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
         </div>
 
         {/* Command Input — Starship-style prompt with right-aligned
-            exit-status + theme name. Dir changes with navigation commands. */}
+            exit-status + theme name. Dir changes with navigation
+            commands. Inner content is constrained to match the Block
+            output width (max-w-4xl) so the input doesn't sprawl past
+            the command output above it on wide monitors. The outer
+            border-t still spans full viewport so the divider line
+            extends edge-to-edge. */}
         <div className="border-t border-terminal-green/30 p-2 sm:p-4">
+          <div className="max-w-4xl">
           {/* Right prompt: subtle, only shown when something to say */}
           <div className="flex items-center justify-end mb-0.5 font-mono text-[10px] sm:text-[11px] tabular-nums text-tui-muted h-3 sm:h-4">
             {lastExitCode !== null && (
@@ -781,6 +787,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                 </div>
               )}
             </div>
+          </div>
           </div>
         </div>
 

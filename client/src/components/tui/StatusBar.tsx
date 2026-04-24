@@ -32,6 +32,10 @@ export function StatusBar({
       aria-label="terminal hints"
       className="flex-shrink-0 border-t border-tui-accent-dim/30 bg-terminal-black px-2 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] leading-tight"
     >
+      {/* Content width-capped to match Block / prompt so the footer
+          doesn't sprawl past the scrollback on wide monitors. The
+          border-t (above) still spans full viewport. */}
+      <div className="max-w-4xl">
       {/* Meta row — muted stats */}
       <div className="flex items-center gap-x-3 text-tui-muted mb-0.5 whitespace-nowrap overflow-x-auto scrollbar-hide">
         <MetaSegment label="mode" value={mode} accent={mode !== 'insert'} />
@@ -59,6 +63,7 @@ export function StatusBar({
         <Hint chip="⌥G" label="gui" />
         <Hint chip="⌥M" label="matrix" />
         <Hint chip="⌃L" label="clear" />
+      </div>
       </div>
     </footer>
   );
