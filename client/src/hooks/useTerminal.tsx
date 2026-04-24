@@ -15,7 +15,9 @@ import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Co
 import { ReplicatePage } from '../components/tui/ReplicatePage';
 import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
 import { MarkdownBlock } from '../components/tui/MarkdownBlock';
+import { BrailleSparkline, formatCompact } from '../components/tui/BrailleSparkline';
 import type { TerminalLinkRegistry, TerminalLink } from '../components/tui/LinkRegistry';
+import { loadPyPIStats, type PyPIStatsData } from '../lib/pypiStats';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -383,6 +385,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'theme', description: 'Change terminal color theme', category: 'tools', argsHint: '[name]' },
   { name: 'gui', description: 'Switch to the GUI portfolio view', category: 'tools' },
   { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
+  { name: 'stats', description: 'Live PyPI download sparklines', category: 'tools' },
 
   // TERMINAL Commands (always available)
   { name: 'clear', description: 'Clear the terminal screen', category: 'terminal' },
@@ -2283,6 +2286,81 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     );
   }, [addLine]);
 
+  const showStats = useCallback(async () => {
+    // Fetch the live pypi-stats.json; same source as the GUI hero.
+    let pypi: PyPIStatsData | null = null;
+    try {
+      pypi = await loadPyPIStats();
+    } catch {
+      pypi = null;
+    }
+
+    if (!pypi || Object.keys(pypi.packages).length === 0) {
+      addLine('stats: no pypi data available.', 'text-tui-error');
+      setLastExitCode(1);
+      return;
+    }
+
+    const packages = Object.values(pypi.packages);
+    // Sort by total downloads descending so the headline number leads.
+    packages.sort((a, b) => b.total_all_time - a.total_all_time);
+
+    const fetchedDate = pypi.fetched_at
+      ? new Date(pypi.fetched_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : '';
+
+    addNode(
+      <Block title="// stats" wide>
+        <div className="mb-3 flex items-baseline gap-3 text-xs sm:text-sm font-mono">
+          <span className="text-tui-accent-dim">pypi</span>
+          <span className="text-terminal-bright-green text-lg tabular-nums">
+            {formatCompact(pypi.total_downloads)}
+          </span>
+          <span className="text-tui-muted text-xs">total downloads</span>
+          {fetchedDate && (
+            <span className="text-tui-muted/70 text-[10px] ml-auto">
+              as of {fetchedDate}
+            </span>
+          )}
+        </div>
+
+        <div className="text-tui-accent-dim text-xs mb-2">// packages</div>
+        <div className="space-y-1.5 font-mono text-xs">
+          {packages.map((pkg) => {
+            const weekly = pkg.weekly.map((w) => w.downloads);
+            const last = weekly[weekly.length - 1] ?? pkg.last_week;
+            return (
+              <div
+                key={pkg.name}
+                className="grid grid-cols-12 items-baseline gap-2 border-l-2 border-tui-accent-dim/40 pl-3"
+              >
+                <span className="col-span-4 sm:col-span-3 text-terminal-bright-green truncate">
+                  {pkg.name}
+                </span>
+                <span className="col-span-5 sm:col-span-6">
+                  <BrailleSparkline data={weekly} width={28} />
+                </span>
+                <span className="col-span-3 sm:col-span-3 text-right text-tui-muted tabular-nums">
+                  {formatCompact(last)}/wk
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-tui-accent-dim/30 text-xs text-tui-muted">
+          sparklines show weekly downloads for the last{' '}
+          {packages[0]?.weekly.length ?? 0} weeks. data refreshed daily.
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addLine, addNode]);
+
   const showKonami = useCallback(() => {
     // Reuse the GUI's cycleTheme helper so the flash affects both views.
     const next = cycleTheme();
@@ -2468,6 +2546,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       case 'konami':
         showKonami();
         break;
+      case 'stats':
+        showStats();
+        break;
       default:
         // Check if this is a dynamic section command
         if (portfolioData?.cv?.sections) {
@@ -2487,7 +2568,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         );
         setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
