@@ -443,6 +443,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'sudo', description: 'A pleasant refusal', category: 'hidden', hidden: true, argsHint: '<anything>' },
   { name: 'matrix', description: 'Trigger the idle screensaver on demand', category: 'hidden', hidden: true },
   { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
+  { name: 'rm', description: 'Tread carefully', category: 'hidden', hidden: true, argsHint: '-rf /' },
   // `o N` / `g N` — vim-motion link open. The handler reads the
   // argument number and opens the corresponding registered link.
   { name: 'open', description: 'Open link by number', category: 'tools', hidden: true, aliases: ['o', 'g'], argsHint: '<N>' },
@@ -2279,14 +2280,106 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     );
   }, [addNode]);
 
+  const showRmRf = useCallback(async () => {
+    // Theatrical `rm -rf /` — hybrid of Permission-denied wall + rapid
+    // fake deletions + recovery wink. Two acts:
+    //
+    //   Act 1 (D): Unix-faithful "Permission denied" wall. System looks
+    //              resistant. User expects the joke to end here.
+    //   Act 2 (A): transition shows privilege "escalation", then a
+    //              cascade of fake deletions. Climax wipes the screen.
+    //              Recovery line restores context with a dry joke.
+    //
+    // The whole theater takes ~3.2s — short enough that users watch it
+    // rather than type through it.
+    const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    // The default scroll-anchor pins the command at the top of the
+    // viewport, which means the theater cascade flows off-screen. For
+    // this show specifically, override by scrolling the pane to the
+    // bottom after each beat.
+    const stickBottom = () => {
+      const pane = document.querySelector<HTMLElement>('[role="log"]');
+      if (pane) pane.scrollTop = pane.scrollHeight;
+    };
+    const beat = (text: string, cls: string) => {
+      addLine(text, cls);
+      // Defer to the next paint so the scrollHeight includes the line.
+      requestAnimationFrame(stickBottom);
+    };
+
+    // --- Act 1: permission denied --------------------------------------
+    const protectedPaths = [
+      '/boot/grub',
+      '/etc/shadow',
+      '/usr/bin',
+      '/var/log/syslog',
+      '/sys/kernel',
+      '/dev/sda',
+      '/root',
+      '/home/subhayu',
+    ];
+    for (const p of protectedPaths) {
+      beat(`rm: cannot remove '${p}': Permission denied`, 'text-tui-error');
+      await delay(55);
+    }
+    await delay(350);
+
+    // --- Transition: escalate ------------------------------------------
+    beat('escalating privileges…', 'text-tui-warn');
+    await delay(650);
+    beat('[sudo] password for visitor: ········', 'text-tui-muted');
+    await delay(250);
+    beat(
+      'authentication bypass: portfolio_mode=true',
+      'text-terminal-bright-green',
+    );
+    await delay(450);
+
+    // --- Act 2: rapid fake deletions -----------------------------------
+    const condemned = [
+      '/bin', '/etc', '/lib', '/lib64', '/opt', '/proc', '/root',
+      '/sbin', '/sys', '/tmp', '/usr', '/var',
+      '/home/subhayu/.ssh',
+      '/home/subhayu/.bash_history',
+      '/home/subhayu/portfolio',
+      '/home/subhayu/portfolio/about',
+      '/home/subhayu/portfolio/experience',
+      '/home/subhayu/portfolio/projects',
+      '/home/subhayu/portfolio/skills',
+      '/home/subhayu',
+      '/',
+    ];
+    for (const p of condemned) {
+      beat(`removing ${p}`, 'text-tui-error');
+      await delay(30);
+    }
+    await delay(250);
+    beat('!!! filesystem vanished !!!', 'text-terminal-bright-green');
+    await delay(800);
+
+    // --- Recovery ------------------------------------------------------
+    clearTerminal();
+    addLine('// restored from backup (3.2s). nothing actually broke.', 'text-terminal-bright-green');
+    addLine(
+      "// turns out you can't delete a read-only portfolio. try `help`.",
+      'text-tui-accent-dim',
+    );
+  }, [addLine, clearTerminal]);
+
   const showSudo = useCallback((args: string[]) => {
     const sub = args.join(' ').trim();
     if (!sub) {
       addLine('usage: sudo <command>', 'text-tui-muted');
       return;
     }
-    if (/rm\s+-r?f?\s*\/?/i.test(sub)) {
-      addLine('nice try. this is a portfolio, not your filesystem.', 'text-tui-accent-dim');
+    if (/^rm\s+-r?f?\s*\/?/i.test(sub)) {
+      // Route the classic meme through the actual `rm -rf /` theater —
+      // `sudo rm -rf /` gets a brief wink before the show starts.
+      addLine(
+        'sudo: privilege escalation acknowledged. unleashing…',
+        'text-tui-warn',
+      );
+      setTimeout(() => void showRmRf(), 250);
       return;
     }
     if (/shutdown|reboot|halt/i.test(sub)) {
@@ -2580,6 +2673,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       case 'konami':
         showKonami();
         break;
+      case 'rm': {
+        // The infamous command. Unix-faithful for anything that
+        // isn't `-rf /`; full theater for the classic.
+        const tail = args.slice(1).join(' ').trim();
+        if (/^-r?f?r?\s*\/?(\*|\/)?$/i.test(tail) || tail === '-rf /' || tail === '-rf /*' || tail === '-fr /') {
+          void showRmRf();
+        } else if (!tail) {
+          addLine('rm: missing operand', 'text-tui-error');
+          addLine("try 'rm --help' for more information.", 'text-tui-muted');
+          setLastExitCode(1);
+        } else {
+          addLine(`rm: cannot remove '${tail}': Permission denied`, 'text-tui-error');
+          setLastExitCode(1);
+        }
+        break;
+      }
       case 'stats':
         showStats();
         break;
@@ -2621,7 +2730,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
         );
         setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
