@@ -114,6 +114,8 @@ export function CommandPalette({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      // Keep the keyboard focus trap shallow: only Esc + the palette's
+      // own keydowns need to matter, and the input auto-focuses on mount.
       className="fixed inset-0 z-50 bg-black/70 flex items-start justify-center pt-[18vh] px-4"
     >
       <div className="relative bg-terminal-black border border-tui-accent-dim/50 border-l-[3px] border-l-terminal-bright-green w-full max-w-2xl terminal-glow flex flex-col max-h-[70vh]">

@@ -498,16 +498,22 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
 
   return (
     <div className="terminal-glow terminal-scanlines relative w-full h-screen bg-terminal-black">
+      {/* Shared film-grain atmosphere — also used by the GUI so both
+           views share one noise floor. Paused on reduced-motion. */}
+      <div className="film-grain" aria-hidden="true" />
       <div className="flex flex-col h-full">
-        {/* Terminal Header */}
-        <div className="border-b border-terminal-green/30 p-2 sm:p-4 flex items-center justify-between">
+        {/* Terminal Header — traffic-light dots keep the retro chrome,
+             and the path segment now reflects the Starship-style dir. */}
+        <div className="border-b border-tui-accent-dim/30 p-2 sm:p-4 flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="flex space-x-1">
-              <div className="w-3 h-3 rounded-full bg-terminal-red"></div>
-              <div className="w-3 h-3 rounded-full bg-terminal-yellow"></div>
+            <div className="flex space-x-1" aria-hidden="true">
+              <div className="w-3 h-3 rounded-full bg-tui-error"></div>
+              <div className="w-3 h-3 rounded-full bg-tui-warn"></div>
               <div className="w-3 h-3 rounded-full bg-terminal-green"></div>
             </div>
-            <span className="text-xs sm:text-sm truncate">~/portfolio</span>
+            <span className="text-xs sm:text-sm truncate font-mono text-tui-accent-dim">
+              {promptUser}@{promptHost}:{currentDir}
+            </span>
           </div>
           <div className="flex items-center space-x-2 text-xs opacity-60">
             {isInstalled && <span className="hidden sm:block font-mono">pwa</span>}

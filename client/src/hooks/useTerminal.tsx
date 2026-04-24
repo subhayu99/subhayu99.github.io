@@ -5,7 +5,6 @@ import { themes } from '../lib/themes';
 import { colorThemes, applyColorTheme, cycleTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, derivePromptUser, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
-import { inlineMd } from '../lib/tuiMarkdown';
 import { Block } from '../components/tui/Block';
 import { SectionBox } from '../components/tui/SectionBox';
 import { CmdLink, ExtLink } from '../components/tui/TuiLink';

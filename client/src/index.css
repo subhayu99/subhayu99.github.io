@@ -227,7 +227,9 @@ html {
     background: rgba(0, 255, 0, 0.15);
   }
 
-  /* Film grain overlay */
+  /* Film grain overlay — applied site-wide on both TUI and GUI so
+     the two views share one atmospheric noise floor. Paused when
+     prefers-reduced-motion is set. */
   .film-grain {
     position: fixed;
     inset: 0;
@@ -235,6 +237,11 @@ html {
     pointer-events: none;
     opacity: 0.035;
     animation: grain 0.5s steps(6) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .film-grain {
+      animation: none;
+    }
   }
   @keyframes grain {
     0%, 100% { transform: translate(0, 0); }
