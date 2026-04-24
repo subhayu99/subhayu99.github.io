@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } fro
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
-import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
+import { colorThemes, applyColorTheme, cycleTheme } from '../config/gui-theme.config';
 import { uiText, formatMessage, apiConfig, terminalConfig, derivePromptUser, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
 import { inlineMd } from '../lib/tuiMarkdown';
@@ -299,7 +299,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
 export interface CommandMetadata {
   name: string;
   description: string;
-  category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal';
+  category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal' | 'hidden';
   /**
    * Function to check if command should be available based on portfolio data
    * Returns true if command should be shown, false to hide it
@@ -309,6 +309,8 @@ export interface CommandMetadata {
   aliases?: string[];
   /** Hint for argument completion, e.g. `[term]` or `[theme-name]`. */
   argsHint?: string;
+  /** Hidden commands appear in autocomplete but not in `help`. */
+  hidden?: boolean;
 }
 
 const COMMAND_REGISTRY: CommandMetadata[] = [
@@ -384,6 +386,15 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'ls', description: 'List available commands', category: 'terminal' },
   { name: 'pwd', description: 'Print working directory', category: 'terminal' },
   { name: 'cat', description: 'Display file contents', category: 'terminal', argsHint: '[file]' },
+
+  // HIDDEN Commands — autocomplete-discoverable, absent from `help`.
+  // Rewards for the curious; mirrors the GUI's select-to-reveal +
+  // long-press easter eggs.
+  { name: 'quote', description: 'Print a short quote', category: 'hidden', hidden: true },
+  { name: 'coffee', description: 'Brew a caffeinated ascii cup', category: 'hidden', hidden: true },
+  { name: 'sudo', description: 'A pleasant refusal', category: 'hidden', hidden: true, argsHint: '<anything>' },
+  { name: 'matrix', description: 'Trigger the idle screensaver on demand', category: 'hidden', hidden: true },
+  { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
 ];
 
 export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
@@ -545,7 +556,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       terminal: [],
     };
     availableCommands.forEach((cmd) => {
-      commandsByCategory[cmd.category].push(cmd);
+      // Hidden commands are discoverable via autocomplete only.
+      if (cmd.hidden) return;
+      if (commandsByCategory[cmd.category]) {
+        commandsByCategory[cmd.category].push(cmd);
+      }
     });
 
     const categoryConfig = {
@@ -2183,8 +2198,123 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     );
   }, [addLine, addNode, commandHistory]);
 
+  // ── Hidden-command handlers (phase 9 easter eggs) ──
+
+  const QUOTES = [
+    'the best way to predict the future is to implement it.',
+    'simplicity is the soul of efficiency.',
+    'a user interface is like a joke — if you have to explain it, it\'s not that good.',
+    'programs must be written for people to read, and only incidentally for machines to execute.',
+    'the computer was born to solve problems that did not exist before.',
+    'first, solve the problem. then, write the code.',
+    'debugging is twice as hard as writing the code in the first place.',
+    'code is read far more often than it is written.',
+    'make it work, make it right, make it fast.',
+    'there are only two hard things in computer science: cache invalidation, naming things, and off-by-one errors.',
+  ];
+
+  const showQuote = useCallback(() => {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    addNode(
+      <Block title="// quote">
+        <div className="border-l-2 border-tui-accent-dim/60 pl-3 italic text-white/90 leading-relaxed">
+          {q}
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addNode]);
+
+  const showCoffee = useCallback(() => {
+    // Hidden ASCII cup — emoji is ok here because it's a deliberate
+    // easter egg moment, not decorative chrome.
+    addNode(
+      <Block title="// coffee">
+        <pre className="text-terminal-bright-green text-xs leading-tight whitespace-pre font-mono">{`
+      ( (
+       ) )
+    ........
+    |      |]
+    \\      /
+     \`----'`}</pre>
+        <div className="text-white/80 text-xs mt-2">
+          ☕ thanks for visiting. caffeine sent telepathically.
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addNode]);
+
+  const showSudo = useCallback((args: string[]) => {
+    const sub = args.join(' ').trim();
+    if (!sub) {
+      addLine('usage: sudo <command>', 'text-tui-muted');
+      return;
+    }
+    if (/rm\s+-r?f?\s*\/?/i.test(sub)) {
+      addLine('nice try. this is a portfolio, not your filesystem.', 'text-tui-accent-dim');
+      return;
+    }
+    if (/shutdown|reboot|halt/i.test(sub)) {
+      addLine('i would if i could.', 'text-tui-accent-dim');
+      return;
+    }
+    addLine(
+      `[sudo] password for visitor: ········`,
+      'text-tui-muted',
+    );
+    addLine('sorry, no sudo for you.', 'text-tui-accent-dim');
+  }, [addLine]);
+
+  const showMatrix = useCallback(() => {
+    // Phase 12 wires an actual matrix-rain overlay into the output
+    // pane. Until then, print a quick reminder.
+    addLine(
+      'matrix screensaver: idle for 30s or wait for phase 12 wiring.',
+      'text-tui-accent-dim',
+    );
+  }, [addLine]);
+
+  const showKonami = useCallback(() => {
+    // Reuse the GUI's cycleTheme helper so the flash affects both views.
+    const next = cycleTheme();
+    addLine(`// theme → ${next.name.toLowerCase()}`, 'text-terminal-bright-green');
+  }, [addLine]);
+
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
+
+    // Vim-style `:cmd args` aliases. Normalise `:q` → `gui`, `:wq` →
+    // an easter-egg flourish, `:theme x` → `theme x`, etc. This runs
+    // before the command echo so the scrollback shows the canonical
+    // form the handler actually ran.
+    let normalised = command.trim();
+    if (normalised.startsWith(':')) {
+      const raw = normalised.slice(1).trim().toLowerCase();
+      if (raw === 'q' || raw === 'quit') {
+        normalised = 'gui';
+      } else if (raw === 'wq') {
+        // Shell out to gui after the flourish — the echo line shows :wq,
+        // then the gui command executes.
+        addLine('nothing to save. you\'re a read-only visitor here.', 'text-tui-accent-dim');
+        normalised = 'gui';
+      } else if (raw === 'help' || raw === 'h') {
+        normalised = 'help';
+      } else if (raw === 'clear' || raw === 'cls') {
+        normalised = 'clear';
+      } else if (raw.startsWith('theme')) {
+        normalised = raw;
+      } else if (raw === 'palette' || raw === 'k') {
+        // `:palette` / `:k` would open the command palette — handled at
+        // the Terminal level via Ctrl+K. Print a nudge here.
+        addLine('press ⌃K to open the command palette.', 'text-tui-muted');
+        return;
+      } else {
+        // Unknown colon shortcut — fall through to treat as regular cmd.
+        normalised = raw;
+      }
+    }
+    const effectiveCommand = normalised;
 
     // Derive user slug from cv.name so the echoed line matches the
     // live prompt. Falls back to 'guest' if data isn't loaded yet.
@@ -2198,7 +2328,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     });
     setHistoryIndex(-1);
 
-    const args = command.trim().split(' ');
+    // `args` + `cmd` are parsed from the :-normalised string — that's
+    // what handlers actually see and route on.
+    const args = effectiveCommand.trim().split(' ');
     const cmd = args[0].toLowerCase();
 
     // Check if command is available (exists in registry and passes availability check)
@@ -2313,6 +2445,21 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       case 'history':
         showHistory(args.slice(1));
         break;
+      case 'quote':
+        showQuote();
+        break;
+      case 'coffee':
+        showCoffee();
+        break;
+      case 'sudo':
+        showSudo(args.slice(1));
+        break;
+      case 'matrix':
+        showMatrix();
+        break;
+      case 'konami':
+        showKonami();
+        break;
       default:
         // Check if this is a dynamic section command
         if (portfolioData?.cv?.sections) {
@@ -2323,15 +2470,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           }
         }
         // Command not found
-        addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
+        addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-tui-error');
         addNode(
-          <span className="text-terminal-yellow">
-            Type <code className="font-mono"><CmdLink cmd="help" className="text-terminal-yellow">help</CmdLink></code>{' '}
-            or click on a command above to get started.
+          <span className="text-tui-accent-dim text-xs">
+            type <CmdLink cmd="help">help</CmdLink>{' '}
+            or click a command to get started.
           </span>,
         );
+        setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
