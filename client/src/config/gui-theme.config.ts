@@ -87,7 +87,11 @@ export function applyColorTheme(theme: ColorTheme) {
   const dimSat = Math.max(40, sat - 20);
   const dimLight = Math.max(25, light - 20);
   root.setProperty('--tui-accent-dim', hsl(hue, dimSat, dimLight));
-  root.setProperty('--tui-muted', hsl(hue, Math.max(10, sat - 70), 60));
+  // Muted uses a very low saturation cap (max 12%) so warm hues
+  // (amber/yellow) don't land in olive-tan territory and read as
+  // "greenish" on a dark background. Low-chroma gray with a whisper
+  // of the accent hue reads as neutral warm/cool gray across themes.
+  root.setProperty('--tui-muted', hsl(hue, Math.min(12, sat / 6), 60));
   root.setProperty('--tui-error', 'hsl(0, 100%, 60%)');
   root.setProperty('--tui-warn', 'hsl(45, 100%, 55%)');
 

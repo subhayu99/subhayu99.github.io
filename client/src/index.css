@@ -32,7 +32,7 @@
 
   /* TUI semantic tokens — theme-following. See applyColorTheme(). */
   --tui-accent-dim: hsl(120, 70%, 35%);   /* darker-hue label color; follows theme */
-  --tui-muted: hsl(120, 15%, 60%);        /* secondary/chrome text; follows theme hue */
+  --tui-muted: hsl(120, 12%, 60%);        /* very low-sat gray + whisper of hue */
   --tui-error: hsl(0, 100%, 60%);         /* errors are universal red, never themed */
   --tui-warn: hsl(45, 100%, 55%);         /* warnings are universal amber */
 
