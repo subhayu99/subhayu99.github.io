@@ -172,9 +172,9 @@ export function renderCustomFields(
   }
 
   return `
-    <div class="mt-2 pt-2 border-t border-terminal-green/20">
-      <div class="text-terminal-bright-green font-semibold text-xs mb-2">📋 Additional Info:</div>
-      <div class="ml-2 space-y-1">
+    <div class="mt-2 pt-2 border-t border-tui-accent-dim/30">
+      <div class="text-tui-accent-dim text-xs mb-2">// additional</div>
+      <div class="ml-1 space-y-1">
         ${fieldsHtml}
       </div>
     </div>
