@@ -80,7 +80,14 @@ export function Block({
       id={id}
       role="region"
       aria-labelledby={titleId}
-      className={`tui-block group relative my-4 border border-tui-accent-dim/40 border-l-[3px] border-l-terminal-bright-green bg-terminal-black terminal-glow ${widthCls} ${className}`}
+      // Chrome: left rail (strong) + top rule (subtle) only. The full
+      // 4-sided border we had before gave each block a "right-edge
+      // border" that read as visual noise — the left rail already
+      // marks the block, and title+top-rule close the top. Bubble
+      // Tea / Ratatui panels skip the right/bottom for the same
+      // reason. Bottom spacing comes from my-4; blocks naturally
+      // separate without a closing rule.
+      className={`tui-block group relative my-4 border-t border-tui-accent-dim/40 border-l-[3px] border-l-terminal-bright-green bg-terminal-black ${widthCls} ${className}`}
     >
       {/* Title row — positioned to straddle the top border so the text
           overlays the border line. Header extends from the left rail
