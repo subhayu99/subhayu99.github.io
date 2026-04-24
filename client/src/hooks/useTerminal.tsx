@@ -3,7 +3,7 @@ import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
 import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
-import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
+import { uiText, formatMessage, apiConfig, terminalConfig, derivePromptUser, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
 import { inlineMd } from '../lib/tuiMarkdown';
 import { Block } from '../components/tui/Block';
@@ -394,6 +394,13 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentInput, setCurrentInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  /** Current pseudo-directory — Starship-style prompt context. Reset
+   *  on `clear`; advanced by destination commands (about → ~/about).
+   *  Non-destination commands (theme, ls, history, search) leave it. */
+  const [currentDir, setCurrentDir] = useState('~');
+  /** Exit code of the most recent command. 0 = success, 127 = not
+   *  found, 1 = handler failed, null = no commands run yet. */
+  const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const lineIdCounter = useRef(0);
 
   const generateId = () => `line-${++lineIdCounter.current}`;
@@ -428,7 +435,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const clearTerminal = useCallback(() => {
     setLines([]);
+    setCurrentDir('~');
   }, []);
+
+  /** Commands that represent a "navigation" — they change the prompt
+   *  context to `~/<cmd>`. Utility commands (ls, pwd, history, theme,
+   *  search, clear, gui, resume, help) don't move the user anywhere.
+   *  `welcome` resets to `~/` since that's the landing state. */
+  const DESTINATION_COMMANDS = new Set([
+    'about', 'skills', 'experience', 'education', 'projects',
+    'personal', 'publications', 'timeline', 'contact', 'whoami',
+    'neofetch', 'replicate', 'clone', 'fork', 'stats',
+  ]);
 
   // Get available commands based on portfolio data
   const getAvailableCommands = useCallback((): CommandMetadata[] => {
@@ -2125,8 +2143,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
-    
-    addLine(`guest@portfolio:~$ ${command}`, 'text-terminal-green font-semibold', true);
+
+    // Derive user slug from cv.name so the echoed line matches the
+    // live prompt. Falls back to 'guest' if data isn't loaded yet.
+    const user = derivePromptUser(portfolioData?.cv.name);
+    addLine(`${user}@portfolio ${currentDir} $ ${command}`, 'text-terminal-green font-semibold', true);
     setCommandHistory(prev => {
       // Collapse duplicates at the top so spamming the same command doesn't
       // fill history. Cap at `maxHistoryItems` from storage config.
@@ -2134,7 +2155,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return deduped.slice(0, storageConfig.limits.maxHistoryItems);
     });
     setHistoryIndex(-1);
-    
+
     const args = command.trim().split(' ');
     const cmd = args[0].toLowerCase();
 
@@ -2147,14 +2168,29 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       );
 
       if (commandInRegistry && commandInRegistry.isAvailable && !commandInRegistry.isAvailable(portfolioData)) {
-        addLine(`Command '${cmd}' is not available (no data found)`, 'text-terminal-yellow');
+        addLine(`command '${cmd}' is not available (no data found)`, 'text-tui-accent-dim');
+        setLastExitCode(1);
         return;
       }
 
       // Command doesn't exist at all
-      addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
+      addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-tui-error');
+      setLastExitCode(127);
       return;
     }
+
+    // Navigation commands move the prompt dir; utility commands don't.
+    if (DESTINATION_COMMANDS.has(cmd)) {
+      // Normalise aliases to their canonical dir (clone/fork → replicate).
+      const canonical = cmd === 'clone' || cmd === 'fork' ? 'replicate' : cmd;
+      setCurrentDir(`~/${canonical}`);
+    } else if (cmd === 'welcome') {
+      setCurrentDir('~');
+    } else if (cmd === 'cat' && args[1] === 'resume.txt') {
+      setCurrentDir('~/docs');
+    }
+    // Success by default; specific commands override below if they fail.
+    setLastExitCode(0);
 
     switch (cmd) {
       case 'help':
@@ -2206,7 +2242,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         listCommands();
         break;
       case 'pwd':
-        addLine('/home/user/portfolio', 'text-white');
+        // Mirror Unix: strip leading `~` and render as an absolute path.
+        addLine(`/home/${user}/portfolio${currentDir.replace(/^~/, '')}`, 'text-white');
         break;
       case 'cat':
         showCat(args.slice(1));
@@ -2252,7 +2289,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           </span>,
         );
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
@@ -2290,6 +2327,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     return getAllCommandNames();
   }, [getAllCommandNames]);
 
+  // Username slug for prompt display — derived from cv.name once loaded.
+  const promptUser = derivePromptUser(portfolioData?.cv.name);
+
   return {
     lines,
     executeCommand,
@@ -2306,5 +2346,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     setCurrentInput,
     clearTerminal,
     showWelcomeMessage,
+    // Starship-style prompt context.
+    currentDir,
+    lastExitCode,
+    promptUser,
+    promptHost: terminalConfig.prompt.hostname,
   };
 }
