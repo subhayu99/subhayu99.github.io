@@ -14,6 +14,7 @@ import { ExploreMore } from '../components/tui/ExploreMore';
 import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
 import { ReplicatePage } from '../components/tui/ReplicatePage';
 import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
+import { MarkdownBlock } from '../components/tui/MarkdownBlock';
 import type { TerminalLinkRegistry, TerminalLink } from '../components/tui/LinkRegistry';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
@@ -118,9 +119,13 @@ function getProjectsNode(
           {((project.highlights as string[]) || []).map((highlight, i) => (
             <div
               key={i}
-              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
-              dangerouslySetInnerHTML={{ __html: `• ${inlineMd(highlight)}` }}
-            />
+              className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
+            >
+              <span className="text-tui-accent-dim shrink-0">·</span>
+              <div className="flex-1">
+                <MarkdownBlock source={highlight} inline />
+              </div>
+            </div>
           ))}
         </div>
         <div
@@ -205,10 +210,9 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       </div>
       <div className="mb-4">
         <p className="text-terminal-green mb-2 text-sm sm:text-base">{uiText.welcome.greeting}</p>
-        <p
-          className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: inlineMd(introParagraph) }}
-        />
+        <div className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
+          <MarkdownBlock source={introParagraph} inline />
+        </div>
       </div>
 
       <SectionBox
@@ -704,11 +708,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           <div className="text-tui-accent-dim text-xs mb-2">// intro</div>
           <div className="space-y-2 ml-1">
             {(cv.sections?.intro ?? []).map((paragraph, i) => (
-              <div
-                key={i}
-                className="text-white leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
-                dangerouslySetInnerHTML={{ __html: inlineMd(paragraph) }}
-              />
+              <div key={i} className="border-l-2 border-tui-accent-dim/40 pl-3">
+                <MarkdownBlock source={paragraph} inline />
+              </div>
             ))}
           </div>
         </div>
@@ -787,16 +789,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }) => (
       <div className="ml-2">
         {label && (
-          <div className="text-terminal-bright-green font-semibold mb-2 text-xs">{label}</div>
+          <div className="text-tui-accent-dim text-xs mb-2">// {label.replace(/:/g, '').toLowerCase()}</div>
         )}
         <div className="space-y-1">
           {items.map((h, hi) => (
             <div
               key={hi}
-              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+              className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
             >
-              {'• '}
-              <span dangerouslySetInnerHTML={{ __html: inlineMd(h) }} />
+              <span className="text-tui-accent-dim shrink-0">·</span>
+              <div className="flex-1">
+                <MarkdownBlock source={h} inline />
+              </div>
             </div>
           ))}
         </div>
@@ -893,13 +897,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         return (
           <div key={index} className={`pb-2 ${isLast ? '' : 'border-b border-terminal-green/20'}`}>
             <div className="flex gap-2">
-              <span className="text-terminal-yellow font-semibold min-w-[100px]">
+              <span className="text-tui-accent-dim font-semibold min-w-[100px]">
                 {item.label as string}:
               </span>
-              <span
-                className="text-white"
-                dangerouslySetInnerHTML={{ __html: inlineMd(item.details as string) }}
-              />
+              <span className="text-white/90">
+                <MarkdownBlock source={item.details as string} inline />
+              </span>
             </div>
             <span
               dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'technologies') }}
@@ -944,14 +947,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         <div className="space-y-1 ml-2">
           {techs.map((tech, i) => (
             <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
-              <div className="md:col-span-3 bg-terminal-green/10 p-2 rounded">
-                <span className="text-terminal-yellow font-semibold mb-1">{tech.label}</span>
+              <div className="md:col-span-3">
+                <span className="text-tui-accent-dim font-semibold">{tech.label}</span>
               </div>
-              <div className="md:col-span-9 bg-terminal-green/5 p-2 rounded ml-3">
-                <span
-                  className="text-white"
-                  dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }}
-                />
+              <div className="md:col-span-9 border-l-2 border-tui-accent-dim/40 pl-3">
+                <MarkdownBlock source={tech.details} inline />
               </div>
             </div>
           ))}
@@ -1005,17 +1005,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 </div>
               </div>
               <div className="ml-2">
-                <div className="text-terminal-bright-green font-semibold mb-2 text-xs">
-                  Key Achievements:
+                <div className="text-tui-accent-dim text-xs mb-2">
+                  // highlights
                 </div>
                 <div className="space-y-1">
                   {job.highlights.map((highlight, hi) => (
                     <div
                       key={hi}
-                      className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                      className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
                     >
-                      {'• '}
-                      <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                      <span className="text-tui-accent-dim shrink-0">·</span>
+                      <div className="flex-1">
+                        <MarkdownBlock source={highlight} inline />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1082,10 +1084,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     {edu.highlights.map((highlight, hi) => (
                       <div
                         key={hi}
-                        className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                        className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
                       >
-                        {'• '}
-                        <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                        <span className="text-tui-accent-dim shrink-0">·</span>
+                        <div className="flex-1">
+                          <MarkdownBlock source={highlight} inline />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1791,11 +1795,13 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const { cv } = portfolioData;
 
-    const Bullet = ({ html }: { html: string }) => (
-      <div
-        className="text-white text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
-        dangerouslySetInnerHTML={{ __html: `· ${html}` }}
-      />
+    const Bullet = ({ md }: { md: string }) => (
+      <div className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2">
+        <span className="text-tui-accent-dim shrink-0">·</span>
+        <div className="flex-1">
+          <MarkdownBlock source={md} inline />
+        </div>
+      </div>
     );
 
     const items: CollapsibleItemData[] = [];
@@ -1803,15 +1809,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (cv.sections?.intro?.length) {
       items.push({
         id: 'about',
-        header: <span className="text-terminal-yellow font-semibold">About</span>,
+        header: <span className="text-tui-accent-dim font-semibold">about</span>,
         content: (
-          <div className="space-y-1">
+          <div className="space-y-2">
             {cv.sections.intro.map((line, i) => (
               <div
                 key={i}
-                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
-                dangerouslySetInnerHTML={{ __html: inlineMd(line) }}
-              />
+                className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
+              >
+                <MarkdownBlock source={line} inline />
+              </div>
             ))}
           </div>
         ),
@@ -1821,17 +1828,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (cv.sections?.technologies?.length) {
       items.push({
         id: 'technologies',
-        header: <span className="text-terminal-yellow font-semibold">Technologies</span>,
+        header: <span className="text-tui-accent-dim font-semibold">technologies</span>,
         content: (
           <div className="space-y-1">
             {cv.sections.technologies.map((tech, i) => (
               <div
                 key={i}
-                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
               >
-                <span className="text-terminal-yellow font-semibold">• {tech.label}</span>
-                <span className="text-white">
-                  {' '}- <span dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }} />
+                <span className="text-terminal-bright-green">{tech.label}</span>
+                <span className="text-white/80"> — </span>
+                <span className="text-white/90">
+                  <MarkdownBlock source={tech.details} inline />
                 </span>
               </div>
             ))}
@@ -1861,7 +1869,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                   {exp.highlights?.length > 0 && (
                     <div className="space-y-1">
                       {exp.highlights.map((h, j) => (
-                        <Bullet key={j} html={inlineMd(h)} />
+                        <Bullet key={j} md={h} />
                       ))}
                     </div>
                   )}
@@ -1891,7 +1899,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 {(edu.highlights?.length ?? 0) > 0 && (
                   <div className="space-y-1 mt-2">
                     {edu.highlights?.map((h, j) => (
-                      <Bullet key={j} html={inlineMd(h)} />
+                      <Bullet key={j} md={h} />
                     ))}
                   </div>
                 )}
@@ -1923,7 +1931,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 {project.highlights?.length > 0 && (
                   <div className="space-y-1">
                     {project.highlights.map((h, j) => (
-                      <Bullet key={j} html={inlineMd(h)} />
+                      <Bullet key={j} md={h} />
                     ))}
                   </div>
                 )}
