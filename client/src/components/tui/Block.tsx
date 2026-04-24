@@ -83,13 +83,15 @@ export function Block({
       className={`tui-block group relative my-4 border border-tui-accent-dim/40 border-l-[3px] border-l-terminal-bright-green bg-terminal-black terminal-glow ${widthCls} ${className}`}
     >
       {/* Title row — positioned to straddle the top border so the text
-          overlays the border line. The black bg on the title clips the
-          border underneath, producing the "punched through" look. */}
-      <header className="pointer-events-none absolute -top-2.5 left-3 right-3 flex items-center justify-between font-mono text-xs sm:text-[13px]">
+          overlays the border line. Header extends from the left rail
+          to the right edge so the title's black background fully
+          clips the top border (no stray "dash" visible between the
+          rail and the title start). */}
+      <header className="pointer-events-none absolute -top-2.5 left-[3px] right-0 flex items-center justify-between font-mono text-xs sm:text-[13px]">
         <div className="pointer-events-auto flex items-center gap-2">
           <span
             id={titleId}
-            className="bg-terminal-black px-2 text-terminal-bright-green tracking-wide"
+            className="bg-terminal-black pl-2 pr-3 text-terminal-bright-green tracking-wide"
           >
             {title}
           </span>
@@ -100,7 +102,7 @@ export function Block({
           )}
         </div>
         {timestamp && (
-          <time className="pointer-events-auto bg-terminal-black px-2 text-tui-muted text-[10px] sm:text-[11px] tabular-nums">
+          <time className="pointer-events-auto bg-terminal-black pl-2 pr-3 text-tui-muted text-[10px] sm:text-[11px] tabular-nums">
             {timestamp}
           </time>
         )}

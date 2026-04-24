@@ -61,7 +61,14 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
     const fontSize = 14;
     const rect = canvas.getBoundingClientRect();
     const columns = Math.floor(rect.width / fontSize);
-    const drops: number[] = Array(columns).fill(0).map(() => Math.random() * -50);
+    // Drops start uniformly distributed across the viewport height
+    // (expressed in rows) so the rain looks "full" the instant the
+    // user triggers it — previously we used Math.random() * -50 which
+    // meant ~12 seconds before columns were visible.
+    const rowsOnScreen = Math.ceil(rect.height / fontSize);
+    const drops: number[] = Array(columns)
+      .fill(0)
+      .map(() => Math.random() * rowsOnScreen);
     // Per-column optional decoded-word state.
     const words: Array<{ text: string; pos: number } | null> =
       Array(columns).fill(null);
@@ -127,7 +134,12 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 z-[5] opacity-70"
+      // Absolute inset-0 against the Terminal's outer shell (which is
+      // `position: relative; h-screen`), so the canvas covers the whole
+      // terminal viewport regardless of how far the user has scrolled
+      // the output pane. z-20 keeps it above scanlines + scrollback,
+      // below the command input and status bar.
+      className="pointer-events-none absolute inset-0 z-20 opacity-80"
     />
   );
 }

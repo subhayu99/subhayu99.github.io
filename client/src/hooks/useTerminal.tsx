@@ -16,7 +16,7 @@ import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
 import { MarkdownBlock } from '../components/tui/MarkdownBlock';
 import { BrailleSparkline, formatCompact } from '../components/tui/BrailleSparkline';
 import type { TerminalLinkRegistry, TerminalLink } from '../components/tui/LinkRegistry';
-import { loadPyPIStats, type PyPIStatsData } from '../lib/pypiStats';
+import { loadPyPIStats, type PyPIStatsData, type PyPIPackageStats } from '../lib/pypiStats';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -100,6 +100,65 @@ const formatDateForDisplay = (dateStr: string): string => {
     month: 'short' 
   });
 };
+
+/** Synthesise a demo PyPI stats payload so the `stats` command always
+ *  has something to render when the real `pypi-stats.json` is missing
+ *  (template clones, pre-deploy, offline dev). Values are obviously
+ *  fake — the UI flags this with a "· demo data" tag. */
+function buildDemoPypi(): PyPIStatsData {
+  const today = new Date();
+  const weeklyFor = (baseDownloads: number, jitter: number, weeks = 16) =>
+    Array.from({ length: weeks }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (weeks - i) * 7);
+      const phase = Math.sin((i / weeks) * Math.PI * 2.2);
+      const noise = (Math.random() - 0.5) * jitter;
+      const value = Math.max(0, Math.round(baseDownloads * (1 + 0.35 * phase) + noise));
+      return { date: d.toISOString().slice(0, 10), downloads: value };
+    });
+
+  const demoPackages: Record<string, PyPIPackageStats> = {
+    quickstart: {
+      name: 'quickstart',
+      total_all_time: 32100,
+      total_180d: 9200,
+      last_day: 220,
+      last_week: 1480,
+      last_month: 5400,
+      daily: [],
+      weekly: weeklyFor(1200, 600),
+    },
+    sqlstream: {
+      name: 'sqlstream',
+      total_all_time: 5200,
+      total_180d: 1800,
+      last_day: 42,
+      last_week: 290,
+      last_month: 980,
+      daily: [],
+      weekly: weeklyFor(260, 140),
+    },
+    'smart-commit': {
+      name: 'smart-commit',
+      total_all_time: 3400,
+      total_180d: 1100,
+      last_day: 18,
+      last_week: 160,
+      last_month: 520,
+      daily: [],
+      weekly: weeklyFor(140, 90),
+    },
+  };
+  const total = Object.values(demoPackages).reduce(
+    (s, p) => s + p.total_all_time,
+    0,
+  );
+  return {
+    fetched_at: today.toISOString(),
+    total_downloads: total,
+    packages: demoPackages,
+  };
+}
 
 function getProjectsNode(
   projectData: Array<Record<string, unknown>>,
@@ -220,7 +279,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       </div>
 
       <SectionBox
-        title="QUICK OVERVIEW"
+        title="// overview"
         bodyClassName="p-3 space-y-1 text-xs sm:text-sm"
         className="max-w-none"
       >
@@ -230,43 +289,23 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
         {cv.website && (
           <CompactRow
             label="WEB"
-            value={<span className="text-terminal-green">{cv.website}</span>}
+            value={<ExtLink href={cv.website}>{cv.website.replace(/^https?:\/\//, '')}</ExtLink>}
           />
         )}
         <CompactRow
           label="EMAIL"
-          value={<span className="text-terminal-green">{cv.email}</span>}
+          value={<ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>}
         />
         {cv.resume_url && (
           <CompactRow
             label="RESUME"
-            value={
-              <span className="text-terminal-green">
-                <a
-                  href={cv.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
-                >
-                  resume.pdf
-                </a>
-              </span>
-            }
+            value={<ExtLink href={cv.resume_url}>resume.pdf</ExtLink>}
           />
         )}
         {sanitizedPhone && (
           <CompactRow
             label="PHONE"
-            value={
-              <span className="text-terminal-green">
-                <a
-                  href={`tel:${sanitizedPhone}`}
-                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
-                >
-                  {sanitizedPhone}
-                </a>
-              </span>
-            }
+            value={<ExtLink href={`tel:${sanitizedPhone}`}>{sanitizedPhone}</ExtLink>}
           />
         )}
       </SectionBox>
@@ -404,6 +443,9 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'sudo', description: 'A pleasant refusal', category: 'hidden', hidden: true, argsHint: '<anything>' },
   { name: 'matrix', description: 'Trigger the idle screensaver on demand', category: 'hidden', hidden: true },
   { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
+  // `o N` / `g N` — vim-motion link open. The handler reads the
+  // argument number and opens the corresponding registered link.
+  { name: 'open', description: 'Open link by number', category: 'tools', hidden: true, aliases: ['o', 'g'], argsHint: '<N>' },
 ];
 
 export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: UseTerminalProps) {
@@ -623,7 +665,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     addNode(
       <SectionBox
-        title="AVAILABLE COMMANDS"
+        title="// help"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
@@ -705,8 +747,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     addNode(
       <SectionBox
-        title="ABOUT ME"
-        centerTitle
+        title="// about"
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div>
@@ -724,39 +765,23 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
           <div className="space-y-1 ml-1">
             {cv.website ? (
               <LabeledRow label="Portfolio">
-                <a href={cv.website} className="hover:text-terminal-bright-green">
+                <ExtLink href={cv.website}>
                   {cv.website.replace('https://', '').trim()}
-                </a>{' '}
-                (you are here)
+                </ExtLink>{' '}
+                <span className="text-tui-muted">(you are here)</span>
               </LabeledRow>
             ) : null}
             <LabeledRow label="Email">
-              <a href={`mailto:${cv.email}`} className="hover:text-terminal-bright-green">
-                {cv.email}
-              </a>
+              <ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>
             </LabeledRow>
             {gh && (
               <LabeledRow label="GitHub">
-                <a
-                  href={`https://github.com/${gh}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-terminal-bright-green"
-                >
-                  {gh}
-                </a>
+                <ExtLink href={`https://github.com/${gh}`}>{gh}</ExtLink>
               </LabeledRow>
             )}
             {li && (
               <LabeledRow label="LinkedIn">
-                <a
-                  href={`https://linkedin.com/in/${li}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-terminal-bright-green"
-                >
-                  {li}
-                </a>
+                <ExtLink href={`https://linkedin.com/in/${li}`}>{li}</ExtLink>
               </LabeledRow>
             )}
           </div>
@@ -945,7 +970,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     const techs = portfolioData.cv.sections?.technologies ?? [];
     addNode(
       <SectionBox
-        title="SKILLS & TECHNOLOGIES"
+        title="// skills"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
@@ -985,7 +1010,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     const jobs = portfolioData.cv.sections?.experience ?? [];
     addNode(
       <SectionBox
-        title="PROFESSIONAL EXPERIENCE"
+        title="// experience"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -1054,7 +1079,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     const edus = portfolioData.cv.sections?.education ?? [];
     addNode(
       <SectionBox
-        title="EDUCATION"
+        title="// education"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -1167,7 +1192,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     addNode(
       <SectionBox
-        title="RESEARCH PUBLICATIONS"
+        title="// publications"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -1190,14 +1215,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
                     <MetaRow
                       label="DOI"
                       value={
-                        <a
-                          href={`https://doi.org/${pub.doi}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-terminal-bright-green underline"
-                        >
+                        <ExtLink href={`https://doi.org/${pub.doi}`}>
                           https://doi.org/{pub.doi}
-                        </a>
+                        </ExtLink>
                       }
                     />
                   )}
@@ -1363,16 +1383,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
                 : formatDateForDisplay(event.dateStr);
               return (
                 <div key={index} className="relative flex items-start space-x-4 group">
-                  <div className="relative z-10 pt-1">
+                  <div className="relative z-10 pt-[5px]">
+                    {/* Small diamond marker — avoids the "checkbox" read
+                        of the previous outlined square. */}
                     <div
-                      className={`w-3 h-3 bg-terminal-black border border-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-[0_0_8px_rgba(var(--glow-color-rgb),0.6)]' : ''}`}
+                      aria-hidden="true"
+                      className={`w-2 h-2 rotate-45 bg-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-[0_0_8px_rgba(var(--glow-color-rgb),0.7)]' : 'opacity-80'}`}
                     />
                   </div>
 
                   <div className="flex-1 min-w-0 pb-2">
                     <div className="border-l-2 border-tui-accent-dim/40 pl-3 group-hover:border-terminal-bright-green transition-colors duration-150">
                       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1 text-xs font-mono">
-                        <span className={`${getTypeColor(event.type)} uppercase tracking-wide`}>
+                        <span className={`${getTypeColor(event.type)} tracking-wide`}>
                           {getTypeLabel(event.type).toLowerCase()}
                         </span>
                         {isOngoing && (
@@ -1551,7 +1574,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     };
 
     addNode(
-      <SectionBox title="SEARCH RESULTS" centerTitle>
+      <SectionBox title="// search results">
         <div className="bg-terminal-green/5 p-2 rounded flex flex-wrap gap-x-3 gap-y-1">
           <span>
             <span className="text-terminal-yellow font-semibold">Search term:</span>
@@ -1611,7 +1634,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     if (!theme) {
       addNode(
-        <SectionBox title="AVAILABLE THEMES" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
+        <SectionBox title="// themes" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
           {colorThemes.map((t) => {
             const [r, g, b] = t.accentRgb;
             return (
@@ -1641,7 +1664,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       storage.remove(storageConfig.keys.theme);
       localStorage.removeItem('gui-color-theme');
       applyColorTheme(colorThemes[0]);
-      addLine('Theme reset.', 'text-terminal-yellow');
+      addLine('// theme → reset', 'text-tui-accent-dim');
       return;
     }
 
@@ -1655,11 +1678,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     if (matchedTheme && themes[matchedTheme.key]) {
       const selectedTheme = themes[matchedTheme.key];
       applyColorTheme(matchedTheme);
-      addLine(`Switched to ${selectedTheme.name}.`, 'text-terminal-bright-green');
+      addLine(`// theme → ${selectedTheme.name.toLowerCase()}`, 'text-terminal-bright-green');
     } else {
       addLine(
-        'Theme not found. Use "theme" to see available themes.',
-        'text-terminal-red',
+        'theme not found. run `theme` to list available.',
+        'text-tui-error',
       );
     }
   }, [addLine, addNode]);
@@ -1677,7 +1700,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     addNode(
       <SectionBox
-        title="CONTACT INFORMATION"
+        title="// contact"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
@@ -1691,12 +1714,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
               label="Phone"
               value={
                 cv.phone ? (
-                  <a
-                    href={cv.phone}
-                    className="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer"
-                  >
-                    {cv.phone.replace(/[^\d+]/g, '')}
-                  </a>
+                  <ExtLink href={cv.phone}>{cv.phone.replace(/[^\d+]/g, '')}</ExtLink>
                 ) : (
                   ''
                 )
@@ -1707,13 +1725,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
         <div>
           <div className="text-tui-accent-dim text-xs mb-2">// social</div>
           <div className="space-y-1 ml-1">
-            {cv.social_networks?.map((social) => (
-              <Row
-                key={social.network}
-                label={social.network}
-                value={getSocialNetworkUrl(social.network, social.username)}
-              />
-            ))}
+            {cv.social_networks?.map((social) => {
+              const url = getSocialNetworkUrl(social.network, social.username);
+              return (
+                <Row
+                  key={social.network}
+                  label={social.network}
+                  value={<ExtLink href={url}>{social.username}</ExtLink>}
+                />
+              );
+            })}
           </div>
         </div>
         <div className="border-t border-tui-accent-dim/30 pt-3">
@@ -2163,7 +2184,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     if (commandHistory.length === 0) {
       addNode(
-        <SectionBox title="COMMAND HISTORY" centerTitle>
+        <SectionBox title="// history">
           <div className="text-terminal-yellow">No commands in history yet.</div>
           <div className="text-white/70 text-xs">
             Commands you run are saved to local storage; they'll show up here.
@@ -2181,7 +2202,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
     addNode(
       <SectionBox
-        title="COMMAND HISTORY"
+        title="// history"
         centerTitle
         bodyClassName="p-3 space-y-0.5 text-xs sm:text-sm font-mono"
       >
@@ -2300,18 +2321,21 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       pypi = null;
     }
 
-    if (!pypi || Object.keys(pypi.packages).length === 0) {
-      addLine('stats: no pypi data available.', 'text-tui-error');
-      setLastExitCode(1);
-      return;
+    // Fall back to a synthesized demo series if the stats file is
+    // missing (pre-deploy / template clones / first-run). The sparkline
+    // command should always demo SOMETHING — a useful feature shouldn't
+    // silently vanish when real data isn't around.
+    const isDemo = !pypi || Object.keys(pypi.packages).length === 0;
+    if (isDemo) {
+      pypi = buildDemoPypi();
     }
 
-    const packages = Object.values(pypi.packages);
+    const packages = Object.values(pypi!.packages);
     // Sort by total downloads descending so the headline number leads.
     packages.sort((a, b) => b.total_all_time - a.total_all_time);
 
-    const fetchedDate = pypi.fetched_at
-      ? new Date(pypi.fetched_at).toLocaleDateString('en-US', {
+    const fetchedDate = pypi!.fetched_at
+      ? new Date(pypi!.fetched_at).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
           year: 'numeric',
@@ -2323,9 +2347,14 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
         <div className="mb-3 flex items-baseline gap-3 text-xs sm:text-sm font-mono">
           <span className="text-tui-accent-dim">pypi</span>
           <span className="text-terminal-bright-green text-lg tabular-nums">
-            {formatCompact(pypi.total_downloads)}
+            {formatCompact(pypi!.total_downloads)}
           </span>
           <span className="text-tui-muted text-xs">total downloads</span>
+          {isDemo && (
+            <span className="text-tui-warn/80 text-[10px] uppercase tracking-wide">
+              · demo data
+            </span>
+          )}
           {fetchedDate && (
             <span className="text-tui-muted/70 text-[10px] ml-auto">
               as of {fetchedDate}
@@ -2554,6 +2583,25 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       case 'stats':
         showStats();
         break;
+      case 'open':
+      case 'o':
+      case 'g': {
+        const n = parseInt(args[1] ?? '', 10);
+        if (Number.isNaN(n)) {
+          addLine('usage: o <N>  — open link number N in view', 'text-tui-muted');
+          setLastExitCode(1);
+          break;
+        }
+        const link = linkRegistry.resolve(n);
+        if (link) {
+          window.open(link.href, '_blank', 'noopener,noreferrer');
+          addLine(`→ opening ${link.label}`, 'text-tui-accent-dim');
+        } else {
+          addLine(`no link #${n} in view`, 'text-tui-error');
+          setLastExitCode(1);
+        }
+        break;
+      }
       default:
         // Check if this is a dynamic section command
         if (portfolioData?.cv?.sections) {
@@ -2573,7 +2621,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
         );
         setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
