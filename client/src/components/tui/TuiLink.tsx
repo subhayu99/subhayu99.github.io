@@ -57,6 +57,7 @@ export function ExtLink({ href, children, className = '', silent = false }: ExtL
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      aria-label={n !== null ? `${label} (link ${n})` : undefined}
       className={`text-terminal-bright-green underline hover:opacity-80 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${className}`}
     >
       {children}
