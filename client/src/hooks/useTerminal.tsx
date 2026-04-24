@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
@@ -14,6 +14,7 @@ import { ExploreMore } from '../components/tui/ExploreMore';
 import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
 import { ReplicatePage } from '../components/tui/ReplicatePage';
 import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
+import type { TerminalLinkRegistry, TerminalLink } from '../components/tui/LinkRegistry';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -405,6 +406,34 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const lineIdCounter = useRef(0);
 
+  // Terminal-wide numbered link registry. Consumed by NumberedLink for
+  // display, by Terminal.tsx for `o N` / `g N` resolution. Resets on
+  // `clear`. Numbers are href-keyed and stable across re-renders.
+  const linkCounter = useRef(0);
+  const linkMap = useRef<Map<number, TerminalLink>>(new Map());
+  const linkHrefIndex = useRef<Map<string, number>>(new Map());
+
+  const linkRegistry = useMemo<TerminalLinkRegistry>(
+    () => ({
+      register: (href: string, label: string) => {
+        const existing = linkHrefIndex.current.get(href);
+        if (existing !== undefined) return existing;
+        const n = ++linkCounter.current;
+        linkMap.current.set(n, { n, href, label });
+        linkHrefIndex.current.set(href, n);
+        return n;
+      },
+      resolve: (n: number) => linkMap.current.get(n),
+      all: () => Array.from(linkMap.current.values()),
+      reset: () => {
+        linkCounter.current = 0;
+        linkMap.current.clear();
+        linkHrefIndex.current.clear();
+      },
+    }),
+    [],
+  );
+
   const generateId = () => `line-${++lineIdCounter.current}`;
 
   // Cap scrollback so the DOM doesn't grow unbounded on long sessions.
@@ -438,7 +467,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const clearTerminal = useCallback(() => {
     setLines([]);
     setCurrentDir('~');
-  }, []);
+    linkRegistry.reset();
+  }, [linkRegistry]);
 
   /** Commands that represent a "navigation" — they change the prompt
    *  context to `~/<cmd>`. Utility commands (ls, pwd, history, theme,
@@ -600,6 +630,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
             <div>
               <span className="text-tui-accent-dim">· </span>
               click anywhere to focus input
+            </div>
+            <div>
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">o N</span> or{' '}
+              <span className="text-terminal-bright-green font-mono">g N</span> to open link{' '}
+              <span className="text-tui-muted">[N]</span>
+            </div>
+            <div>
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+k</span> opens the command palette
             </div>
           </div>
         </div>
@@ -2358,5 +2398,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     // Exposed for the command palette (phase 6).
     getCommandMetadata: getAvailableCommands,
     recentCommands: commandHistory,
+    // Link registry — consumed by NumberedLink + Terminal.tsx's
+    // `o N` / `g N` keyboard resolver (phase 7).
+    linkRegistry,
   };
 }
