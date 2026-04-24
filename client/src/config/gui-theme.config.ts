@@ -84,8 +84,14 @@ export function applyColorTheme(theme: ColorTheme) {
   // Glacier user saw lemon labels. Now labels derive from the accent hue
   // at a darker lightness, giving mono-accent discipline across themes.
   // Errors stay hardcoded red — they must pop regardless of theme.
-  const dimSat = Math.max(40, sat - 20);
-  const dimLight = Math.max(25, light - 20);
+  //
+  // accent-dim must remain readable on a black background. dim at L=30
+  // worked for matrix/yellow/red (warm hues stay readable when dark)
+  // but landed too muddy for cooler hues (blue/cyan/glacier — dark
+  // teal on black is hard to scan). Bump to L=42 for a consistent
+  // mid-tone that reads across all hues.
+  const dimSat = Math.max(50, sat - 10);
+  const dimLight = Math.max(38, light - 10);
   root.setProperty('--tui-accent-dim', hsl(hue, dimSat, dimLight));
   // Muted uses a very low saturation cap (max 12%) so warm hues
   // (amber/yellow) don't land in olive-tan territory and read as
