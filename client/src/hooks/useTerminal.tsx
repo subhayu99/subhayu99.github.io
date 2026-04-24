@@ -2351,5 +2351,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     lastExitCode,
     promptUser,
     promptHost: terminalConfig.prompt.hostname,
+    // Used by the status bar to render live counts.
+    historyLength: commandHistory.length,
   };
 }

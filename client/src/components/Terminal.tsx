@@ -5,6 +5,7 @@ import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { uiText, apiConfig, getSavedTheme } from '../config';
+import { StatusBar } from './tui/StatusBar';
 
 interface TerminalProps {
   onSwitchToGUI?: () => void;
@@ -52,6 +53,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     lastExitCode,
     promptUser,
     promptHost,
+    historyLength,
   } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
 
   // Get current suggestions
@@ -481,6 +483,13 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
             </div>
           </div>
         </div>
+
+        {/* Persistent keyboard-hint status bar (lazygit / k9s / Ghostty) */}
+        <StatusBar
+          themeName={getSavedTheme().name.toLowerCase()}
+          blockCount={lines.filter((l) => l.isCommand).length}
+          historyCount={historyLength}
+        />
       </div>
     </div>
   );

@@ -1,0 +1,98 @@
+import { Kbd } from './Kbd';
+
+interface StatusBarProps {
+  /** Current theme display name (lowercase). */
+  themeName: string;
+  /** Count of output blocks in scrollback. */
+  blockCount: number;
+  /** Count of history entries. */
+  historyCount: number;
+  /** Input mode — `insert` normally, `search` during reverse-search,
+   *  `palette` when the command palette is open. */
+  mode?: 'insert' | 'search' | 'palette';
+}
+
+/**
+ * Persistent footer strip — always visible. Two rows:
+ *   - meta row (muted): mode · theme · blocks · history
+ *   - hint row: key-chip hotkeys (lazygit / k9s / Ghostty idiom)
+ *
+ * On narrow screens the meta row compresses to just mode+theme and
+ * the hints scroll horizontally via snap-x so they're still reachable.
+ */
+export function StatusBar({
+  themeName,
+  blockCount,
+  historyCount,
+  mode = 'insert',
+}: StatusBarProps) {
+  return (
+    <footer
+      role="toolbar"
+      aria-label="terminal hints"
+      className="flex-shrink-0 border-t border-tui-accent-dim/30 bg-terminal-black px-2 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] leading-tight"
+    >
+      {/* Meta row — muted stats */}
+      <div className="flex items-center gap-x-3 text-tui-muted mb-0.5 whitespace-nowrap overflow-x-auto scrollbar-hide">
+        <MetaSegment label="mode" value={mode} accent={mode !== 'insert'} />
+        <Sep />
+        <MetaSegment label="theme" value={themeName} />
+        <Sep className="hidden sm:inline" />
+        <MetaSegment label="blocks" value={String(blockCount)} className="hidden sm:inline-flex" />
+        <Sep className="hidden sm:inline" />
+        <MetaSegment label="history" value={String(historyCount)} className="hidden sm:inline-flex" />
+      </div>
+
+      {/* Hint row — key chips */}
+      <div className="flex items-center gap-x-2 sm:gap-x-3 overflow-x-auto scrollbar-hide whitespace-nowrap">
+        <Hint chip="?" label="help" />
+        <Hint chip="/" label="search" />
+        <Hint chip=":" label="cmd" />
+        <Hint chip="⌃R" label="recall" />
+        <Hint chip="⌃K" label="palette" />
+        <Hint chip="o N" label="open link" />
+        <Hint chip="t" label="theme" />
+        <Hint chip="g" label="gui" />
+        <Hint chip="⌃L" label="clear" />
+      </div>
+    </footer>
+  );
+}
+
+function MetaSegment({
+  label,
+  value,
+  accent = false,
+  className = '',
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={`inline-flex items-center gap-1 ${className}`}>
+      <span className="text-tui-muted/70">{label}:</span>
+      <span className={accent ? 'text-terminal-bright-green' : 'text-tui-accent-dim'}>
+        {value}
+      </span>
+    </span>
+  );
+}
+
+function Sep({ className = '' }: { className?: string }) {
+  return (
+    <span className={`text-tui-muted/40 ${className}`} aria-hidden="true">
+      ·
+    </span>
+  );
+}
+
+function Hint({ chip, label }: { chip: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-tui-muted">
+      <Kbd>{chip}</Kbd>
+      <span>{label}</span>
+    </span>
+  );
+}
