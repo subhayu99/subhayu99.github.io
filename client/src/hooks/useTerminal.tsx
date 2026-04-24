@@ -254,20 +254,23 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       <div className="mb-3 sm:mb-4">
         {usePre ? (
           <>
-            <div className="hidden sm:block border border-terminal-green/30 rounded-sm px-4 py-2 max-w-4xl overflow-x-auto">
+            {/* Banner uses a left-rail treatment (no top/right/bottom
+                border, no rounded corners) to match the Block family's
+                chrome. The banner is atmospheric, not a container. */}
+            <div className="hidden sm:block border-l-[3px] border-l-terminal-bright-green pl-3 max-w-4xl overflow-x-auto">
               <pre className="text-terminal-bright-green text-xs leading-tight">
                 {styledName}
               </pre>
             </div>
-            <div className="sm:hidden text-terminal-bright-green text-center mb-3">
-              <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
-              <div className="text-sm">TERMINAL PORTFOLIO</div>
+            <div className="sm:hidden text-terminal-bright-green mb-3 border-l-[3px] border-l-terminal-bright-green pl-3">
+              <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
+              <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
             </div>
           </>
         ) : (
-          <div className="text-terminal-bright-green text-center mb-3">
-            <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
-            <div className="text-sm">TERMINAL PORTFOLIO</div>
+          <div className="text-terminal-bright-green mb-3 border-l-[3px] border-l-terminal-bright-green pl-3">
+            <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
+            <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
           </div>
         )}
       </div>
@@ -279,7 +282,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       </div>
 
       <SectionBox
-        title="// overview"
+        title="// identity"
         bodyClassName="p-3 space-y-1 text-xs sm:text-sm"
         className="max-w-none"
       >
@@ -1360,15 +1363,15 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     };
 
     const stats = [
-      { value: portfolioData.cv.sections?.experience?.length ?? 0, label: 'Positions' },
-      { value: portfolioData.cv.sections?.education?.length ?? 0, label: 'Degrees' },
+      { value: portfolioData.cv.sections?.experience?.length ?? 0, label: 'positions' },
+      { value: portfolioData.cv.sections?.education?.length ?? 0, label: 'degrees' },
       {
         value:
           (portfolioData.cv.sections?.professional_projects?.length ?? 0) +
           (portfolioData.cv.sections?.personal_projects?.length ?? 0),
-        label: 'Projects',
+        label: 'projects',
       },
-      { value: portfolioData.cv.sections?.publication?.length ?? 0, label: 'Publications' },
+      { value: portfolioData.cv.sections?.publication?.length ?? 0, label: 'publications' },
     ];
 
     addNode(
@@ -1432,7 +1435,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
               {stats.map((s) => (
                 <div key={s.label} className="border-l-2 border-tui-accent-dim/40 pl-2">
                   <div className="text-terminal-bright-green text-lg tabular-nums">{s.value}</div>
-                  <div className="text-tui-muted text-xs uppercase tracking-wide">{s.label}</div>
+                  <div className="text-tui-muted text-xs">{s.label}</div>
                 </div>
               ))}
             </div>
@@ -1710,7 +1713,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
           <div className="space-y-1 ml-1">
             <Row label="Name" value={cv.name} />
             <Row label="Location" value={cv.location} />
-            <Row label="Email" value={cv.email} />
+            <Row
+              label="Email"
+              value={<ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>}
+            />
             <Row
               label="Phone"
               value={
@@ -2142,7 +2148,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       // render at the same width as figure space in most monospace fonts,
       // which jags the right edges of the ASCII boxes. Normalise any
       // Unicode space variant to a regular space inside the <pre>.
-      const normalised = neofetchContent.replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ');
+      const normalised = neofetchContent
+        .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+        // Strip inline markdown — the <pre> doesn't parse it,
+        // so `[text](url)` leaked into the rendered banner as
+        // literal brackets. Collapse to bare text.
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$1');
 
       addNode(
         <pre className="font-mono text-terminal-green whitespace-pre text-xs sm:text-sm leading-tight overflow-x-auto">
@@ -2156,30 +2167,34 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
   }, [addLine, addNode, portfolioData, showNeofetchFallback]);
 
   const listCommands = useCallback(() => {
-    const commands = getAllCommandNames();
+    // Visible-only: hidden commands (quote/coffee/matrix/konami/rm/
+    // sudo/open/o/g) are discoverable via autocomplete, not ls.
+    const visible = getAvailableCommands()
+      .filter((c) => !c.hidden)
+      .map((c) => c.name);
     addNode(
       <Block title="// ls">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-0.5 text-xs sm:text-sm font-mono">
-          {commands.map((cmd) => (
+          {visible.map((cmd) => (
             <CmdLink key={cmd} cmd={cmd} className="text-terminal-green font-normal">
               {cmd}
             </CmdLink>
           ))}
         </div>
         <div className="pt-2 mt-2 border-t border-tui-accent-dim/30 text-xs text-tui-muted">
-          {commands.length} commands · try <CmdLink cmd="help" className="text-tui-accent-dim">help</CmdLink> for descriptions
+          {visible.length} commands · try <CmdLink cmd="help" className="text-tui-accent-dim">help</CmdLink> for descriptions
         </div>
       </Block>,
       'w-full',
     );
-  }, [addNode, getAllCommandNames]);
+  }, [addNode, getAvailableCommands]);
 
   const showHistory = useCallback((args: string[]) => {
     if (args[0] === 'clear') {
       setCommandHistory([]);
       setHistoryIndex(-1);
       storage.remove(storageConfig.keys.commandHistory);
-      addLine('Command history cleared.', 'text-terminal-yellow');
+      addLine('command history cleared.', 'text-tui-accent-dim');
       return;
     }
 
