@@ -7,6 +7,7 @@ import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { uiText, apiConfig, getSavedTheme } from '../config';
 import { StatusBar } from './tui/StatusBar';
 import { CommandPalette } from './tui/CommandPalette';
+import { TerminalLinkProvider } from './tui/LinkRegistry';
 
 interface TerminalProps {
   onSwitchToGUI?: () => void;
@@ -57,6 +58,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     historyLength,
     getCommandMetadata,
     recentCommands,
+    linkRegistry,
   } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
 
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -245,6 +247,22 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       case 'Enter':
         e.preventDefault();
         if (input.trim()) {
+          // Vim-motion link open: `o N` / `g N` / `open N` routes to
+          // the numbered-link registry, not to executeCommand. Falls
+          // through to executeCommand when the input doesn't match.
+          const openMatch = input.trim().match(/^(?:o|g|open)\s+(\d+)$/i);
+          if (openMatch) {
+            const n = parseInt(openMatch[1], 10);
+            const link = linkRegistry.resolve(n);
+            if (link) {
+              window.open(link.href, '_blank', 'noopener,noreferrer');
+            } else {
+              executeCommand(`echo "no link #${n} in view"`);
+            }
+            setInput('');
+            setShowAutocomplete(false);
+            break;
+          }
           executeCommand(input);
           setInput('');
         }
@@ -387,21 +405,25 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           onClick={handleTerminalClick}
         >
 
-          {/* Command Output */}
-          <div className="space-y-1 text-xs sm:text-sm lg:text-base">
-            {lines.map((line) => (
-              <motion.div
-                key={line.id}
-                data-line-id={line.id}
-                initial={prefersReducedMotion ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
-                className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
-              >
-                {line.content}
-              </motion.div>
-            ))}
-          </div>
+          {/* Command Output. TerminalLinkProvider is scoped to this
+              subtree so every NumberedLink inside any Block registers
+              with the same terminal-wide numbering sequence. */}
+          <TerminalLinkProvider value={linkRegistry}>
+            <div className="space-y-1 text-xs sm:text-sm lg:text-base">
+              {lines.map((line) => (
+                <motion.div
+                  key={line.id}
+                  data-line-id={line.id}
+                  initial={prefersReducedMotion ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className={`${line.className || 'text-terminal-green'} break-words overflow-x-auto leading-relaxed`}
+                >
+                  {line.content}
+                </motion.div>
+              ))}
+            </div>
+          </TerminalLinkProvider>
         </div>
 
         {/* Command Input — Starship-style prompt with right-aligned

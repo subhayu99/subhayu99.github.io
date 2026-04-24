@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { useTerminalLinks } from './LinkRegistry';
 
 interface CmdLinkProps {
   /** Target command name, e.g. "skills". Rendered as `?cmd=skills` so
@@ -30,14 +31,27 @@ interface ExtLinkProps {
   href: string;
   children: ReactNode;
   className?: string;
+  /** Hide the `[N]` number tag. Default `false` — tags are visible
+      so users discover the `o N` / `g N` open-by-number shortcut.
+      Set `silent` for very short inline links that would disturb
+      prose flow. */
+  silent?: boolean;
 }
 
 /**
  * External http/https link. Opens in a new tab with `noopener
- * noreferrer`. Accent-underlined so it's clearly clickable in a block
- * of plain terminal text.
+ * noreferrer`. Accent-underlined, with a `[N]` tag that resolves via
+ * the terminal's link registry so `o N` / `g N` opens it keyboard-
+ * only.
  */
-export function ExtLink({ href, children, className = '' }: ExtLinkProps) {
+export function ExtLink({ href, children, className = '', silent = false }: ExtLinkProps) {
+  const registry = useTerminalLinks();
+  const label = typeof children === 'string' ? children : href;
+  const n = useMemo(
+    () => (registry ? registry.register(href, label) : null),
+    [registry, href, label],
+  );
+
   return (
     <a
       href={href}
@@ -46,6 +60,14 @@ export function ExtLink({ href, children, className = '' }: ExtLinkProps) {
       className={`text-terminal-bright-green underline hover:opacity-80 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${className}`}
     >
       {children}
+      {n !== null && !silent && (
+        <span
+          aria-hidden="true"
+          className="ml-1 text-tui-muted text-[10px] sm:text-xs tabular-nums"
+        >
+          [{n}]
+        </span>
+      )}
     </a>
   );
 }

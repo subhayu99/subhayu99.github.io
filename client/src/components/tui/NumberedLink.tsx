@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react';
 import { useBlockLinks } from './Block';
+import { useTerminalLinks } from './LinkRegistry';
 
 interface NumberedLinkProps {
   /** Target URL. External links open in a new tab with noopener. */
@@ -17,10 +18,11 @@ interface NumberedLinkProps {
 }
 
 /**
- * External link that registers itself with the enclosing `Block` so
- * the user can open it with `o N` (vim-motion, wired in Phase 7).
- * Outside a `Block`, this renders as a plain external link without a
- * number — legacy contexts keep working.
+ * External link that registers itself with the terminal-wide link
+ * registry so the user can open it keyboard-only with `o N` / `g N`
+ * (vim-motion). When rendered outside a registry (e.g., in a test or
+ * standalone render) it degrades gracefully to a plain external
+ * link without a number.
  */
 export function NumberedLink({
   href,
@@ -29,11 +31,13 @@ export function NumberedLink({
   silent = false,
   className = '',
 }: NumberedLinkProps) {
-  const registry = useBlockLinks();
-  // useMemo so the registration is stable across re-renders within the
-  // same Block (Block's provider resets its counter per render, so the
-  // same link always claims the same number as long as render order is
-  // deterministic).
+  const terminalRegistry = useTerminalLinks();
+  const blockRegistry = useBlockLinks();
+  // Prefer terminal-wide registry (stable numbers across render).
+  // Fall back to the Block's per-render registry so legacy contexts
+  // keep working; finally no-op if neither is present.
+  const registry = terminalRegistry ?? blockRegistry;
+
   const displayLabel =
     label ?? (typeof children === 'string' ? children : href);
   const n = useMemo(
