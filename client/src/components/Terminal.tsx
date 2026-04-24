@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, memo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useTerminal } from '../hooks/useTerminal';
@@ -62,6 +62,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
 
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // Reverse-search state (fzf / bash Ctrl+R).
+  const [searchMode, setSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMatchIndex, setSearchMatchIndex] = useState(0);
 
   // Get current suggestions
   const suggestions = getCommandSuggestions(input);
@@ -204,8 +208,89 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     };
   }, [executeCommand]);
 
+  // Reverse-search: all history entries matching the query, newest
+  // first. An empty query yields every history entry.
+  const searchMatches = searchMode
+    ? recentCommands.filter((cmd) =>
+        searchQuery === '' || cmd.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : [];
+  const activeSearchMatch =
+    searchMatches[Math.min(searchMatchIndex, Math.max(0, searchMatches.length - 1))];
+
+  const exitSearchMode = useCallback((commit?: string | null) => {
+    setSearchMode(false);
+    setSearchQuery('');
+    setSearchMatchIndex(0);
+    if (commit !== undefined && commit !== null) setInput(commit);
+    inputRef.current?.focus();
+  }, []);
+
   // Handle keydown events
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Reverse-search mode absorbs every key — enter/exit are the only
+    // transitions back to normal terminal behaviour.
+    if (searchMode) {
+      if (e.key === 'Escape' || (e.key === 'g' && e.ctrlKey)) {
+        e.preventDefault();
+        exitSearchMode('');
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeSearchMatch) {
+          exitSearchMode(null);
+          setInput('');
+          executeCommand(activeSearchMatch);
+        } else {
+          exitSearchMode('');
+        }
+        return;
+      }
+      if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        // Cycle to the next older match.
+        setSearchMatchIndex((i) =>
+          searchMatches.length > 0 ? (i + 1) % searchMatches.length : 0,
+        );
+        return;
+      }
+      if (e.key === 'Tab') {
+        // Commit the match as the current input for editing.
+        e.preventDefault();
+        exitSearchMode(activeSearchMatch ?? '');
+        return;
+      }
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        setSearchQuery((q) => q.slice(0, -1));
+        setSearchMatchIndex(0);
+        return;
+      }
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setSearchQuery((q) => q + e.key);
+        setSearchMatchIndex(0);
+        return;
+      }
+      // Block arrow keys, etc. while searching.
+      if (e.key.startsWith('Arrow')) {
+        e.preventDefault();
+        return;
+      }
+      return;
+    }
+
+    // Ctrl+R enters reverse-search (from normal / autocomplete mode).
+    if (e.ctrlKey && (e.key === 'r' || e.key === 'R')) {
+      e.preventDefault();
+      setSearchMode(true);
+      setSearchQuery(input); // seed with whatever they were typing
+      setSearchMatchIndex(0);
+      setShowAutocomplete(false);
+      return;
+    }
+
     // Handle autocomplete navigation
     if (showAutocomplete && suggestions.length > 0) {
       switch (e.key) {
@@ -443,18 +528,30 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
             <span>{getSavedTheme().name.toLowerCase()}</span>
           </div>
           <div className="flex items-center font-mono">
-            <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
-              <span className="text-tui-accent-dim">{promptUser}</span>
-              <span className="text-tui-muted">@{promptHost}</span>
-              <span className="text-terminal-bright-green"> {currentDir}</span>
-              <span className="text-terminal-green"> $ </span>
-            </span>
+            {searchMode ? (
+              <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
+                <span className="text-tui-accent-dim">(reverse-i-search)</span>
+                <span className="text-tui-muted">`</span>
+                <span className="text-terminal-bright-green">{searchQuery}</span>
+                <span className="text-tui-muted">'</span>
+                <span className="text-terminal-green">: </span>
+              </span>
+            ) : (
+              <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
+                <span className="text-tui-accent-dim">{promptUser}</span>
+                <span className="text-tui-muted">@{promptHost}</span>
+                <span className="text-terminal-bright-green"> {currentDir}</span>
+                <span className="text-terminal-green"> $ </span>
+              </span>
+            )}
             <div className="flex-1 relative min-w-0">
               <input
                 ref={inputRef}
                 type="text"
-                value={input}
+                value={searchMode ? (activeSearchMatch ?? '') : input}
+                readOnly={searchMode}
                 onChange={(e) => {
+                  if (searchMode) return; // all typing is handled via keydown
                   setInput(e.target.value);
                   if (!hasTyped && e.target.value.length > 0) {
                     setHasTyped(true);
@@ -464,7 +561,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                 className="w-full bg-transparent text-terminal-green outline-none font-mono text-xs sm:text-sm"
                 autoComplete="off"
                 spellCheck="false"
-                placeholder={!hasTyped ? uiText.input.placeholder : ""}
+                placeholder={!hasTyped && !searchMode ? uiText.input.placeholder : ""}
               />
               {/* Ghost span — invisible mirror of the input text. Its
                   offsetWidth is what we measure to position the cursor. */}
@@ -482,6 +579,24 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                 █
               </span>
               
+              {/* Reverse-search hints: shown beneath the prompt while
+                  a Ctrl+R search is active. Hidden otherwise. */}
+              {searchMode && (
+                <div className="absolute top-full left-0 right-0 mt-1 text-[10px] font-mono text-tui-muted flex items-center gap-3">
+                  <span>
+                    {searchMatches.length > 0
+                      ? `${searchMatchIndex + 1}/${searchMatches.length}`
+                      : 'no match'}
+                  </span>
+                  <span>
+                    <span className="text-terminal-bright-green">⌃R</span> next ·{' '}
+                    <span className="text-terminal-bright-green">↵</span> run ·{' '}
+                    <span className="text-terminal-bright-green">tab</span> edit ·{' '}
+                    <span className="text-terminal-bright-green">esc</span> cancel
+                  </span>
+                </div>
+              )}
+
               {/* Autocomplete Dropdown */}
               {showAutocomplete && suggestions.length > 0 && (
                 <div
@@ -530,7 +645,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           themeName={getSavedTheme().name.toLowerCase()}
           blockCount={lines.filter((l) => l.isCommand).length}
           historyCount={historyLength}
-          mode={paletteOpen ? 'palette' : 'insert'}
+          mode={searchMode ? 'search' : paletteOpen ? 'palette' : 'insert'}
         />
       </div>
 
