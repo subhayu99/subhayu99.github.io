@@ -12,3 +12,4 @@ export { socialConfig, getSocialNetworkUrl } from './social.config';
 export { storageConfig, storage } from './storage.config';
 export { guiTheme, accentHex, accentHoverHex, accentRgbStr, accentRgba, accentRgbCss, getAccentRgb, colorThemes, applyColorTheme, getSavedTheme, cycleTheme } from './gui-theme.config';
 export type { ColorTheme } from './gui-theme.config';
+export { tuiVars, tuiColor, tuiRhythm, tuiText, tuiChrome, tuiClass } from './tui-tokens';

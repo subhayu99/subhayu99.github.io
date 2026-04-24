@@ -79,6 +79,18 @@ export function applyColorTheme(theme: ColorTheme) {
   root.setProperty('--input', hsl(hue, sat, 20));
   root.setProperty('--glow-color-rgb', `${r}, ${g}, ${b}`);
 
+  // TUI semantic tokens — theme-following. Before this, `--terminal-yellow`
+  // and the scanline tint were hardcoded and ignored every theme, so a
+  // Glacier user saw lemon labels. Now labels derive from the accent hue
+  // at a darker lightness, giving mono-accent discipline across themes.
+  // Errors stay hardcoded red — they must pop regardless of theme.
+  const dimSat = Math.max(40, sat - 20);
+  const dimLight = Math.max(25, light - 20);
+  root.setProperty('--tui-accent-dim', hsl(hue, dimSat, dimLight));
+  root.setProperty('--tui-muted', hsl(hue, Math.max(10, sat - 70), 60));
+  root.setProperty('--tui-error', 'hsl(0, 100%, 60%)');
+  root.setProperty('--tui-warn', 'hsl(45, 100%, 55%)');
+
   // Sync both localStorage keys so terminal and GUI stay in sync
   localStorage.setItem('gui-color-theme', theme.key);
   localStorage.setItem('terminal-theme', theme.key);

@@ -2036,7 +2036,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         )}
         <div>└{border}┘</div>
         <div>{'\u00A0'}</div>
-        <div className="text-terminal-dim">
+        <div className="text-tui-muted">
           💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt
         </div>
         <div>{'\u00A0'}</div>

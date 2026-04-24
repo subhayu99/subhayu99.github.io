@@ -28,9 +28,18 @@
   --terminal-bright-green: hsl(120, 100%, 60%);
   --terminal-black: hsl(0, 0%, 0%);
   --terminal-white: hsl(0, 0%, 100%);
-  --terminal-red: hsl(0, 100%, 50%);
-  --terminal-yellow: hsl(60, 100%, 50%);
   --glow-color-rgb: 0, 255, 0;
+
+  /* TUI semantic tokens — theme-following. See applyColorTheme(). */
+  --tui-accent-dim: hsl(120, 70%, 35%);   /* darker-hue label color; follows theme */
+  --tui-muted: hsl(120, 15%, 60%);        /* secondary/chrome text; follows theme hue */
+  --tui-error: hsl(0, 100%, 60%);         /* errors are universal red, never themed */
+  --tui-warn: hsl(45, 100%, 55%);         /* warnings are universal amber */
+
+  /* Backwards-compat aliases — old `text-terminal-yellow`/`text-terminal-red`
+     classes still work, and now pick up the theme-following semantics above. */
+  --terminal-yellow: var(--tui-accent-dim);
+  --terminal-red: var(--tui-error);
 
   /* GUI Portfolio variables — update gui-theme.config.ts to change theme */
   --gui-bg: #000000;
@@ -119,7 +128,9 @@ html {
     right: 0;
     bottom: 0;
     pointer-events: none;
-    background: linear-gradient(transparent 50%, rgba(0, 255, 0, 0.03) 50%);
+    /* Scanline tint follows the active theme hue instead of being baked
+       matrix-green — a Glacier theme now has glacier-tinted scanlines. */
+    background: linear-gradient(transparent 50%, rgba(var(--glow-color-rgb), 0.03) 50%);
     background-size: 100% 4px;
     opacity: 0.1;
   }
@@ -132,12 +143,14 @@ html {
   }
   
   .terminal-glow {
-    box-shadow: 0 0 20px rgba(var(--glow-color-rgb), 0.2), inset 0 0 20px rgba(var(--glow-color-rgb), 0.1);
+    /* Outer glow only — the previous `inset` + outer combo caused
+       `Block`-in-frame nested glows that muddied on saturated themes. */
+    box-shadow: 0 0 20px rgba(var(--glow-color-rgb), 0.2);
   }
 
   @media (max-width: 768px) {
     .terminal-glow {
-      box-shadow: 0 0 10px rgba(var(--glow-color-rgb), 0.15), inset 0 0 10px rgba(var(--glow-color-rgb), 0.05);
+      box-shadow: 0 0 10px rgba(var(--glow-color-rgb), 0.15);
     }
   }
 
