@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTerminal } from '../hooks/useTerminal';
 import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
-import { getPromptString, uiText, apiConfig } from '../config';
+import { uiText, apiConfig, getSavedTheme } from '../config';
 
 interface TerminalProps {
   onSwitchToGUI?: () => void;
@@ -48,6 +48,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     getAllCommands,
     clearTerminal,
     showWelcomeMessage,
+    currentDir,
+    lastExitCode,
+    promptUser,
+    promptHost,
   } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
 
   // Get current suggestions
@@ -379,10 +383,29 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           </div>
         </div>
 
-        {/* Command Input */}
+        {/* Command Input — Starship-style prompt with right-aligned
+            exit-status + theme name. Dir changes with navigation commands. */}
         <div className="border-t border-terminal-green/30 p-2 sm:p-4">
-          <div className="flex items-center">
-            <span className="text-terminal-bright-green mr-1 sm:mr-2 text-xs sm:text-sm flex-shrink-0">{getPromptString()}</span>
+          {/* Right prompt: subtle, only shown when something to say */}
+          <div className="flex items-center justify-end mb-0.5 font-mono text-[10px] sm:text-[11px] tabular-nums text-tui-muted h-3 sm:h-4">
+            {lastExitCode !== null && (
+              <span className="mr-3">
+                {lastExitCode === 0 ? (
+                  <span className="text-terminal-bright-green">✔</span>
+                ) : (
+                  <span className="text-tui-error">✖ {lastExitCode}</span>
+                )}
+              </span>
+            )}
+            <span>{getSavedTheme().name.toLowerCase()}</span>
+          </div>
+          <div className="flex items-center font-mono">
+            <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
+              <span className="text-tui-accent-dim">{promptUser}</span>
+              <span className="text-tui-muted">@{promptHost}</span>
+              <span className="text-terminal-bright-green"> {currentDir}</span>
+              <span className="text-terminal-green"> $ </span>
+            </span>
             <div className="flex-1 relative min-w-0">
               <input
                 ref={inputRef}
