@@ -8,6 +8,8 @@ import { uiText, apiConfig, getSavedTheme } from '../config';
 import { StatusBar } from './tui/StatusBar';
 import { CommandPalette } from './tui/CommandPalette';
 import { TerminalLinkProvider } from './tui/LinkRegistry';
+import { BootSequence } from './tui/BootSequence';
+import { IdleMatrixRain } from './tui/IdleMatrixRain';
 
 interface TerminalProps {
   onSwitchToGUI?: () => void;
@@ -59,13 +61,26 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     getCommandMetadata,
     recentCommands,
     linkRegistry,
-  } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
+  } = useTerminal({
+    portfolioData: portfolioData || null,
+    onSwitchToGUI,
+    onTriggerMatrix: () => setMatrixActive(true),
+  });
 
   const [paletteOpen, setPaletteOpen] = useState(false);
   // Reverse-search state (fzf / bash Ctrl+R).
   const [searchMode, setSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMatchIndex, setSearchMatchIndex] = useState(0);
+  // Boot sequence: shown once per tab session. sessionStorage flag
+  // short-circuits on reloads so only the very first mount plays it.
+  const [bootDone, setBootDone] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    if (new URLSearchParams(window.location.search).has('skipBoot')) return true;
+    return sessionStorage.getItem('tui-boot-shown') === '1';
+  });
+  // Idle matrix-rain screensaver: fires after 30s with no input.
+  const [matrixActive, setMatrixActive] = useState(false);
 
   // Get current suggestions
   const suggestions = getCommandSuggestions(input);
@@ -171,11 +186,15 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     lastAnchoredCommandId.current = lastCmd.id;
   }, [lines, prefersReducedMotion]);
 
-  // Handle URL command execution (for PWA shortcuts)
+  // Handle URL command execution (for PWA shortcuts). Waits for the
+  // boot sequence to finish — bootDone flips true after the CRT
+  // animation, so the welcome / deep-link runs against the rendered
+  // Block chrome rather than behind the boot overlay.
   useEffect(() => {
     if (isLoading || !portfolioData || welcomeMessageShown.current) {
       return; // Wait for data, and only run once
     }
+    if (!bootDone) return; // Wait for boot sequence to finish
 
     if (urlCommand) {
       // If a command is in the URL, execute it and skip the welcome message
@@ -187,7 +206,34 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     }
 
     welcomeMessageShown.current = true; // Mark as shown
-  }, [urlCommand, isLoading, portfolioData, executeCommand, clearCommand, showWelcomeMessage]);
+  }, [urlCommand, isLoading, portfolioData, executeCommand, clearCommand, showWelcomeMessage, bootDone]);
+
+  // Idle matrix rain: after 30s of no input / pointer activity, the
+  // screensaver kicks in. Any interaction dismisses it instantly and
+  // resets the timer. The `matrix` command also triggers it directly
+  // (handled in useTerminal; listens for a state signal here).
+  useEffect(() => {
+    const IDLE_MS = 30_000;
+    let t: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      setMatrixActive(false);
+      clearTimeout(t);
+      t = setTimeout(() => setMatrixActive(true), IDLE_MS);
+    };
+    schedule();
+    const evts: (keyof WindowEventMap)[] = [
+      'keydown',
+      'pointerdown',
+      'pointermove',
+      'wheel',
+      'touchstart',
+    ];
+    evts.forEach((e) => window.addEventListener(e, schedule, { passive: true }));
+    return () => {
+      clearTimeout(t);
+      evts.forEach((e) => window.removeEventListener(e, schedule));
+    };
+  }, []);
 
   // Handle offline/online status
   useEffect(() => {
@@ -486,9 +532,25 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           aria-label="Terminal output"
           aria-live="polite"
           aria-atomic="false"
-          className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-terminal cursor-text"
+          className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-terminal cursor-text relative"
           onClick={handleTerminalClick}
         >
+          {/* CRT boot sequence — plays once per session before welcome. */}
+          {!bootDone && (
+            <BootSequence
+              themeName={getSavedTheme().name.toLowerCase()}
+              onComplete={() => {
+                setBootDone(true);
+                try {
+                  sessionStorage.setItem('tui-boot-shown', '1');
+                } catch {
+                  // ignore storage errors
+                }
+              }}
+            />
+          )}
+          {/* Idle matrix-rain screensaver — overlays output while idle. */}
+          <IdleMatrixRain active={matrixActive} />
 
           {/* Command Output. TerminalLinkProvider is scoped to this
               subtree so every NumberedLink inside any Block registers

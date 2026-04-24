@@ -34,6 +34,9 @@ export interface TerminalLine {
 export interface UseTerminalProps {
   portfolioData: PortfolioData | null;
   onSwitchToGUI?: () => void;
+  /** Called by the `matrix` command to trigger the idle-rain overlay
+   *  on demand. Terminal.tsx wires this to setMatrixActive(true). */
+  onTriggerMatrix?: () => void;
 }
 
 function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
@@ -404,7 +407,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
 ];
 
-export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
+export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>(() => {
     // Rehydrate from localStorage so the history command + arrow-key
@@ -2278,13 +2281,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   }, [addLine]);
 
   const showMatrix = useCallback(() => {
-    // Phase 12 wires an actual matrix-rain overlay into the output
-    // pane. Until then, print a quick reminder.
-    addLine(
-      'matrix screensaver: idle for 30s or wait for phase 12 wiring.',
-      'text-tui-accent-dim',
-    );
-  }, [addLine]);
+    if (onTriggerMatrix) {
+      addLine('// matrix — rain summoned. any key dismisses.', 'text-terminal-bright-green');
+      onTriggerMatrix();
+    } else {
+      addLine(
+        'matrix screensaver: idle for 30s to see it.',
+        'text-tui-accent-dim',
+      );
+    }
+  }, [addLine, onTriggerMatrix]);
 
   const showStats = useCallback(async () => {
     // Fetch the live pypi-stats.json; same source as the GUI hero.
