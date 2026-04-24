@@ -6,6 +6,7 @@ import { loadPortfolioData } from '../lib/portfolioDataLoader';
 import { usePWA, useURLCommand } from '../hooks/usePWA';
 import { uiText, apiConfig, getSavedTheme } from '../config';
 import { StatusBar } from './tui/StatusBar';
+import { CommandPalette } from './tui/CommandPalette';
 
 interface TerminalProps {
   onSwitchToGUI?: () => void;
@@ -54,7 +55,11 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     promptUser,
     promptHost,
     historyLength,
+    getCommandMetadata,
+    recentCommands,
   } = useTerminal({ portfolioData: portfolioData || null, onSwitchToGUI });
+
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Get current suggestions
   const suggestions = getCommandSuggestions(input);
@@ -93,6 +98,20 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     document.addEventListener('mousedown', onDocMouseDown);
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, [showAutocomplete]);
+
+  // Ctrl+K / Cmd+K opens the command palette from anywhere in the TUI.
+  // Captured at the window level so it works when focus is in a link
+  // or a button inside a Block output.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen((p) => !p);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Auto-focus input and scroll to bottom
   useEffect(() => {
@@ -489,8 +508,18 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           themeName={getSavedTheme().name.toLowerCase()}
           blockCount={lines.filter((l) => l.isCommand).length}
           historyCount={historyLength}
+          mode={paletteOpen ? 'palette' : 'insert'}
         />
       </div>
+
+      {/* Warp-style command palette — Ctrl+K / Cmd+K */}
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        commands={getCommandMetadata()}
+        recentCommands={recentCommands}
+        onExecute={executeCommand}
+      />
     </div>
   );
 }

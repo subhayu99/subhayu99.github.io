@@ -295,7 +295,7 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
 }
 
 // Command Registry Types and Definitions
-interface CommandMetadata {
+export interface CommandMetadata {
   name: string;
   description: string;
   category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal';
@@ -306,6 +306,8 @@ interface CommandMetadata {
   isAvailable?: (data: PortfolioData | null) => boolean;
   /** Command aliases */
   aliases?: string[];
+  /** Hint for argument completion, e.g. `[term]` or `[theme-name]`. */
+  argsHint?: string;
 }
 
 const COMMAND_REGISTRY: CommandMetadata[] = [
@@ -370,8 +372,8 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'contact', description: 'Get in touch with me', category: 'contact' },
 
   // TOOLS Commands (always available)
-  { name: 'search', description: 'Search through my portfolio content', category: 'tools' },
-  { name: 'theme', description: 'Change terminal color theme', category: 'tools' },
+  { name: 'search', description: 'Search through my portfolio content', category: 'tools', argsHint: '[term]' },
+  { name: 'theme', description: 'Change terminal color theme', category: 'tools', argsHint: '[name]' },
   { name: 'gui', description: 'Switch to the GUI portfolio view', category: 'tools' },
   { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
 
@@ -380,7 +382,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'history', description: 'Show recent commands (click to re-run)', category: 'terminal' },
   { name: 'ls', description: 'List available commands', category: 'terminal' },
   { name: 'pwd', description: 'Print working directory', category: 'terminal' },
-  { name: 'cat', description: 'Display file contents', category: 'terminal' },
+  { name: 'cat', description: 'Display file contents', category: 'terminal', argsHint: '[file]' },
 ];
 
 export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
@@ -2353,5 +2355,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     promptHost: terminalConfig.prompt.hostname,
     // Used by the status bar to render live counts.
     historyLength: commandHistory.length,
+    // Exposed for the command palette (phase 6).
+    getCommandMetadata: getAvailableCommands,
+    recentCommands: commandHistory,
   };
 }
