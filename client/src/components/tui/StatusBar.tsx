@@ -56,7 +56,10 @@ export function StatusBar({
     <footer
       role="toolbar"
       aria-label="terminal hints"
-      className="flex-shrink-0 border-t border-tui-accent-dim/30 bg-terminal-black px-2 sm:px-3 py-1 font-mono text-[10px] sm:text-[11px] leading-tight"
+      // pb adds safe-area for iPhones with a home bar so chips don't
+      // sit under the indicator. With h-dvh on the outer shell, the
+      // strip lifts above the soft keyboard automatically when it opens.
+      className="flex-shrink-0 border-t border-tui-accent-dim/30 bg-terminal-black px-2 sm:px-3 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] font-mono text-[10px] sm:text-[11px] leading-tight"
     >
       <div className="max-w-4xl flex items-center gap-x-3">
         {mode === 'search' ? (
@@ -76,18 +79,26 @@ export function StatusBar({
           </div>
         ) : (
           // Hint row — chips are buttons. Bare-key chips (?, /, :) work
-          // on every platform because the underlying keys exist on
-          // on-screen keyboards too. Modifier-based chips (⌃/⌥) hide
-          // on touch — a tap couldn't simulate a Ctrl-modified key
-          // event for the same handler, and the labels read as noise
-          // without a physical modifier key. The actions are still
-          // reachable by typing the underlying command (e.g. `theme`,
-          // `matrix`, `clear`).
+          // on every platform. On touch we still surface the modifier-
+          // backed actions (recall/palette/theme/gui/matrix/clear) but
+          // drop the meaningless ⌃/⌥ glyphs and render them as plain
+          // bracketed labels so users get one-tap access to the same
+          // functionality desktop users get from the keyboard. Strip is
+          // horizontally scrollable for narrow screens.
           <div className="flex items-center gap-x-2 sm:gap-x-3 overflow-x-auto scrollbar-hide whitespace-nowrap flex-1 min-w-0">
             <Hint chip="?" label="help" onTap={actions.help} />
             <Hint chip="/" label="search" onTap={actions.search} />
             <Hint chip=":" label="cmd" onTap={actions.cmd} />
-            {!isTouchDevice && (
+            {isTouchDevice ? (
+              <>
+                <TouchChip label="recall" onTap={actions.recall} />
+                <TouchChip label="palette" onTap={actions.palette} />
+                <TouchChip label="theme" onTap={actions.cycleTheme} />
+                <TouchChip label="gui" onTap={actions.toGui} />
+                <TouchChip label="matrix" onTap={actions.matrix} />
+                <TouchChip label="clear" onTap={actions.clear} />
+              </>
+            ) : (
               <>
                 <Hint chip={`${ctrlKey}R`} label="recall" onTap={actions.recall} />
                 <Hint chip={`${ctrlKey}K`} label="palette" onTap={actions.palette} />
@@ -142,4 +153,21 @@ function Hint({
     );
   }
   return <span className="inline-flex items-center gap-1 text-tui-muted">{inner}</span>;
+}
+
+/** Touch-device variant of Hint — no kbd glyph (modifier keys don't
+ *  exist on phones), just a `[label]` chip that fires the same action.
+ *  Slightly bigger tap target than the desktop hint so it's reachable
+ *  on a small screen. */
+function TouchChip({ label, onTap }: { label: string; onTap: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      aria-label={label}
+      className="inline-flex items-center rounded-sm border border-tui-accent-dim/40 px-1.5 py-[1px] text-tui-muted hover:text-terminal-bright-green hover:border-terminal-bright-green/60 active:bg-terminal-bright-green/10 focus-visible:outline-none focus-visible:text-terminal-bright-green focus-visible:border-terminal-bright-green transition-colors"
+    >
+      {label}
+    </button>
+  );
 }
