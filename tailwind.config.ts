@@ -67,6 +67,13 @@ export default {
         "terminal-white": "var(--terminal-white)",
         "terminal-red": "var(--terminal-red)",
         "terminal-yellow": "var(--terminal-yellow)",
+        // TUI semantic tokens — new code uses these. `terminal-yellow` and
+        // `terminal-red` above are backwards-compat aliases pointing at the
+        // same CSS vars.
+        "tui-accent-dim": "var(--tui-accent-dim)",
+        "tui-muted": "var(--tui-muted)",
+        "tui-error": "var(--tui-error)",
+        "tui-warn": "var(--tui-warn)",
         gui: {
           bg: "var(--gui-bg)",
           surface: "var(--gui-surface)",
