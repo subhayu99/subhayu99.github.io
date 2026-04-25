@@ -27,7 +27,6 @@ export const uiText = {
    * Welcome banner and greeting
    */
   welcome: {
-    greeting: 'a portfolio that talks back. type `help` or pick a tile.',
     /** Legacy — unused since Phase 2 swapped welcome to Block chrome. */
     title: '',
   },

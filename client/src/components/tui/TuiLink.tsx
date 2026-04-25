@@ -31,23 +31,22 @@ interface ExtLinkProps {
   href: string;
   children: ReactNode;
   className?: string;
-  /** Hide the `[N]` number tag. Default `false` — tags are visible
-      so users discover the `o N` / `g N` open-by-number shortcut.
-      Set `silent` for very short inline links that would disturb
-      prose flow. */
+  /** Legacy prop — used to hide the inline `[N]` tag. The tag has
+      since been removed entirely; this is kept as a no-op so existing
+      call sites compile. */
   silent?: boolean;
 }
 
 /**
  * External http/https link. Opens in a new tab with `noopener
- * noreferrer`. Accent-underlined, with a `[N]` tag that resolves via
- * the terminal's link registry so `o N` / `g N` opens it keyboard-
- * only.
+ * noreferrer`. Still registers with the terminal-wide registry so the
+ * `open N` command resolves it; the visible `[N]` suffix has been
+ * removed to keep outputs uncluttered.
  */
-export function ExtLink({ href, children, className = '', silent = false }: ExtLinkProps) {
+export function ExtLink({ href, children, className = '' }: ExtLinkProps) {
   const registry = useTerminalLinks();
   const label = typeof children === 'string' ? children : href;
-  const n = useMemo(
+  useMemo(
     () => (registry ? registry.register(href, label) : null),
     [registry, href, label],
   );
@@ -57,18 +56,9 @@ export function ExtLink({ href, children, className = '', silent = false }: ExtL
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={n !== null ? `${label} (link ${n})` : undefined}
       className={`text-terminal-bright-green underline hover:opacity-80 rounded-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green ${className}`}
     >
       {children}
-      {n !== null && !silent && (
-        <span
-          aria-hidden="true"
-          className="ml-1 text-tui-muted text-[10px] sm:text-xs tabular-nums"
-        >
-          [{n}]
-        </span>
-      )}
     </a>
   );
 }

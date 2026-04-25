@@ -12,21 +12,22 @@ import {
 /**
  * The canonical chrome primitive for every command's output.
  *
- * Visual grammar is adopted from Textual and Ratatui — a titled border
- * where the title "punches through" the top edge. A thicker left rail
- * marks the output as an addressable block in the Warp sense; it fades
- * on hover to suggest rerun/copy affordances (wired in later phases).
+ * Visual grammar borrows from Textual / Ratatui (titled top border with
+ * the title "punching through") and Warp (left rail as a hover-revealed
+ * affordance, not a permanent fence). Default state: top hairline +
+ * `// title` only, rail-space reserved but transparent. Hover state:
+ * the rail lights up to mark the block as addressable. Avoids the
+ * "every command is fenced" feeling of a permanent rail.
  *
- *   ┌─── // about ────────────────────────── 14:32 ──
- *   │
- *   │   body content
- *   │
- *   └──────────────────────────────────────────────
+ *   ─── // about ────────────────────────── 14:32 ──
  *
- * The title is rendered inline with `font-mono` in accent-bright; the
- * border is accent-dim at 40% opacity; the rail is accent-dim solid.
- * The background is solid `terminal-black` so the title can visually
- * punch through the border line.
+ *       body content
+ *
+ *   (on hover, a 3px accent-bright rail appears on the left)
+ *
+ * Title is `font-mono` in accent-bright; top border is accent-dim at
+ * 40% opacity. Background is solid `terminal-black` so the title
+ * punches through the top hairline cleanly.
  */
 
 interface BlockProps {
@@ -80,21 +81,22 @@ export function Block({
       id={id}
       role="region"
       aria-labelledby={titleId}
-      // Chrome: left rail (strong) + top rule (subtle) only. The full
-      // 4-sided border we had before gave each block a "right-edge
-      // border" that read as visual noise — the left rail already
-      // marks the block, and title+top-rule close the top. Bubble
-      // Tea / Ratatui panels skip the right/bottom for the same
-      // reason. Bottom spacing comes from my-4; blocks naturally
-      // separate without a closing rule.
-      className={`tui-block group relative my-4 border-t border-tui-accent-dim/40 border-l-[3px] border-l-terminal-bright-green bg-terminal-black ${widthCls} ${className}`}
+      // Chrome: top hairline + title only by default. The left rail
+      // is reserved (3px transparent) but invisible until hover —
+      // Warp idiom. This stops every block reading as a fenced cell;
+      // the title + top rule + my-4 spacing carry the delimitation,
+      // and the rail becomes a hover-revealed "this is addressable"
+      // affordance instead of a permanent fence.
+      className={`tui-block group relative my-4 border-t border-tui-accent-dim/40 border-l-[3px] border-l-transparent hover:border-l-terminal-bright-green transition-colors duration-200 bg-terminal-black ${widthCls} ${className}`}
     >
       {/* Title row — positioned to straddle the top border so the text
-          overlays the border line. Header extends from the left rail
-          to the right edge so the title's black background fully
-          clips the top border (no stray "dash" visible between the
-          rail and the title start). */}
-      <header className="pointer-events-none absolute -top-2.5 left-[3px] right-0 flex items-center justify-between font-mono text-xs sm:text-[13px]">
+          overlays the border line. Header extends from x=0 to right
+          edge so the title's black background also clips the top
+          border in the 3px rail-space (otherwise a stray `-` tick
+          shows through where border-left is transparent). On hover
+          the rail still appears below the title's height, so the
+          "title on rail" reading is preserved. */}
+      <header className="pointer-events-none absolute -top-2.5 -left-[3px] right-0 flex items-center justify-between font-mono text-xs sm:text-[13px]">
         <div className="pointer-events-auto flex items-center gap-2">
           <span
             id={titleId}

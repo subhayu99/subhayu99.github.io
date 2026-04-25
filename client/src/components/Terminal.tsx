@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, memo } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo, memo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useTerminal } from '../hooks/useTerminal';
@@ -64,7 +64,14 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   } = useTerminal({
     portfolioData: portfolioData || null,
     onSwitchToGUI,
-    onTriggerMatrix: () => setMatrixActive(true),
+    onTriggerMatrix: (opts) => {
+      setMatrixActive(true);
+      setMatrixPersistent(opts?.persist === true);
+    },
+    onDismissMatrix: () => {
+      setMatrixActive(false);
+      setMatrixPersistent(false);
+    },
   });
 
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -80,24 +87,56 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     return sessionStorage.getItem('tui-boot-shown') === '1';
   });
   // Idle matrix-rain screensaver: fires after 30s with no input.
+  // `matrixPersistent` keeps the rain on across keypresses (`matrix on`)
+  // until explicitly dismissed via `matrix off`. Default mode auto-
+  // dismisses on user interaction.
   const [matrixActive, setMatrixActive] = useState(false);
+  const [matrixPersistent, setMatrixPersistent] = useState(false);
 
-  // Get current suggestions
-  const suggestions = getCommandSuggestions(input);
+  // Persistent silent toggle for Alt+M / the matrix chip. We bypass
+  // executeCommand entirely — no prompt echo, no scrollback line, no
+  // history pollution — and pin it persistent so the next keypress
+  // doesn't immediately dismiss it. The typed `matrix` / `matrix on`
+  // / `matrix off` commands still go through the normal pathway.
+  const toggleMatrix = useCallback(() => {
+    setMatrixActive((wasActive) => {
+      if (wasActive) {
+        setMatrixPersistent(false);
+        return false;
+      }
+      setMatrixPersistent(true);
+      return true;
+    });
+  }, []);
+
+  // Get current suggestions. Memoised so the array reference is stable
+  // across renders that don't change `input` — without this, the
+  // autocomplete effect would re-fire on every render (the arrow-key
+  // bump → re-render path), wiping `selectedSuggestion` back to 0 and
+  // breaking ↑/↓ navigation inside the dropdown.
+  const suggestions = useMemo(
+    () => getCommandSuggestions(input),
+    [getCommandSuggestions, input],
+  );
 
   // Update autocomplete visibility and reset selection when input changes.
   // Suppressed while browsing history with arrow keys — otherwise a recalled
   // command (e.g. "skills") opens the autocomplete, and the very next Up
   // goes into autocomplete navigation rather than continuing history recall.
+  // Also suppressed when the only suggestion exactly matches the input —
+  // a one-row dropdown showing what you already typed is just noise.
   useEffect(() => {
-    if (!isBrowsingHistory && suggestions.length > 0 && input.trim()) {
+    const trimmed = input.trim();
+    const isRedundant =
+      suggestions.length === 1 && suggestions[0].toLowerCase() === trimmed.toLowerCase();
+    if (!isBrowsingHistory && suggestions.length > 0 && trimmed && !isRedundant) {
       setShowAutocomplete(true);
       setSelectedSuggestion(0);
     } else {
       setShowAutocomplete(false);
       setSelectedSuggestion(0);
     }
-  }, [input, suggestions.length, isBrowsingHistory]);
+  }, [input, suggestions, isBrowsingHistory]);
 
   // Measure the ghost span to position the blinking cursor precisely.
   // Runs before paint so the cursor never flashes at the wrong spot.
@@ -151,10 +190,13 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
         return;
       }
 
-      // Alt-letter shortcuts. Match lower-or-upper case.
+      // Alt-letter shortcuts. Match by physical key code (e.code) not
+      // produced character (e.key) — on macOS Alt is the Option key,
+      // which mutates `e.key` to special chars (Alt+T → "†", Alt+G →
+      // "©", Alt+M → "µ"). e.code === "KeyT" identifies the same
+      // physical key regardless of the modifier-mutated character.
       if (e.altKey && !mod) {
-        const k = e.key.toLowerCase();
-        if (k === 't') {
+        if (e.code === 'KeyT') {
           e.preventDefault();
           const current = getSavedTheme();
           const idx = colorThemes.findIndex((th) => th.key === current.key);
@@ -162,42 +204,49 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           executeCommand(`theme ${next.key}`);
           return;
         }
-        if (k === 'g') {
+        if (e.code === 'KeyG') {
           e.preventDefault();
           executeCommand('gui');
           return;
         }
-        if (k === 'm') {
+        if (e.code === 'KeyM') {
           e.preventDefault();
-          executeCommand('matrix');
+          toggleMatrix();
           return;
         }
       }
 
-      // Non-letter bare-key prefixes — safe because they never start a
-      // command word. Activate regardless of input focus; on focus they
-      // still get to seed the input helpfully.
+      // Non-letter bare-key prefixes. These previously hijacked the
+      // input regardless of state, which broke things like typing
+      // `rm -rf` then `/` (suddenly the input became `search `).
+      // Now we only intercept when the input is empty — at that point
+      // the user clearly isn't typing a command, so the shortcut wins.
+      // While typing a command, these keys reach the input naturally
+      // (`/` is a valid character in arguments).
       if (!mod && !e.altKey) {
+        const target = e.target as HTMLElement | null;
+        const isEditable =
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target?.isContentEditable;
+        const inputEmpty = !input;
         if (e.key === '?') {
-          e.preventDefault();
-          executeCommand('help');
-          return;
+          if (!isEditable || inputEmpty) {
+            e.preventDefault();
+            executeCommand('help');
+            return;
+          }
         }
         if (e.key === '/') {
-          e.preventDefault();
-          inputRef.current?.focus();
-          setInput('search ');
-          return;
+          if (!isEditable || inputEmpty) {
+            e.preventDefault();
+            inputRef.current?.focus();
+            setInput('search ');
+            return;
+          }
         }
         if (e.key === ':') {
-          // Only seed `:` when the input is empty — otherwise the user
-          // might be trying to type `:` mid-text.
-          const target = e.target as HTMLElement | null;
-          const isEditable =
-            target instanceof HTMLInputElement ||
-            target instanceof HTMLTextAreaElement ||
-            target?.isContentEditable;
-          if (!isEditable || !input) {
+          if (!isEditable || inputEmpty) {
             e.preventDefault();
             inputRef.current?.focus();
             setInput(':');
@@ -208,7 +257,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [clearTerminal, executeCommand, input]);
+  }, [clearTerminal, executeCommand, input, toggleMatrix]);
 
   // Auto-focus input and scroll to bottom
   useEffect(() => {
@@ -286,39 +335,59 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
 
   // Idle matrix rain:
   //   - After 30s of no activity the screensaver activates.
-  //   - Any interaction WHILE ACTIVE dismisses it.
-  //   - Interaction while idle just resets the 30s timer (does not
-  //     spuriously set active=false; earlier version did, which racing
-  //     with the `matrix` command caused the rain to vanish the same
-  //     frame it was summoned).
-  //   - The `matrix` command manually triggers it via onTriggerMatrix.
+  //   - Deliberate user input WHILE ACTIVE dismisses it. We split
+  //     "dismissal" (keydown / pointerdown / wheel / touchstart) from
+  //     "idle reset" (those + pointermove). pointermove resets the
+  //     idle clock but does NOT dismiss — otherwise reading the screen
+  //     while your mouse drifts a pixel kills the rain.
+  //   - There's a 350ms grace period after activation during which
+  //     dismissal is ignored. This stops the very keydown that
+  //     triggered `matrix` (the Enter key) from immediately dismissing
+  //     it via the window-level listener firing later in the same
+  //     event dispatch.
+  //   - The `matrix` command manually triggers via onTriggerMatrix.
   const matrixActiveRef = useRef(false);
   matrixActiveRef.current = matrixActive;
+  const matrixPersistentRef = useRef(false);
+  matrixPersistentRef.current = matrixPersistent;
+  const matrixActivatedAt = useRef(0);
+  useEffect(() => {
+    if (matrixActive) matrixActivatedAt.current = Date.now();
+  }, [matrixActive]);
   useEffect(() => {
     const IDLE_MS = 30_000;
+    const GRACE_MS = 350;
     let t: ReturnType<typeof setTimeout>;
     const resetTimer = () => {
       clearTimeout(t);
       t = setTimeout(() => setMatrixActive(true), IDLE_MS);
     };
-    const handle = () => {
-      if (matrixActiveRef.current) {
+    const dismiss = () => {
+      if (matrixPersistentRef.current) return; // `matrix on` mode — keep rain alive
+      if (matrixActiveRef.current && Date.now() - matrixActivatedAt.current > GRACE_MS) {
         setMatrixActive(false);
       }
-      resetTimer();
     };
     resetTimer();
-    const evts: (keyof WindowEventMap)[] = [
+    const idleEvts: (keyof WindowEventMap)[] = [
       'keydown',
       'pointerdown',
       'pointermove',
       'wheel',
       'touchstart',
     ];
-    evts.forEach((e) => window.addEventListener(e, handle, { passive: true }));
+    const dismissEvts: (keyof WindowEventMap)[] = [
+      'keydown',
+      'pointerdown',
+      'wheel',
+      'touchstart',
+    ];
+    idleEvts.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
+    dismissEvts.forEach((e) => window.addEventListener(e, dismiss, { passive: true }));
     return () => {
       clearTimeout(t);
-      evts.forEach((e) => window.removeEventListener(e, handle));
+      idleEvts.forEach((e) => window.removeEventListener(e, resetTimer));
+      dismissEvts.forEach((e) => window.removeEventListener(e, dismiss));
     };
   }, []);
 
@@ -638,7 +707,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
               subtree so every NumberedLink inside any Block registers
               with the same terminal-wide numbering sequence. */}
           <TerminalLinkProvider value={linkRegistry}>
-            <div className="space-y-1 text-xs sm:text-sm lg:text-base">
+            <div className="space-y-1 text-sm sm:text-base">
               {lines.map((line) => (
                 <motion.div
                   key={line.id}
@@ -655,31 +724,17 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           </TerminalLinkProvider>
         </div>
 
-        {/* Command Input — Starship-style prompt with right-aligned
-            exit-status + theme name. Dir changes with navigation
-            commands. Inner content is constrained to match the Block
-            output width (max-w-4xl) so the input doesn't sprawl past
-            the command output above it on wide monitors. The outer
-            border-t still spans full viewport so the divider line
-            extends edge-to-edge. */}
-        <div className="border-t border-terminal-green/30 p-2 sm:p-4">
+        {/* Command Input — Starship-style prompt. Exit status is a
+            single inline ✔/✖ glyph between the path and the `$`, so
+            we don't need a dedicated row above. Theme name is shown
+            once in the StatusBar instead of duplicated here. Inner
+            content is capped to max-w-4xl to align with Block output
+            on wide monitors; the outer border-t still spans edge-to-edge. */}
+        <div className="border-t border-terminal-green/30 px-2 sm:px-4 py-1.5 sm:py-2">
           <div className="max-w-4xl">
-          {/* Right prompt: subtle, only shown when something to say */}
-          <div className="flex items-center justify-end mb-0.5 font-mono text-[10px] sm:text-[11px] tabular-nums text-tui-muted h-3 sm:h-4">
-            {lastExitCode !== null && (
-              <span className="mr-3">
-                {lastExitCode === 0 ? (
-                  <span className="text-terminal-bright-green">✔</span>
-                ) : (
-                  <span className="text-tui-error">✖ {lastExitCode}</span>
-                )}
-              </span>
-            )}
-            <span>{getSavedTheme().name.toLowerCase()}</span>
-          </div>
           <div className="flex items-center font-mono">
             {searchMode ? (
-              <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
+              <span className="flex-shrink-0 text-sm sm:text-base whitespace-nowrap">
                 <span className="text-tui-accent-dim">(reverse-i-search)</span>
                 <span className="text-tui-muted">`</span>
                 <span className="text-terminal-bright-green">{searchQuery}</span>
@@ -687,14 +742,21 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                 <span className="text-terminal-green">: </span>
               </span>
             ) : (
-              <span className="flex-shrink-0 text-xs sm:text-sm whitespace-nowrap">
+              <span className="flex-shrink-0 text-sm sm:text-base whitespace-nowrap">
                 <span className="text-tui-accent-dim">{promptUser}</span>
                 <span className="text-tui-muted">@{promptHost}</span>
                 <span className="text-terminal-bright-green"> {currentDir}</span>
+                {lastExitCode !== null && (
+                  lastExitCode === 0 ? (
+                    <span className="text-terminal-bright-green"> ✔</span>
+                  ) : (
+                    <span className="text-tui-error"> ✖</span>
+                  )
+                )}
                 <span className="text-terminal-green"> $ </span>
               </span>
             )}
-            <div className="flex-1 relative min-w-0">
+            <div className="flex-1 relative min-w-0 ml-1.5 sm:ml-2">
               <input
                 ref={inputRef}
                 type="text"
@@ -708,7 +770,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                   }
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-terminal-green outline-none font-mono text-xs sm:text-sm"
+                className="w-full bg-transparent text-terminal-green outline-none font-mono text-sm sm:text-base"
                 autoComplete="off"
                 spellCheck="false"
                 placeholder={!hasTyped && !searchMode ? uiText.input.placeholder : ""}
@@ -718,34 +780,20 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
               <span
                 ref={ghostRef}
                 aria-hidden="true"
-                className="invisible absolute top-0 left-0 whitespace-pre font-mono text-xs sm:text-sm pointer-events-none"
+                className="invisible absolute top-0 left-0 whitespace-pre font-mono text-sm sm:text-base pointer-events-none"
               >
                 {input}
               </span>
               <span
-                className="absolute text-terminal-green blink text-xs sm:text-sm"
+                className="absolute text-terminal-green blink text-sm sm:text-base"
                 style={{ left: `${cursorLeft}px`, top: '50%', transform: 'translateY(-45%)' }}
               >
                 █
               </span>
               
-              {/* Reverse-search hints: shown beneath the prompt while
-                  a Ctrl+R search is active. Hidden otherwise. */}
-              {searchMode && (
-                <div className="absolute top-full left-0 right-0 mt-1 text-[10px] font-mono text-tui-muted flex items-center gap-3">
-                  <span>
-                    {searchMatches.length > 0
-                      ? `${searchMatchIndex + 1}/${searchMatches.length}`
-                      : 'no match'}
-                  </span>
-                  <span>
-                    <span className="text-terminal-bright-green">⌃R</span> next ·{' '}
-                    <span className="text-terminal-bright-green">↵</span> run ·{' '}
-                    <span className="text-terminal-bright-green">tab</span> edit ·{' '}
-                    <span className="text-terminal-bright-green">esc</span> cancel
-                  </span>
-                </div>
-              )}
+              {/* Reverse-search hints live in the StatusBar (mode='search')
+                  so they don't pop in as a third row above the chip
+                  strip. See StatusBar.tsx for the swap. */}
 
               {/* Autocomplete Dropdown */}
               {showAutocomplete && suggestions.length > 0 && (
@@ -761,7 +809,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
                         key={suggestion}
                         role="option"
                         aria-selected={index === selectedSuggestion}
-                        className={`px-3 py-1 text-xs sm:text-sm cursor-pointer border border-transparent rounded-sm transition-all duration-150 ease-in-out ${
+                        className={`px-3 py-1 text-sm sm:text-base cursor-pointer border border-transparent rounded-sm transition-all duration-150 ease-in-out ${
                           index === selectedSuggestion
                             // Selected state — theme-reactive glow via --glow-color-rgb,
                             // so a Glacier theme pops in cool-white and a Pink theme
@@ -791,12 +839,51 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
           </div>
         </div>
 
-        {/* Persistent keyboard-hint status bar (lazygit / k9s / Ghostty) */}
+        {/* Persistent keyboard-hint status bar (lazygit / k9s / Ghostty).
+            Each chip is also tappable — fires the same action a
+            keyboard shortcut would. On touch devices the modifier
+            chips hide entirely (they have no Ctrl/Alt counterpart),
+            but the bare-key chips (?, /, :) still tap to act. */}
         <StatusBar
           themeName={getSavedTheme().name.toLowerCase()}
           blockCount={lines.filter((l) => l.isCommand).length}
           historyCount={historyLength}
           mode={searchMode ? 'search' : paletteOpen ? 'palette' : 'insert'}
+          searchInfo={
+            searchMode
+              ? { matchIndex: searchMatchIndex, matchCount: searchMatches.length }
+              : undefined
+          }
+          actions={{
+            help: () => executeCommand('help'),
+            search: () => {
+              inputRef.current?.focus();
+              setInput('search ');
+            },
+            cmd: () => {
+              inputRef.current?.focus();
+              setInput(':');
+            },
+            recall: () => {
+              setSearchMode(true);
+              setSearchQuery(input);
+              setSearchMatchIndex(0);
+              setShowAutocomplete(false);
+              inputRef.current?.focus();
+            },
+            palette: () => setPaletteOpen((p) => !p),
+            cycleTheme: () => {
+              const current = getSavedTheme();
+              const idx = colorThemes.findIndex((th) => th.key === current.key);
+              const next = colorThemes[(idx + 1) % colorThemes.length];
+              executeCommand(`theme ${next.key}`);
+            },
+            toGui: () => executeCommand('gui'),
+            // Same toggle as Alt+M — silent (no echo), persistent
+            // (doesn't auto-dismiss on next keypress).
+            matrix: toggleMatrix,
+            clear: () => clearTerminal(),
+          }}
         />
       </div>
 
