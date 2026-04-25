@@ -33,9 +33,15 @@ export interface TerminalLine {
 export interface UseTerminalProps {
   portfolioData: PortfolioData | null;
   onSwitchToGUI?: () => void;
-  /** Called by the `matrix` command to trigger the idle-rain overlay
-   *  on demand. Terminal.tsx wires this to setMatrixActive(true). */
-  onTriggerMatrix?: () => void;
+  /** Called by the `matrix` command to trigger the idle-rain overlay.
+   *  Pass `{ persist: true }` for `matrix on` (rain stays through key
+   *  presses); omit / pass `false` for the default one-shot summon
+   *  (any input dismisses). Terminal.tsx maps this to setMatrixActive
+   *  + setMatrixPersistent. */
+  onTriggerMatrix?: (opts?: { persist?: boolean }) => void;
+  /** Called by `matrix off` to explicitly dismiss + clear the
+   *  persistent flag. */
+  onDismissMatrix?: () => void;
 }
 
 function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
@@ -254,28 +260,26 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       <div className="mb-3 sm:mb-4">
         {usePre ? (
           <>
-            {/* Banner uses a left-rail treatment (no top/right/bottom
-                border, no rounded corners) to match the Block family's
-                chrome. The banner is atmospheric, not a container. */}
-            <div className="hidden sm:block border-l-[3px] border-l-terminal-bright-green pl-3 max-w-4xl overflow-x-auto">
+            {/* ASCII banner stands on its own — the left rail used to
+                read as a redundant frame around already-fenced art. */}
+            <div className="hidden sm:block max-w-4xl overflow-x-auto">
               <pre className="text-terminal-bright-green text-xs leading-tight">
                 {styledName}
               </pre>
             </div>
-            <div className="sm:hidden text-terminal-bright-green mb-3 border-l-[3px] border-l-terminal-bright-green pl-3">
+            <div className="sm:hidden text-terminal-bright-green mb-3">
               <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
               <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
             </div>
           </>
         ) : (
-          <div className="text-terminal-bright-green mb-3 border-l-[3px] border-l-terminal-bright-green pl-3">
+          <div className="text-terminal-bright-green mb-3">
             <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
             <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
           </div>
         )}
       </div>
       <div className="mb-4">
-        <p className="text-terminal-green mb-2 text-sm sm:text-base">{uiText.welcome.greeting}</p>
         <div className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
           <MarkdownBlock source={introParagraph} inline />
         </div>
@@ -452,7 +456,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'open', description: 'Open link by number', category: 'tools', hidden: true, aliases: ['o', 'g'], argsHint: '<N>' },
 ];
 
-export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: UseTerminalProps) {
+export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onDismissMatrix }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>(() => {
     // Rehydrate from localStorage so the history command + arrow-key
@@ -537,13 +541,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
   }, [linkRegistry]);
 
   /** Commands that represent a "navigation" — they change the prompt
-   *  context to `~/<cmd>`. Utility commands (ls, pwd, history, theme,
-   *  search, clear, gui, resume, help) don't move the user anywhere.
-   *  `welcome` resets to `~/` since that's the landing state. */
+   *  context to `~/<cmd>`. Utility / lookup commands (ls, pwd, history,
+   *  theme, search, clear, gui, resume, help, whoami, neofetch, stats)
+   *  don't move the user anywhere — they're print-and-return ops, not
+   *  section views, and pinning them to `~/whoami` reads as a duplicate
+   *  next to the command echo. `welcome` resets to `~/` since that's
+   *  the landing state. */
   const DESTINATION_COMMANDS = new Set([
     'about', 'skills', 'experience', 'education', 'projects',
-    'personal', 'publications', 'timeline', 'contact', 'whoami',
-    'neofetch', 'replicate', 'clone', 'fork', 'stats',
+    'personal', 'publications', 'timeline', 'contact',
+    'replicate', 'clone', 'fork',
   ]);
 
   // Get available commands based on portfolio data
@@ -2408,17 +2415,27 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     addLine('sorry, no sudo for you.', 'text-tui-accent-dim');
   }, [addLine]);
 
-  const showMatrix = useCallback(() => {
-    if (onTriggerMatrix) {
-      addLine('// matrix — rain summoned. any key dismisses.', 'text-terminal-bright-green');
-      onTriggerMatrix();
-    } else {
-      addLine(
-        'matrix screensaver: idle for 30s to see it.',
-        'text-tui-accent-dim',
-      );
+  const showMatrix = useCallback((mode?: 'on' | 'off') => {
+    if (mode === 'off') {
+      if (onDismissMatrix) onDismissMatrix();
+      addLine('// matrix — rain dismissed.', 'text-tui-accent-dim');
+      return;
     }
-  }, [addLine, onTriggerMatrix]);
+    if (!onTriggerMatrix) {
+      addLine('matrix screensaver: idle for 30s to see it.', 'text-tui-accent-dim');
+      return;
+    }
+    if (mode === 'on') {
+      addLine(
+        '// matrix — rain pinned. type `matrix off` to dismiss.',
+        'text-terminal-bright-green',
+      );
+      onTriggerMatrix({ persist: true });
+    } else {
+      addLine('// matrix — rain summoned. any key dismisses.', 'text-terminal-bright-green');
+      onTriggerMatrix({ persist: false });
+    }
+  }, [addLine, onTriggerMatrix, onDismissMatrix]);
 
   const showStats = useCallback(async () => {
     // Fetch the live pypi-stats.json; same source as the GUI hero.
@@ -2585,6 +2602,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
     if (DESTINATION_COMMANDS.has(cmd)) {
       // Normalise aliases to their canonical dir (clone/fork → replicate).
       const canonical = cmd === 'clone' || cmd === 'fork' ? 'replicate' : cmd;
+      // Already viewing this section — re-running just duplicates the
+      // identical block. Friendly nudge instead of redundant output.
+      // No-arg only; with args (e.g. `theme blue`) the command is doing
+      // real work, not just navigating.
+      if (currentDir === `~/${canonical}` && args.length === 1) {
+        addLine(
+          `// already viewing ${canonical} — type 'clear' to reset, or scroll up`,
+          'text-tui-muted',
+        );
+        setLastExitCode(0);
+        return;
+      }
       setCurrentDir(`~/${canonical}`);
     } else if (cmd === 'welcome') {
       setCurrentDir('~');
@@ -2682,24 +2711,76 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
       case 'sudo':
         showSudo(args.slice(1));
         break;
-      case 'matrix':
-        showMatrix();
+      case 'matrix': {
+        const sub = (args[1] ?? '').toLowerCase();
+        if (sub === 'on' || sub === '--keep' || sub === '-k') {
+          showMatrix('on');
+        } else if (sub === 'off' || sub === 'stop' || sub === 'dismiss') {
+          showMatrix('off');
+        } else {
+          showMatrix();
+        }
         break;
+      }
       case 'konami':
         showKonami();
         break;
       case 'rm': {
         // The infamous command. Unix-faithful for anything that
         // isn't `-rf /`; full theater for the classic.
-        const tail = args.slice(1).join(' ').trim();
-        if (/^-r?f?r?\s*\/?(\*|\/)?$/i.test(tail) || tail === '-rf /' || tail === '-rf /*' || tail === '-fr /') {
+        const restArgs = args.slice(1);
+        // Split flags (anything starting with `-`) from operands so the
+        // error message reads like a real shell ("cannot remove 'd'",
+        // not "cannot remove '-rf d'"). Also lets us detect `-rf /`
+        // regardless of flag/operand order.
+        const flagTokens = restArgs.filter((a) => a.startsWith('-'));
+        const operandTokens = restArgs.filter((a) => !a.startsWith('-') && a !== '');
+        const flagChars = flagTokens
+          .filter((f) => !f.startsWith('--'))
+          .map((f) => f.slice(1).toLowerCase())
+          .join('');
+        const hasR = flagChars.includes('r') || flagTokens.includes('--recursive');
+        const hasF = flagChars.includes('f') || flagTokens.includes('--force');
+        const targetsRoot = operandTokens.some((t) => t === '/' || t === '/*');
+        if (hasR && hasF && targetsRoot) {
           void showRmRf();
-        } else if (!tail) {
+        } else if (restArgs.length === 0) {
+          addLine('rm: missing operand', 'text-tui-error');
+          addLine("try 'rm --help' for more information.", 'text-tui-muted');
+          setLastExitCode(1);
+        } else if (flagTokens.includes('--help') || flagChars.includes('h')) {
+          // Real `rm` shows usage. Ours plays along — reads as a real
+          // shell page, with a wink at the bottom for the curious.
+          // Wrapped in <pre> so multi-space alignment survives.
+          addNode(
+            <pre className="font-mono whitespace-pre text-xs sm:text-sm leading-relaxed overflow-x-auto">
+              <span className="text-terminal-green">Usage: rm [OPTION]... FILE...{'\n'}</span>
+              <span className="text-tui-muted">
+                Remove (unlink) the FILE(s).{'\n'}
+                {'\n'}
+                {'  '}-f, --force            ignore nonexistent files, never prompt{'\n'}
+                {'  '}-i                     prompt before every removal{'\n'}
+                {'  '}-r, -R, --recursive    remove directories recursively{'\n'}
+                {'  '}-v, --verbose          explain what is being done{'\n'}
+                {'      '}--help             display this help and exit{'\n'}
+                {'\n'}
+              </span>
+              <span className="text-tui-accent-dim">
+                // note: this is a read-only portfolio. no file is ever actually removed.
+              </span>
+            </pre>,
+          );
+          setLastExitCode(0);
+        } else if (operandTokens.length === 0) {
+          // Only flags, no file — same error real `rm` gives.
           addLine('rm: missing operand', 'text-tui-error');
           addLine("try 'rm --help' for more information.", 'text-tui-muted');
           setLastExitCode(1);
         } else {
-          addLine(`rm: cannot remove '${tail}': Permission denied`, 'text-tui-error');
+          // Show one error per operand, just like real rm.
+          for (const op of operandTokens) {
+            addLine(`rm: cannot remove '${op}': Permission denied`, 'text-tui-error');
+          }
           setLastExitCode(1);
         }
         break;
@@ -2766,17 +2847,44 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix }: U
 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
-    const commands = getAllCommandNames();
-    // Source theme subcommands from the palette itself so new themes show
-    // up automatically. `reset` is kept as an explicit sentinel.
-    const themeSubCommands = [...colorThemes.map((t) => t.key), 'reset'];
-    const subCommands = ['cat resume.txt', ...themeSubCommands.map((color) => `theme ${color}`)];
+    // Subcommand maps — only surface AFTER the user has typed the
+    // base command followed by a space. Real shells don't suggest
+    // `matrix on` while you're still typing `matrix`.
+    const themeSubs = [...colorThemes.map((t) => t.key), 'reset'].map((c) => `theme ${c}`);
+    const matrixSubs = ['matrix on', 'matrix off'];
+    const catSubs = ['cat resume.txt'];
+    const subcommandGroups: Array<{ base: string; subs: string[] }> = [
+      { base: 'theme', subs: themeSubs },
+      { base: 'matrix', subs: matrixSubs },
+      { base: 'cat', subs: catSubs },
+    ];
+
     const lower = input.toLowerCase();
-    let matched = commands.filter((cmd) => cmd.startsWith(lower));
-    if (matched.length === 0) {
-      matched = subCommands.filter((cmd) => cmd.startsWith(lower));
+    const matched = new Set<string>();
+
+    // 1. Direct command-name matches — only when no space yet (i.e.,
+    // user is still picking the base command). Once a space is typed
+    // the user has committed to that command and is typing args.
+    if (!lower.includes(' ')) {
+      const commands = getAllCommandNames();
+      for (const cmd of commands) {
+        if (cmd.startsWith(lower)) matched.add(cmd);
+      }
     }
-    return matched;
+
+    // 2. Subcommand matches — gated on `${base} ` (with trailing space)
+    // so the dropdown stays empty while the base name is still being
+    // typed. Real terminals don't autosuggest subcommands; they wait
+    // for the base + space.
+    for (const { base, subs } of subcommandGroups) {
+      if (lower.startsWith(`${base} `)) {
+        for (const sub of subs) {
+          if (sub.startsWith(lower)) matched.add(sub);
+        }
+      }
+    }
+
+    return Array.from(matched);
   }, [getAllCommandNames]);
 
   const getAllCommands = useCallback(() => {
