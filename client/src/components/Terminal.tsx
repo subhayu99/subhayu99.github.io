@@ -615,7 +615,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   // Render loading or error states
   if (isLoading) {
     return (
-      <div className="terminal-glow terminal-scanlines relative w-full h-screen bg-terminal-black">
+      <div className="terminal-glow terminal-scanlines relative w-full h-dvh bg-terminal-black">
         <div className="flex items-center justify-center h-full">
           <div className="text-terminal-green">
             <div className="mb-4">{uiText.loading.text}</div>
@@ -628,7 +628,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
 
   if (error) {
     return (
-      <div className="terminal-glow terminal-scanlines relative w-full h-screen bg-terminal-black">
+      <div className="terminal-glow terminal-scanlines relative w-full h-dvh bg-terminal-black">
         <div className="flex items-center justify-center h-full">
           <div className="text-terminal-red">
             <div className="mb-4">{uiText.loading.error}:</div>
@@ -641,7 +641,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   }
 
   return (
-    <div className="terminal-glow terminal-scanlines relative w-full h-screen bg-terminal-black">
+    // h-dvh so the layout shrinks with the visual viewport when the
+    // mobile soft keyboard opens — h-screen (100vh) is fixed to the
+    // page height and lets the keyboard cover the input + status bar.
+    <div className="terminal-glow terminal-scanlines relative w-full h-dvh bg-terminal-black">
       {/* Shared film-grain atmosphere — also used by the GUI so both
            views share one noise floor. Paused on reduced-motion. */}
       <div className="film-grain" aria-hidden="true" />
