@@ -72,7 +72,11 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
     if (!ctx) return;
 
     const isMobile = window.innerWidth < 768;
-    const colWidth = isMobile ? COL_WIDTH * 2 : COL_WIDTH;
+    // Mobile previously used 2× column width (44px / 40px font) which
+    // read as a wall of giant glyphs — too "zoomed in" relative to
+    // screen size. 1.3× keeps the column count low enough for perf
+    // on weaker devices while letting more glyphs share the screen.
+    const colWidth = isMobile ? Math.round(COL_WIDTH * 1.3) : COL_WIDTH;
 
     let w = 0;
     let h = 0;
