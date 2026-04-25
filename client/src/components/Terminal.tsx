@@ -67,10 +67,12 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     onTriggerMatrix: (opts) => {
       setMatrixActive(true);
       setMatrixPersistent(opts?.persist === true);
+      setMatrixRainbow(opts?.rainbow === true);
     },
     onDismissMatrix: () => {
       setMatrixActive(false);
       setMatrixPersistent(false);
+      setMatrixRainbow(false);
     },
   });
 
@@ -92,6 +94,10 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
   // dismisses on user interaction.
   const [matrixActive, setMatrixActive] = useState(false);
   const [matrixPersistent, setMatrixPersistent] = useState(false);
+  // Rainbow mode — flipped on by the `rainbow` command, cleared on
+  // every dismiss + on Alt+M / chip toggle so plain matrix toggles
+  // never inherit a stale rainbow state.
+  const [matrixRainbow, setMatrixRainbow] = useState(false);
 
   // Persistent silent toggle for Alt+M / the matrix chip. We bypass
   // executeCommand entirely — no prompt echo, no scrollback line, no
@@ -102,9 +108,11 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
     setMatrixActive((wasActive) => {
       if (wasActive) {
         setMatrixPersistent(false);
+        setMatrixRainbow(false);
         return false;
       }
       setMatrixPersistent(true);
+      setMatrixRainbow(false);
       return true;
     });
   }, []);
@@ -651,7 +659,7 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
       {/* Idle matrix-rain screensaver — positioned on the outer shell
            (not the scrolling output pane) so it overlays the full
            terminal viewport regardless of scroll position. */}
-      <IdleMatrixRain active={matrixActive} />
+      <IdleMatrixRain active={matrixActive} rainbow={matrixRainbow} />
       <div className="flex flex-col h-full">
         {/* Terminal Header — traffic-light dots keep the retro chrome,
              and the path segment now reflects the Starship-style dir. */}

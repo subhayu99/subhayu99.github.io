@@ -38,7 +38,7 @@ export interface UseTerminalProps {
    *  presses); omit / pass `false` for the default one-shot summon
    *  (any input dismisses). Terminal.tsx maps this to setMatrixActive
    *  + setMatrixPersistent. */
-  onTriggerMatrix?: (opts?: { persist?: boolean }) => void;
+  onTriggerMatrix?: (opts?: { persist?: boolean; rainbow?: boolean }) => void;
   /** Called by `matrix off` to explicitly dismiss + clear the
    *  persistent flag. */
   onDismissMatrix?: () => void;
@@ -449,6 +449,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'coffee', description: 'Brew a caffeinated ascii cup', category: 'hidden', hidden: true },
   { name: 'sudo', description: 'A pleasant refusal', category: 'hidden', hidden: true, argsHint: '<anything>' },
   { name: 'matrix', description: 'Trigger the idle screensaver on demand', category: 'hidden', hidden: true },
+  { name: 'rainbow', description: 'Rainbow-coloured matrix rain — any key dismisses', category: 'hidden', hidden: true },
   { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
   { name: 'rm', description: 'Tread carefully', category: 'hidden', hidden: true, argsHint: '-rf /' },
   // `o N` / `g N` — vim-motion link open. The handler reads the
@@ -2437,6 +2438,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
     }
   }, [addLine, onTriggerMatrix, onDismissMatrix]);
 
+  /** Rainbow-mode matrix rain. Same wiring as `matrix` (non-persistent
+   *  — any keypress dismisses) but with rainbow-coloured columns. The
+   *  rainbow flag is set on onTriggerMatrix so the rain renders in
+   *  HSL-spectrum hues instead of the active theme accent. */
+  const showRainbow = useCallback(() => {
+    if (!onTriggerMatrix) {
+      addLine('rainbow rain: not available right now.', 'text-tui-accent-dim');
+      return;
+    }
+    addLine(
+      '// rainbow — taste the rainbow. any key dismisses.',
+      'text-terminal-bright-green',
+    );
+    onTriggerMatrix({ persist: false, rainbow: true });
+  }, [addLine, onTriggerMatrix]);
+
   const showStats = useCallback(async () => {
     // Fetch the live pypi-stats.json; same source as the GUI hero.
     let pypi: PyPIStatsData | null = null;
@@ -2722,6 +2739,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
         }
         break;
       }
+      case 'rainbow':
+        showRainbow();
+        break;
       case 'konami':
         showKonami();
         break;
@@ -2826,7 +2846,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
         );
         setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showRainbow, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
