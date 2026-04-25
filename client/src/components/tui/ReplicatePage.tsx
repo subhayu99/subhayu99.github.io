@@ -9,108 +9,150 @@ export function ReplicatePage() {
   return (
     <>
       <Block title="// replicate" wide>
-        <div className="text-tui-muted text-xs mb-4">
-          clone this portfolio — drop in a resume.yaml, deploy. pick a path below.
+        {/* Pitch — sets the payoff + time before any steps. Two ETAs
+            because "have a resume?" vs "starting fresh?" diverge here. */}
+        <div className="text-white/80 text-xs sm:text-sm mb-1">
+          fork this portfolio. drop in a{' '}
+          <Code>resume.yaml</Code>, deploy.
+        </div>
+        <div className="text-tui-muted text-xs mb-5">
+          ~5 min if you have a resume · ~10 min from scratch
         </div>
 
-        <Subsection title="// ai converter">
-          <p className="text-white/80 mb-2">
-            already have a resume? convert it to YAML via AI in ~2 min.
-          </p>
-          <Steps>
-            <Step n={1}>get the ai conversion prompt (button below)</Step>
-            <Step n={2}>paste the prompt into ChatGPT / Claude / Gemini</Step>
-            <Step n={3}>attach or paste your existing resume (pdf, text, linkedin)</Step>
-            <Step n={4}>
-              ai generates yaml — save as{' '}
-              <Code>resume.yaml</Code>
-            </Step>
-          </Steps>
-          <div className="mt-3 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="border border-terminal-bright-green px-3 py-1 text-terminal-bright-green hover:bg-terminal-bright-green/10 transition-colors text-xs font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
-            >
-              get conversion prompt
-            </button>
-            <span className="text-tui-muted text-xs">
-              works with any ai assistant
+        {/* ── Step 1 ── */}
+        <PhaseHeader n={1} title="get your resume.yaml" eta="~2 min" />
+        <PhaseBody>
+          {/* Dominant CTA — most visitors arrive with a resume in some
+              form. The button doesn't convert anything itself — it
+              hands you the prompt to feed your AI of choice. The
+              label spells that out so users don't expect in-page
+              magic. */}
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="group w-full sm:w-auto inline-flex items-center gap-3 border-2 border-terminal-bright-green bg-terminal-bright-green/15 hover:bg-terminal-bright-green/25 px-4 py-2.5 text-terminal-bright-green transition-colors font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terminal-bright-green shadow-[0_0_14px_rgba(var(--glow-color-rgb),0.35)]"
+          >
+            <span className="text-base font-bold tracking-wide">
+              [&nbsp;get ai prompt&nbsp;]
             </span>
-          </div>
-        </Subsection>
+            <span className="text-xs text-terminal-bright-green/80">
+              copy → paste into chatgpt / claude / gemini
+            </span>
+            <span
+              aria-hidden="true"
+              className="ml-auto text-base text-terminal-bright-green transition-transform group-hover:translate-x-0.5"
+            >
+              →
+            </span>
+          </button>
 
-        <Subsection title="// easy mode">
-          <p className="text-white/80 mb-2">
-            zero-code deploy — everything auto-generates from your resume.yaml.
-          </p>
+          <ul className="mt-3 space-y-1 text-xs sm:text-sm text-white/80 list-none">
+            <AltRow>
+              <NumberedLink href="https://app.rendercv.com">rendercv builder</NumberedLink>
+              <span className="text-tui-muted"> — start from scratch in your browser</span>
+            </AltRow>
+            <AltRow>
+              <span className="text-terminal-bright-green">write yaml manually</span>
+              <span className="text-tui-muted"> — see schema in </span>
+              <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/ADVANCED.md">
+                ADVANCED.md
+              </NumberedLink>
+            </AltRow>
+          </ul>
+        </PhaseBody>
+
+        {/* ── Step 2 ── */}
+        <PhaseHeader n={2} title="deploy" eta="~3 min" />
+        <PhaseBody>
+          {/* Default path: zero-code via template. The advanced path is
+              tucked inside <details> below to keep the easy flow clean. */}
           <Steps>
             <Step n={1}>
-              create{' '}
-              <Code>resume.yaml</Code>
-              {' '}(use{' '}
-              <NumberedLink href="https://app.rendercv.com">rendercv</NumberedLink>{' '}
-              or ai, above)
-            </Step>
-            <Step n={2}>
               click{' '}
               <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/generate">
                 "use this template"
               </NumberedLink>
               {' '}→ name it{' '}
-              <Code>yourusername.github.io</Code>
-            </Step>
-            <Step n={3}>
-              enable actions + pages:{' '}
-              <span className="text-tui-accent-dim">settings → pages → deploy from actions</span>
-              <div className="text-tui-warn/80 text-xs mt-1">
-                ! do this before uploading resume or the first build errors
+              <Code>&lt;your-username&gt;.github.io</Code>
+              <div className="text-tui-muted text-[11px] mt-1">
+                replace <Code>&lt;your-username&gt;</Code> with your actual github handle
+                — angle brackets aren't part of the name.
               </div>
             </Step>
-            <Step n={4}>
+            <Step n={2}>
+              <Callout>
+                <div className="font-semibold text-tui-warn">
+                  ⚠ enable actions + pages BEFORE uploading your resume
+                </div>
+                <div className="text-white/80 mt-1">
+                  settings → actions → general → allow all
+                  <br />
+                  settings → pages → source: deploy from actions
+                </div>
+                <div className="text-tui-muted text-[11px] mt-1">
+                  skip this and the first build errors out — common gotcha.
+                </div>
+              </Callout>
+            </Step>
+            <Step n={3}>
               upload{' '}
               <Code>resume.yaml</Code>
-              {' '}to the repo — deploy fires automatically.
+              {' '}to the repo — the deploy action fires automatically.
             </Step>
           </Steps>
-          <div className="mt-3 border-l-2 border-tui-accent-dim/50 pl-3 text-xs text-white/80">
-            <div className="text-tui-accent-dim mb-1">auto-generated:</div>
-            <ul className="space-y-0.5 list-none">
-              <li>· ascii art name banner</li>
-              <li>· pwa manifest.json</li>
-              <li>· pdf resume</li>
-              <li>· neofetch banner (if custom not provided)</li>
-            </ul>
-          </div>
-        </Subsection>
 
-        <Subsection title="// advanced mode">
-          <p className="text-white/80 mb-2">
-            full control over themes, commands, features. npm + git.
-          </p>
-          <Steps>
-            <Step n={1}>
-              clone + install:
-              <Pre>
+          {/* Advanced — collapsed by default. Native <details> for zero
+              JS, accessible by default, keyboard-friendly. */}
+          <details className="group mt-4 border-t border-tui-accent-dim/30 pt-3">
+            <summary className="cursor-pointer text-xs sm:text-sm text-tui-accent-dim hover:text-terminal-bright-green flex items-center gap-2 list-none focus-visible:outline-none focus-visible:text-terminal-bright-green">
+              <span className="font-mono text-terminal-bright-green w-3">
+                <span className="group-open:hidden">+</span>
+                <span className="hidden group-open:inline">−</span>
+              </span>
+              <span>advanced (full control — clone + npm)</span>
+            </summary>
+            <div className="mt-3 pl-5">
+              <Steps>
+                <Step n={1}>
+                  clone + install:
+                  <Pre>
 {`git clone https://github.com/subhayu99/subhayu99.github.io.git
 cd subhayu99.github.io
 npm install`}
-              </Pre>
-            </Step>
-            <Step n={2}>
-              copy configs:
-              <Pre>
+                  </Pre>
+                </Step>
+                <Step n={2}>
+                  copy configs:
+                  <Pre>
 {`cp template.config.yaml.example template.config.yaml
 cp .env.example .env
 cp client/public/manifest.json.example client/public/manifest.json`}
-              </Pre>
-            </Step>
-            <Step n={3}>add your resume + customise themes / commands</Step>
-            <Step n={4}>push + enable github pages</Step>
-          </Steps>
-        </Subsection>
+                  </Pre>
+                </Step>
+                <Step n={3}>add your resume + customise themes / commands</Step>
+                <Step n={4}>push + enable github pages</Step>
+              </Steps>
+            </div>
+          </details>
+        </PhaseBody>
 
-        <div className="mt-4 pt-3 border-t border-tui-accent-dim/30">
+        {/* ── What you get ── (named phase, no number — it's the payoff
+             not a step). Lands before docs so the user sees the reward
+             before scrolling into reference links. */}
+        <PhaseHeader title="what you get" />
+        <PhaseBody>
+          <div className="text-xs sm:text-sm text-white/80 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            <Bullet>live at <Code>&lt;your-username&gt;.github.io</Code></Bullet>
+            <Bullet>pwa-installable (offline-ready)</Bullet>
+            <Bullet>auto-rendered pdf resume</Bullet>
+            <Bullet>ascii name banner</Bullet>
+            <Bullet>neofetch system info</Bullet>
+            <Bullet>themes + custom commands</Bullet>
+          </div>
+        </PhaseBody>
+
+        {/* ── Help / docs ── */}
+        <div className="mt-2 pt-3 border-t border-tui-accent-dim/30">
           <div className="text-tui-accent-dim text-xs mb-2">// docs</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
             <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io#readme">
@@ -142,29 +184,78 @@ cp client/public/manifest.json.example client/public/manifest.json`}
 
 // ── Small primitives used only by this page ──
 
-function Subsection({ title, children }: { title: string; children: React.ReactNode }) {
+/** Numbered phase header — `// step N — title` with optional ETA on the right. */
+function PhaseHeader({
+  n,
+  title,
+  eta,
+}: {
+  n?: number;
+  title: string;
+  eta?: string;
+}) {
   return (
-    <div className="mb-4">
-      <div className="text-tui-accent-dim text-xs mb-2">{title}</div>
-      <div className="pl-2 border-l-2 border-tui-accent-dim/30 text-xs sm:text-sm">
-        {children}
+    <div className="mt-5 mb-2 flex items-baseline justify-between gap-2">
+      <div className="text-terminal-bright-green text-xs sm:text-sm font-mono tracking-wide">
+        // {n != null ? `step ${n} — ` : ''}{title}
       </div>
+      {eta && (
+        <div className="text-tui-muted text-[10px] sm:text-xs tabular-nums whitespace-nowrap">
+          {eta}
+        </div>
+      )}
     </div>
   );
 }
 
+/** Body of a phase — left rail + indent so phases visually group. */
+function PhaseBody({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="pl-3 border-l-2 border-tui-accent-dim/30">{children}</div>
+  );
+}
+
 function Steps({ children }: { children: React.ReactNode }) {
-  return <ol className="space-y-1.5 ml-1 list-none">{children}</ol>;
+  return <ol className="space-y-2 list-none">{children}</ol>;
 }
 
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-2">
-      <span className="text-terminal-bright-green tabular-nums font-mono">
+      <span className="text-terminal-bright-green tabular-nums font-mono text-xs sm:text-sm">
         {n}.
       </span>
-      <div className="text-white flex-1 leading-relaxed">{children}</div>
+      <div className="text-white/90 flex-1 leading-relaxed text-xs sm:text-sm">
+        {children}
+      </div>
     </li>
+  );
+}
+
+function AltRow({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-2">
+      <span className="text-tui-accent-dim mt-[2px]">·</span>
+      <div className="flex-1">{children}</div>
+    </li>
+  );
+}
+
+function Bullet({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="text-terminal-bright-green mt-[1px]">·</span>
+      <div className="flex-1">{children}</div>
+    </div>
+  );
+}
+
+/** Boxed warning — louder than a one-line tip, scoped to a step. */
+function Callout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="border border-tui-warn/40 bg-tui-warn/[0.04] px-3 py-2 text-xs sm:text-sm">
+      {children}
+    </div>
   );
 }
 
