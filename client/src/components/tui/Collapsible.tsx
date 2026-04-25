@@ -45,12 +45,12 @@ export function CollapsibleGroup({
         <button
           type="button"
           onClick={toggleAll}
-          className="text-xs px-2 py-1 border border-terminal-green/50 rounded hover:bg-terminal-green/10 transition-colors text-terminal-yellow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
+          className="text-[10px] px-1.5 py-0.5 border border-tui-accent-dim/50 hover:bg-terminal-bright-green/10 transition-colors text-tui-accent-dim focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green font-mono"
         >
           <span aria-hidden="true" className="mr-1">
             {allOpen ? '⌃' : '⌄'}
           </span>
-          {allOpen ? 'Collapse All' : 'Expand All'}
+          {allOpen ? 'collapse all' : 'expand all'}
         </button>
       }
       bodyClassName={bodyClassName}
@@ -82,12 +82,12 @@ interface CollapsibleItemProps {
 
 function CollapsibleItem({ header, children, isOpen, onToggle }: CollapsibleItemProps) {
   return (
-    <div className="border border-terminal-green/20 rounded">
+    <div className="border border-tui-accent-dim/30 border-l-2 border-l-tui-accent-dim/60">
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="w-full cursor-pointer hover:bg-terminal-green/10 transition-colors p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green rounded"
+        className="w-full cursor-pointer hover:bg-terminal-bright-green/5 transition-colors p-3 text-left focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-terminal-bright-green"
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">{header}</div>
@@ -102,7 +102,7 @@ function CollapsibleItem({ header, children, isOpen, onToggle }: CollapsibleItem
         </div>
       </button>
       {isOpen && (
-        <div className="border-t border-terminal-green/20 p-3 pt-2">{children}</div>
+        <div className="border-t border-tui-accent-dim/30 p-3 pt-2">{children}</div>
       )}
     </div>
   );

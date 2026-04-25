@@ -1,8 +1,17 @@
 /**
  * UI Text Configuration
  *
- * Centralizes all user-facing text, messages, and labels used throughout
- * the terminal interface.
+ * Centralizes all user-facing text used throughout the terminal.
+ *
+ * Voice guide:
+ *   - Lowercase section titles: `// about`, `// experience`, `// projects`.
+ *   - Em-dash (—) not hyphen: "Jan 2021 — Present".
+ *   - Terse. No marketing. No "🚀". Emoji reserved for:
+ *       - boot sequence
+ *       - `konami` easter-egg reveal
+ *       - `coffee` easter egg
+ *   - Errors are Unix-literal: `bash: foo: command not found`.
+ *   - Help tips are one-line, never promotional.
  */
 
 export const uiText = {
@@ -10,31 +19,33 @@ export const uiText = {
    * Terminal loading and initialization messages
    */
   loading: {
-    text: 'Initializing terminal...',
-    error: 'Failed to load portfolio data',
+    text: 'initializing terminal…',
+    error: 'failed to load portfolio data',
   },
 
   /**
    * Welcome banner and greeting
    */
   welcome: {
-    greeting: 'Welcome to my portfolio!',
-    title: 'TERMINAL PORTFOLIO',
+    /** Legacy — unused since Phase 2 swapped welcome to Block chrome. */
+    title: '',
   },
 
   /**
-   * Section headers
+   * Section headers — legacy uppercase values. All commands have been
+   * migrated to pass `// lowercase` titles directly; these are kept
+   * for backwards compat with any caller that still reads them.
    */
   sections: {
-    help: { title: 'AVAILABLE COMMANDS' },
-    about: { title: 'ABOUT ME' },
-    skills: { title: 'TECHNOLOGIES & SKILLS' },
-    experience: { title: 'WORK EXPERIENCE' },
-    education: { title: 'EDUCATION' },
-    projects: { title: 'PROJECTS' },
-    professionalProjects: { title: 'PROFESSIONAL PROJECTS' },
-    personalProjects: { title: 'PERSONAL PROJECTS' },
-    publications: { title: 'PUBLICATIONS' },
+    help: { title: '// help' },
+    about: { title: '// about' },
+    skills: { title: '// skills' },
+    experience: { title: '// experience' },
+    education: { title: '// education' },
+    projects: { title: '// projects' },
+    professionalProjects: { title: '// projects' },
+    personalProjects: { title: '// personal' },
+    publications: { title: '// publications' },
   },
 
   /**
@@ -43,20 +54,20 @@ export const uiText = {
   messages: {
     error: {
       commandNotFound: 'bash: {cmd}: command not found',
-      invalidArgument: 'Invalid argument: {arg}',
-      noData: 'No data available',
-      portfolioNotLoaded: 'Portfolio data not loaded',
-      resumeNotFound: 'Resume URL not found',
-      noPublications: 'No publications found',
-      noProfessionalProjects: 'No professional projects found',
-      noPersonalProjects: 'No personal projects found',
-      loadFailed: 'Error loading neofetch content!',
+      invalidArgument: 'invalid argument: {arg}',
+      noData: 'no data available',
+      portfolioNotLoaded: 'portfolio data not loaded',
+      resumeNotFound: 'resume url not found',
+      noPublications: 'no publications found',
+      noProfessionalProjects: 'no professional projects found',
+      noPersonalProjects: 'no personal projects found',
+      loadFailed: 'error loading neofetch content',
     },
     info: {
-      typeHelp: "Type 'help' to see available commands",
-      cleared: 'Terminal cleared',
-      opening: 'Opening {target}...',
-      connecting: "💡 LET'S CONNECT",
+      typeHelp: "type 'help' to see available commands",
+      cleared: 'terminal cleared',
+      opening: 'opening {target}…',
+      connecting: "// let's connect",
     },
   },
 
@@ -70,20 +81,21 @@ export const uiText = {
   },
 
   /**
-   * Timeline section headers
+   * Timeline section headers — lowercase to match the GUI idiom.
+   * Rendered as `work`, `research`, etc. inside the timeline block.
    */
   timeline: {
-    education: 'EDUCATION',
-    work: 'WORK',
-    project: 'PROJECT',
-    research: 'RESEARCH',
+    education: 'education',
+    work: 'work',
+    project: 'project',
+    research: 'research',
   },
 
   /**
    * Input placeholder text
    */
   input: {
-    placeholder: 'Type a command...',
+    placeholder: 'type a command…',
   },
 } as const;
 

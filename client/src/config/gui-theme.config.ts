@@ -79,6 +79,28 @@ export function applyColorTheme(theme: ColorTheme) {
   root.setProperty('--input', hsl(hue, sat, 20));
   root.setProperty('--glow-color-rgb', `${r}, ${g}, ${b}`);
 
+  // TUI semantic tokens — theme-following. Before this, `--terminal-yellow`
+  // and the scanline tint were hardcoded and ignored every theme, so a
+  // Glacier user saw lemon labels. Now labels derive from the accent hue
+  // at a darker lightness, giving mono-accent discipline across themes.
+  // Errors stay hardcoded red — they must pop regardless of theme.
+  //
+  // accent-dim must remain readable on a black background. dim at L=30
+  // worked for matrix/yellow/red (warm hues stay readable when dark)
+  // but landed too muddy for cooler hues (blue/cyan/glacier — dark
+  // teal on black is hard to scan). Bump to L=42 for a consistent
+  // mid-tone that reads across all hues.
+  const dimSat = Math.max(50, sat - 10);
+  const dimLight = Math.max(38, light - 10);
+  root.setProperty('--tui-accent-dim', hsl(hue, dimSat, dimLight));
+  // Muted uses a very low saturation cap (max 12%) so warm hues
+  // (amber/yellow) don't land in olive-tan territory and read as
+  // "greenish" on a dark background. Low-chroma gray with a whisper
+  // of the accent hue reads as neutral warm/cool gray across themes.
+  root.setProperty('--tui-muted', hsl(hue, Math.min(12, sat / 6), 60));
+  root.setProperty('--tui-error', 'hsl(0, 100%, 60%)');
+  root.setProperty('--tui-warn', 'hsl(45, 100%, 55%)');
+
   // Sync both localStorage keys so terminal and GUI stay in sync
   localStorage.setItem('gui-color-theme', theme.key);
   localStorage.setItem('terminal-theme', theme.key);

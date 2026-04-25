@@ -1,11 +1,11 @@
-import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { type PortfolioData } from '../../../shared/schema';
 import { formatExperiencePeriod, getSocialNetworkUrl } from '../lib/portfolioData';
 import { themes } from '../lib/themes';
-import { colorThemes, applyColorTheme } from '../config/gui-theme.config';
-import { uiText, formatMessage, apiConfig, terminalConfig, storage, storageConfig } from '../config';
+import { colorThemes, applyColorTheme, cycleTheme } from '../config/gui-theme.config';
+import { uiText, formatMessage, apiConfig, terminalConfig, derivePromptUser, storage, storageConfig } from '../config';
 import { renderCustomFields } from '../lib/fieldRenderer';
-import { inlineMd } from '../lib/tuiMarkdown';
+import { Block } from '../components/tui/Block';
 import { SectionBox } from '../components/tui/SectionBox';
 import { CmdLink, ExtLink } from '../components/tui/TuiLink';
 import { UsageHint } from '../components/tui/UsageHint';
@@ -13,6 +13,10 @@ import { ExploreMore } from '../components/tui/ExploreMore';
 import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
 import { ReplicatePage } from '../components/tui/ReplicatePage';
 import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
+import { MarkdownBlock } from '../components/tui/MarkdownBlock';
+import { BrailleSparkline, formatCompact } from '../components/tui/BrailleSparkline';
+import type { TerminalLinkRegistry, TerminalLink } from '../components/tui/LinkRegistry';
+import { loadPyPIStats, type PyPIStatsData, type PyPIPackageStats } from '../lib/pypiStats';
 // Import specific date-fns functions for better tree-shaking
 import { parse } from 'date-fns/parse';
 
@@ -29,6 +33,15 @@ export interface TerminalLine {
 export interface UseTerminalProps {
   portfolioData: PortfolioData | null;
   onSwitchToGUI?: () => void;
+  /** Called by the `matrix` command to trigger the idle-rain overlay.
+   *  Pass `{ persist: true }` for `matrix on` (rain stays through key
+   *  presses); omit / pass `false` for the default one-shot summon
+   *  (any input dismisses). Terminal.tsx maps this to setMatrixActive
+   *  + setMatrixPersistent. */
+  onTriggerMatrix?: (opts?: { persist?: boolean }) => void;
+  /** Called by `matrix off` to explicitly dismiss + clear the
+   *  persistent flag. */
+  onDismissMatrix?: () => void;
 }
 
 function getUsername(portfolioData: PortfolioData, network: string): string | undefined {
@@ -94,6 +107,65 @@ const formatDateForDisplay = (dateStr: string): string => {
   });
 };
 
+/** Synthesise a demo PyPI stats payload so the `stats` command always
+ *  has something to render when the real `pypi-stats.json` is missing
+ *  (template clones, pre-deploy, offline dev). Values are obviously
+ *  fake — the UI flags this with a "· demo data" tag. */
+function buildDemoPypi(): PyPIStatsData {
+  const today = new Date();
+  const weeklyFor = (baseDownloads: number, jitter: number, weeks = 16) =>
+    Array.from({ length: weeks }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (weeks - i) * 7);
+      const phase = Math.sin((i / weeks) * Math.PI * 2.2);
+      const noise = (Math.random() - 0.5) * jitter;
+      const value = Math.max(0, Math.round(baseDownloads * (1 + 0.35 * phase) + noise));
+      return { date: d.toISOString().slice(0, 10), downloads: value };
+    });
+
+  const demoPackages: Record<string, PyPIPackageStats> = {
+    quickstart: {
+      name: 'quickstart',
+      total_all_time: 32100,
+      total_180d: 9200,
+      last_day: 220,
+      last_week: 1480,
+      last_month: 5400,
+      daily: [],
+      weekly: weeklyFor(1200, 600),
+    },
+    sqlstream: {
+      name: 'sqlstream',
+      total_all_time: 5200,
+      total_180d: 1800,
+      last_day: 42,
+      last_week: 290,
+      last_month: 980,
+      daily: [],
+      weekly: weeklyFor(260, 140),
+    },
+    'smart-commit': {
+      name: 'smart-commit',
+      total_all_time: 3400,
+      total_180d: 1100,
+      last_day: 18,
+      last_week: 160,
+      last_month: 520,
+      daily: [],
+      weekly: weeklyFor(140, 90),
+    },
+  };
+  const total = Object.values(demoPackages).reduce(
+    (s, p) => s + p.total_all_time,
+    0,
+  );
+  return {
+    fetched_at: today.toISOString(),
+    total_downloads: total,
+    packages: demoPackages,
+  };
+}
+
 function getProjectsNode(
   projectData: Array<Record<string, unknown>>,
   type: string,
@@ -116,9 +188,13 @@ function getProjectsNode(
           {((project.highlights as string[]) || []).map((highlight, i) => (
             <div
               key={i}
-              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
-              dangerouslySetInnerHTML={{ __html: `• ${inlineMd(highlight)}` }}
-            />
+              className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
+            >
+              <span className="text-tui-accent-dim shrink-0">·</span>
+              <div className="flex-1">
+                <MarkdownBlock source={highlight} inline />
+              </div>
+            </div>
           ))}
         </div>
         <div
@@ -184,33 +260,33 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
       <div className="mb-3 sm:mb-4">
         {usePre ? (
           <>
-            <div className="hidden sm:block border border-terminal-green/30 rounded-sm px-4 py-2 max-w-4xl overflow-x-auto">
+            {/* ASCII banner stands on its own — the left rail used to
+                read as a redundant frame around already-fenced art. */}
+            <div className="hidden sm:block max-w-4xl overflow-x-auto">
               <pre className="text-terminal-bright-green text-xs leading-tight">
                 {styledName}
               </pre>
             </div>
-            <div className="sm:hidden text-terminal-bright-green text-center mb-3">
-              <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
-              <div className="text-sm">TERMINAL PORTFOLIO</div>
+            <div className="sm:hidden text-terminal-bright-green mb-3">
+              <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
+              <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
             </div>
           </>
         ) : (
-          <div className="text-terminal-bright-green text-center mb-3">
-            <div className="text-lg font-bold">{cv.name.toUpperCase()}</div>
-            <div className="text-sm">TERMINAL PORTFOLIO</div>
+          <div className="text-terminal-bright-green mb-3">
+            <div className="text-lg font-bold">{cv.name.toLowerCase()}</div>
+            <div className="text-xs text-tui-accent-dim">// terminal portfolio</div>
           </div>
         )}
       </div>
       <div className="mb-4">
-        <p className="text-terminal-green mb-2 text-sm sm:text-base">Welcome to my portfolio!</p>
-        <p
-          className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: inlineMd(introParagraph) }}
-        />
+        <div className="text-white/80 mb-2 text-xs sm:text-sm leading-relaxed">
+          <MarkdownBlock source={introParagraph} inline />
+        </div>
       </div>
 
       <SectionBox
-        title="QUICK OVERVIEW"
+        title="// identity"
         bodyClassName="p-3 space-y-1 text-xs sm:text-sm"
         className="max-w-none"
       >
@@ -220,81 +296,53 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
         {cv.website && (
           <CompactRow
             label="WEB"
-            value={<span className="text-terminal-green">{cv.website}</span>}
+            value={<ExtLink href={cv.website}>{cv.website.replace(/^https?:\/\//, '')}</ExtLink>}
           />
         )}
         <CompactRow
           label="EMAIL"
-          value={<span className="text-terminal-green">{cv.email}</span>}
+          value={<ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>}
         />
         {cv.resume_url && (
           <CompactRow
             label="RESUME"
-            value={
-              <span className="text-terminal-green">
-                <a
-                  href={cv.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
-                >
-                  resume.pdf
-                </a>
-              </span>
-            }
+            value={<ExtLink href={cv.resume_url}>resume.pdf</ExtLink>}
           />
         )}
         {sanitizedPhone && (
           <CompactRow
             label="PHONE"
-            value={
-              <span className="text-terminal-green">
-                <a
-                  href={`tel:${sanitizedPhone}`}
-                  className="text-terminal-bright-green hover:text-terminal-yellow hover:underline cursor-pointer"
-                >
-                  {sanitizedPhone}
-                </a>
-              </span>
-            }
+            value={<ExtLink href={`tel:${sanitizedPhone}`}>{sanitizedPhone}</ExtLink>}
           />
         )}
       </SectionBox>
 
       <div className="mb-4">
-        <p className="text-terminal-green mb-2 text-sm sm:text-base">
-          🚀 Start exploring with these core commands (or click them):
+        <p className="text-tui-accent-dim mb-2 text-xs sm:text-sm">
+          // quick tiles
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-          <QuickCmd cmd="about" label="learn more about me" />
-          <QuickCmd cmd="skills" label="view technical expertise" />
-          <QuickCmd cmd="experience" label="see professional work" />
-          <QuickCmd cmd="projects" label="see professional projects" />
-          <QuickCmd cmd="personal" label="see personal projects" />
-          <QuickCmd cmd="contact" label="display contact details" />
+          <QuickCmd cmd="about" label="background" />
+          <QuickCmd cmd="skills" label="technical expertise" />
+          <QuickCmd cmd="experience" label="work history" />
+          <QuickCmd cmd="projects" label="professional work" />
+          <QuickCmd cmd="personal" label="personal projects" />
+          <QuickCmd cmd="contact" label="get in touch" />
         </div>
       </div>
 
-      <div className="text-xs sm:text-sm space-y-2">
-        <div className="flex items-center space-x-2 text-terminal-green/80">
-          <span>💡</span>
-          <span>
-            Type{' '}
-            <CmdLink cmd="help" className="font-bold hover:text-terminal-yellow">
-              help
-            </CmdLink>{' '}
-            for all commands
-          </span>
+      <div className="text-xs space-y-1 text-tui-muted">
+        <div>
+          type{' '}
+          <CmdLink cmd="help">help</CmdLink>{' '}
+          for all commands
         </div>
-        <div className="flex items-center space-x-2 text-terminal-green/40 text-xs">
-          <span>✨</span>
-          <span>
-            Like this portfolio? Type{' '}
-            <CmdLink cmd="replicate" className="text-terminal-green/60 hover:text-terminal-green">
-              replicate
-            </CmdLink>{' '}
-            to create your own in ~5 min
-          </span>
+        <div className="text-tui-muted/70">
+          like this portfolio? type{' '}
+          <CmdLink cmd="replicate" className="text-tui-muted">
+            replicate
+          </CmdLink>{' '}
+          to fork it in ~5 min
         </div>
       </div>
     </div>
@@ -302,10 +350,10 @@ async function getWelcomeNode(portfolioData: PortfolioData): Promise<ReactNode> 
 }
 
 // Command Registry Types and Definitions
-interface CommandMetadata {
+export interface CommandMetadata {
   name: string;
   description: string;
-  category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal';
+  category: 'information' | 'professional' | 'contact' | 'tools' | 'terminal' | 'hidden';
   /**
    * Function to check if command should be available based on portfolio data
    * Returns true if command should be shown, false to hide it
@@ -313,6 +361,10 @@ interface CommandMetadata {
   isAvailable?: (data: PortfolioData | null) => boolean;
   /** Command aliases */
   aliases?: string[];
+  /** Hint for argument completion, e.g. `[term]` or `[theme-name]`. */
+  argsHint?: string;
+  /** Hidden commands appear in autocomplete but not in `help`. */
+  hidden?: boolean;
 }
 
 const COMMAND_REGISTRY: CommandMetadata[] = [
@@ -377,20 +429,34 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'contact', description: 'Get in touch with me', category: 'contact' },
 
   // TOOLS Commands (always available)
-  { name: 'search', description: 'Search through my portfolio content', category: 'tools' },
-  { name: 'theme', description: 'Change terminal color theme', category: 'tools' },
+  { name: 'search', description: 'Search through my portfolio content', category: 'tools', argsHint: '[term]' },
+  { name: 'theme', description: 'Change terminal color theme', category: 'tools', argsHint: '[name]' },
   { name: 'gui', description: 'Switch to the GUI portfolio view', category: 'tools' },
   { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
+  { name: 'stats', description: 'Live PyPI download sparklines', category: 'tools' },
 
   // TERMINAL Commands (always available)
   { name: 'clear', description: 'Clear the terminal screen', category: 'terminal' },
   { name: 'history', description: 'Show recent commands (click to re-run)', category: 'terminal' },
   { name: 'ls', description: 'List available commands', category: 'terminal' },
   { name: 'pwd', description: 'Print working directory', category: 'terminal' },
-  { name: 'cat', description: 'Display file contents', category: 'terminal' },
+  { name: 'cat', description: 'Display file contents', category: 'terminal', argsHint: '[file]' },
+
+  // HIDDEN Commands — autocomplete-discoverable, absent from `help`.
+  // Rewards for the curious; mirrors the GUI's select-to-reveal +
+  // long-press easter eggs.
+  { name: 'quote', description: 'Print a short quote', category: 'hidden', hidden: true },
+  { name: 'coffee', description: 'Brew a caffeinated ascii cup', category: 'hidden', hidden: true },
+  { name: 'sudo', description: 'A pleasant refusal', category: 'hidden', hidden: true, argsHint: '<anything>' },
+  { name: 'matrix', description: 'Trigger the idle screensaver on demand', category: 'hidden', hidden: true },
+  { name: 'konami', description: 'Cycle color theme with a flash', category: 'hidden', hidden: true },
+  { name: 'rm', description: 'Tread carefully', category: 'hidden', hidden: true, argsHint: '-rf /' },
+  // `o N` / `g N` — vim-motion link open. The handler reads the
+  // argument number and opens the corresponding registered link.
+  { name: 'open', description: 'Open link by number', category: 'tools', hidden: true, aliases: ['o', 'g'], argsHint: '<N>' },
 ];
 
-export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) {
+export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onDismissMatrix }: UseTerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([]);
   const [commandHistory, setCommandHistory] = useState<string[]>(() => {
     // Rehydrate from localStorage so the history command + arrow-key
@@ -401,7 +467,42 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [currentInput, setCurrentInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  /** Current pseudo-directory — Starship-style prompt context. Reset
+   *  on `clear`; advanced by destination commands (about → ~/about).
+   *  Non-destination commands (theme, ls, history, search) leave it. */
+  const [currentDir, setCurrentDir] = useState('~');
+  /** Exit code of the most recent command. 0 = success, 127 = not
+   *  found, 1 = handler failed, null = no commands run yet. */
+  const [lastExitCode, setLastExitCode] = useState<number | null>(null);
   const lineIdCounter = useRef(0);
+
+  // Terminal-wide numbered link registry. Consumed by NumberedLink for
+  // display, by Terminal.tsx for `o N` / `g N` resolution. Resets on
+  // `clear`. Numbers are href-keyed and stable across re-renders.
+  const linkCounter = useRef(0);
+  const linkMap = useRef<Map<number, TerminalLink>>(new Map());
+  const linkHrefIndex = useRef<Map<string, number>>(new Map());
+
+  const linkRegistry = useMemo<TerminalLinkRegistry>(
+    () => ({
+      register: (href: string, label: string) => {
+        const existing = linkHrefIndex.current.get(href);
+        if (existing !== undefined) return existing;
+        const n = ++linkCounter.current;
+        linkMap.current.set(n, { n, href, label });
+        linkHrefIndex.current.set(href, n);
+        return n;
+      },
+      resolve: (n: number) => linkMap.current.get(n),
+      all: () => Array.from(linkMap.current.values()),
+      reset: () => {
+        linkCounter.current = 0;
+        linkMap.current.clear();
+        linkHrefIndex.current.clear();
+      },
+    }),
+    [],
+  );
 
   const generateId = () => `line-${++lineIdCounter.current}`;
 
@@ -435,7 +536,22 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const clearTerminal = useCallback(() => {
     setLines([]);
-  }, []);
+    setCurrentDir('~');
+    linkRegistry.reset();
+  }, [linkRegistry]);
+
+  /** Commands that represent a "navigation" — they change the prompt
+   *  context to `~/<cmd>`. Utility / lookup commands (ls, pwd, history,
+   *  theme, search, clear, gui, resume, help, whoami, neofetch, stats)
+   *  don't move the user anywhere — they're print-and-return ops, not
+   *  section views, and pinning them to `~/whoami` reads as a duplicate
+   *  next to the command echo. `welcome` resets to `~/` since that's
+   *  the landing state. */
+  const DESTINATION_COMMANDS = new Set([
+    'about', 'skills', 'experience', 'education', 'projects',
+    'personal', 'publications', 'timeline', 'contact',
+    'replicate', 'clone', 'fork',
+  ]);
 
   // Get available commands based on portfolio data
   const getAvailableCommands = useCallback((): CommandMetadata[] => {
@@ -502,15 +618,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       terminal: [],
     };
     availableCommands.forEach((cmd) => {
-      commandsByCategory[cmd.category].push(cmd);
+      // Hidden commands are discoverable via autocomplete only.
+      if (cmd.hidden) return;
+      if (commandsByCategory[cmd.category]) {
+        commandsByCategory[cmd.category].push(cmd);
+      }
     });
 
     const categoryConfig = {
-      information: { emoji: '📋', label: 'INFORMATION' },
-      professional: { emoji: '💼', label: 'PROFESSIONAL' },
-      contact: { emoji: '📧', label: 'CONTACT' },
-      tools: { emoji: '🔧', label: 'TOOLS' },
-      terminal: { emoji: '⌨️', label: 'TERMINAL' },
+      information: { label: 'information' },
+      professional: { label: 'professional' },
+      contact: { label: 'contact' },
+      tools: { label: 'tools' },
+      terminal: { label: 'terminal' },
     } as const;
 
     const CommandRow = ({ cmd }: { cmd: CommandMetadata }) => {
@@ -539,11 +659,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const Category = ({ cat }: { cat: keyof typeof categoryConfig }) => {
       const cmds = commandsByCategory[cat];
       if (!cmds.length) return null;
-      const { emoji, label } = categoryConfig[cat];
+      const { label } = categoryConfig[cat];
       return (
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">
-            {emoji} {label}
+          <div className="text-tui-accent-dim text-xs mb-2">
+            // {label}
           </div>
           <div className="space-y-1 ml-2">
             {cmds.map((cmd) => (
@@ -556,7 +676,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox
-        title="AVAILABLE COMMANDS"
+        title="// help"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
@@ -565,39 +685,44 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         <Category cat="contact" />
         <Category cat="tools" />
         <Category cat="terminal" />
-        <div className="border-t border-terminal-green/30 pt-3">
-          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-          <div className="space-y-1 ml-2 text-xs">
+        <div className="border-t border-tui-accent-dim/30 pt-3">
+          <div className="text-tui-accent-dim text-xs mb-2">// tips</div>
+          <div className="space-y-0.5 ml-1 text-xs text-white/80">
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Tab</span> for
-              auto-completion
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">tab</span> for auto-completion
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">↑↓</span> arrow keys to
-              navigate command history
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">↑↓</span> to navigate command history
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Ctrl+C</span> to
-              interrupt current operation
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+c</span> to clear input
             </div>
             <div>
-              <span className="text-white">• </span>Use{' '}
-              <span className="text-terminal-bright-green font-semibold">Ctrl+L</span> to clear
-              screen quickly
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+l</span> to clear screen
             </div>
             <div>
-              <span className="text-white">• </span>Click anywhere on the terminal to focus input
+              <span className="text-tui-accent-dim">· </span>
+              click anywhere to focus input
+            </div>
+            <div>
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">o N</span> or{' '}
+              <span className="text-terminal-bright-green font-mono">g N</span> to open link{' '}
+              <span className="text-tui-muted">[N]</span>
+            </div>
+            <div>
+              <span className="text-tui-accent-dim">· </span>
+              <span className="text-terminal-bright-green font-mono">ctrl+k</span> opens the command palette
             </div>
           </div>
         </div>
-        <div className="text-terminal-white text-center pt-2 border-t border-terminal-green/30">
-          Start with <CmdLink cmd="about" className="hover:text-terminal-yellow">about</CmdLink> to
-          learn more about me, or try{' '}
-          <CmdLink cmd="neofetch" className="hover:text-terminal-yellow">neofetch</CmdLink> for a
-          quick overview.
+        <div className="text-white/70 pt-2 border-t border-tui-accent-dim/30 text-xs">
+          start with <CmdLink cmd="about">about</CmdLink>{' '}
+          — or try <CmdLink cmd="neofetch">neofetch</CmdLink> for a quick overview.
         </div>
       </SectionBox>,
       'w-full',
@@ -633,60 +758,41 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox
-        title="ABOUT ME"
-        centerTitle
+        title="// about"
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">👋 INTRODUCTION</div>
-          <div className="space-y-2 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// intro</div>
+          <div className="space-y-2 ml-1">
             {(cv.sections?.intro ?? []).map((paragraph, i) => (
-              <div
-                key={i}
-                className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded"
-                dangerouslySetInnerHTML={{ __html: inlineMd(paragraph) }}
-              />
+              <div key={i} className="border-l-2 border-tui-accent-dim/40 pl-3">
+                <MarkdownBlock source={paragraph} inline />
+              </div>
             ))}
           </div>
         </div>
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">🔗 QUICK LINKS</div>
-          <div className="space-y-1 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// links</div>
+          <div className="space-y-1 ml-1">
             {cv.website ? (
               <LabeledRow label="Portfolio">
-                <a href={cv.website} className="hover:text-terminal-bright-green">
+                <ExtLink href={cv.website}>
                   {cv.website.replace('https://', '').trim()}
-                </a>{' '}
-                (you are here)
+                </ExtLink>{' '}
+                <span className="text-tui-muted">(you are here)</span>
               </LabeledRow>
             ) : null}
             <LabeledRow label="Email">
-              <a href={`mailto:${cv.email}`} className="hover:text-terminal-bright-green">
-                {cv.email}
-              </a>
+              <ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>
             </LabeledRow>
             {gh && (
               <LabeledRow label="GitHub">
-                <a
-                  href={`https://github.com/${gh}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-terminal-bright-green"
-                >
-                  {gh}
-                </a>
+                <ExtLink href={`https://github.com/${gh}`}>{gh}</ExtLink>
               </LabeledRow>
             )}
             {li && (
               <LabeledRow label="LinkedIn">
-                <a
-                  href={`https://linkedin.com/in/${li}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-terminal-bright-green"
-                >
-                  {li}
-                </a>
+                <ExtLink href={`https://linkedin.com/in/${li}`}>{li}</ExtLink>
               </LabeledRow>
             )}
           </div>
@@ -724,16 +830,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     }) => (
       <div className="ml-2">
         {label && (
-          <div className="text-terminal-bright-green font-semibold mb-2 text-xs">{label}</div>
+          <div className="text-tui-accent-dim text-xs mb-2">// {label.replace(/:/g, '').toLowerCase()}</div>
         )}
         <div className="space-y-1">
           {items.map((h, hi) => (
             <div
               key={hi}
-              className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+              className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
             >
-              {'• '}
-              <span dangerouslySetInnerHTML={{ __html: inlineMd(h) }} />
+              <span className="text-tui-accent-dim shrink-0">·</span>
+              <div className="flex-1">
+                <MarkdownBlock source={h} inline />
+              </div>
             </div>
           ))}
         </div>
@@ -830,13 +938,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         return (
           <div key={index} className={`pb-2 ${isLast ? '' : 'border-b border-terminal-green/20'}`}>
             <div className="flex gap-2">
-              <span className="text-terminal-yellow font-semibold min-w-[100px]">
+              <span className="text-tui-accent-dim font-semibold min-w-[100px]">
                 {item.label as string}:
               </span>
-              <span
-                className="text-white"
-                dangerouslySetInnerHTML={{ __html: inlineMd(item.details as string) }}
-              />
+              <span className="text-white/90">
+                <MarkdownBlock source={item.details as string} inline />
+              </span>
             </div>
             <span
               dangerouslySetInnerHTML={{ __html: renderCustomFields(item, 'technologies') }}
@@ -874,21 +981,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const techs = portfolioData.cv.sections?.technologies ?? [];
     addNode(
       <SectionBox
-        title="SKILLS & TECHNOLOGIES"
+        title="// skills"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div className="space-y-1 ml-2">
           {techs.map((tech, i) => (
             <div key={i} className="grid grid-cols-1 md:grid-cols-12 gap-1 md:gap-2">
-              <div className="md:col-span-3 bg-terminal-green/10 p-2 rounded">
-                <span className="text-terminal-yellow font-semibold mb-1">{tech.label}</span>
+              <div className="md:col-span-3">
+                <span className="text-tui-accent-dim font-semibold">{tech.label}</span>
               </div>
-              <div className="md:col-span-9 bg-terminal-green/5 p-2 rounded ml-3">
-                <span
-                  className="text-white"
-                  dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }}
-                />
+              <div className="md:col-span-9 border-l-2 border-tui-accent-dim/40 pl-3">
+                <MarkdownBlock source={tech.details} inline />
               </div>
             </div>
           ))}
@@ -917,7 +1021,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const jobs = portfolioData.cv.sections?.experience ?? [];
     addNode(
       <SectionBox
-        title="PROFESSIONAL EXPERIENCE"
+        title="// experience"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -942,17 +1046,19 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 </div>
               </div>
               <div className="ml-2">
-                <div className="text-terminal-bright-green font-semibold mb-2 text-xs">
-                  Key Achievements:
+                <div className="text-tui-accent-dim text-xs mb-2">
+                  // highlights
                 </div>
                 <div className="space-y-1">
                   {job.highlights.map((highlight, hi) => (
                     <div
                       key={hi}
-                      className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                      className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
                     >
-                      {'• '}
-                      <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                      <span className="text-tui-accent-dim shrink-0">·</span>
+                      <div className="flex-1">
+                        <MarkdownBlock source={highlight} inline />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -984,7 +1090,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const edus = portfolioData.cv.sections?.education ?? [];
     addNode(
       <SectionBox
-        title="EDUCATION"
+        title="// education"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -1019,10 +1125,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     {edu.highlights.map((highlight, hi) => (
                       <div
                         key={hi}
-                        className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                        className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2"
                       >
-                        {'• '}
-                        <span dangerouslySetInnerHTML={{ __html: inlineMd(highlight) }} />
+                        <span className="text-tui-accent-dim shrink-0">·</span>
+                        <div className="flex-1">
+                          <MarkdownBlock source={highlight} inline />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1095,7 +1203,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox
-        title="RESEARCH PUBLICATIONS"
+        title="// publications"
         centerTitle
         bodyClassName="p-3 space-y-4 text-xs sm:text-sm"
       >
@@ -1118,14 +1226,9 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                     <MetaRow
                       label="DOI"
                       value={
-                        <a
-                          href={`https://doi.org/${pub.doi}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-terminal-bright-green underline"
-                        >
+                        <ExtLink href={`https://doi.org/${pub.doi}`}>
                           https://doi.org/{pub.doi}
-                        </a>
+                        </ExtLink>
                       }
                     />
                   )}
@@ -1246,20 +1349,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return bEndDate.getTime() - aEndDate.getTime();
     }).reverse();
 
-    const getIcon = (type: string) => {
-      switch (type) {
-        case 'education': return '🎓';
-        case 'experience': return '💼';
-        case 'project': return '🚀';
-        case 'publication': return '📝';
-        default: return '•';
-      }
-    };
-
     const getTypeColor = (type: string) => {
       switch (type) {
         case 'education': return 'text-terminal-bright-green';
-        case 'experience': return 'text-terminal-yellow';
+        case 'experience': return 'text-tui-accent-dim';
         case 'project': return 'text-terminal-green';
         case 'publication': return 'text-terminal-white';
         default: return 'text-white';
@@ -1277,98 +1370,85 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     };
 
     const stats = [
-      { value: portfolioData.cv.sections?.experience?.length ?? 0, label: 'Positions' },
-      { value: portfolioData.cv.sections?.education?.length ?? 0, label: 'Degrees' },
+      { value: portfolioData.cv.sections?.experience?.length ?? 0, label: 'positions' },
+      { value: portfolioData.cv.sections?.education?.length ?? 0, label: 'degrees' },
       {
         value:
           (portfolioData.cv.sections?.professional_projects?.length ?? 0) +
           (portfolioData.cv.sections?.personal_projects?.length ?? 0),
-        label: 'Projects',
+        label: 'projects',
       },
-      { value: portfolioData.cv.sections?.publication?.length ?? 0, label: 'Publications' },
+      { value: portfolioData.cv.sections?.publication?.length ?? 0, label: 'publications' },
     ];
 
     addNode(
-      <div className="border border-terminal-green/50 rounded-sm mb-4 terminal-glow max-w-5xl">
-        <div className="border-b border-terminal-green/30 px-3 py-1 text-center">
-          <span className="text-terminal-bright-green text-sm font-bold">CAREER TIMELINE</span>
-        </div>
-        <div className="p-4">
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-terminal-bright-green via-terminal-green to-terminal-green/30" />
+      <Block title="// timeline" wide>
+        <div className="relative">
+          <div className="absolute left-8 top-0 bottom-0 w-px bg-tui-accent-dim/50" />
 
-            <div className="space-y-6">
-              {timelineEvents.map((event, index) => {
-                const isOngoing = event.status === 'ongoing';
-                const duration = event.endDateStr
-                  ? `${formatDateForDisplay(event.dateStr)} - ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}`
-                  : formatDateForDisplay(event.dateStr);
-                return (
-                  <div key={index} className="relative flex items-start space-x-4 group">
-                    <div className="relative z-10">
-                      <div
-                        className={`w-4 h-4 rounded-full bg-terminal-green border-2 border-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-lg shadow-terminal-green/50' : ''} group-hover:scale-125 transition-transform duration-200`}
-                      />
-                    </div>
+          <div className="space-y-5">
+            {timelineEvents.map((event, index) => {
+              const isOngoing = event.status === 'ongoing';
+              const duration = event.endDateStr
+                ? `${formatDateForDisplay(event.dateStr)} — ${isOngoing ? uiText.labels.present : formatDateForDisplay(event.endDateStr)}`
+                : formatDateForDisplay(event.dateStr);
+              return (
+                <div key={index} className="relative flex items-start space-x-4 group">
+                  <div className="relative z-10 pt-[5px]">
+                    {/* Small diamond marker — avoids the "checkbox" read
+                        of the previous outlined square. */}
+                    <div
+                      aria-hidden="true"
+                      className={`w-2 h-2 rotate-45 bg-terminal-bright-green ${isOngoing ? 'animate-pulse shadow-[0_0_8px_rgba(var(--glow-color-rgb),0.7)]' : 'opacity-80'}`}
+                    />
+                  </div>
 
-                    <div className="flex-1 min-w-0 pb-4">
-                      <div className="bg-terminal-green/5 border border-terminal-green/20 rounded-lg p-4 group-hover:border-terminal-green/40 group-hover:bg-terminal-green/10 transition-all duration-200 ml-1">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-lg">{getIcon(event.type)}</span>
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full bg-terminal-green/20 ${getTypeColor(event.type)} font-semibold`}
-                          >
-                            {getTypeLabel(event.type)}
-                          </span>
-                          {isOngoing && (
-                            <span className="text-xs px-2 py-1 rounded-full bg-terminal-bright-green/20 text-terminal-bright-green font-semibold animate-pulse">
-                              CURRENT
-                            </span>
-                          )}
-                          <div className="text-xs text-white/70 font-mono sm:ml-auto">
-                            {duration}
-                          </div>
-                        </div>
-
-                        <div className="mb-2">
-                          <h3 className="text-terminal-bright-green font-semibold text-sm mb-1">
-                            {event.title}
-                          </h3>
-                          {event.subtitle && (
-                            <p className="text-terminal-yellow text-xs mb-1">{event.subtitle}</p>
-                          )}
-                          {event.description && (
-                            <p className="text-white/70 text-xs">{event.description}</p>
-                          )}
-                        </div>
-
+                  <div className="flex-1 min-w-0 pb-2">
+                    <div className="border-l-2 border-tui-accent-dim/40 pl-3 group-hover:border-terminal-bright-green transition-colors duration-150">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mb-1 text-xs font-mono">
+                        <span className={`${getTypeColor(event.type)} tracking-wide`}>
+                          {getTypeLabel(event.type).toLowerCase()}
+                        </span>
                         {isOngoing && (
-                          <div className="mt-2">
-                            <div className="h-1 bg-terminal-green/20 rounded-full overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-terminal-green to-terminal-bright-green animate-pulse rounded-full" />
-                            </div>
-                          </div>
+                          <span className="text-terminal-bright-green animate-pulse">
+                            · current
+                          </span>
+                        )}
+                        <span className="text-tui-muted sm:ml-auto tabular-nums">
+                          {duration}
+                        </span>
+                      </div>
+
+                      <div className="mb-1">
+                        <h3 className="text-terminal-bright-green text-sm">
+                          {event.title}
+                        </h3>
+                        {event.subtitle && (
+                          <p className="text-tui-accent-dim text-xs">{event.subtitle}</p>
+                        )}
+                        {event.description && (
+                          <p className="text-white/70 text-xs">{event.description}</p>
                         )}
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
+          </div>
 
-            <div className="mt-8 border-t border-terminal-green/30 pt-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                {stats.map((s) => (
-                  <div key={s.label} className="bg-terminal-green/5 rounded-lg p-3">
-                    <div className="text-terminal-bright-green font-bold text-lg">{s.value}</div>
-                    <div className="text-white/70 text-xs">{s.label}</div>
-                  </div>
-                ))}
-              </div>
+          <div className="mt-6 border-t border-tui-accent-dim/30 pt-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {stats.map((s) => (
+                <div key={s.label} className="border-l-2 border-tui-accent-dim/40 pl-2">
+                  <div className="text-terminal-bright-green text-lg tabular-nums">{s.value}</div>
+                  <div className="text-tui-muted text-xs">{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>,
+      </Block>,
       'w-full',
     );
   }, [addLine, addNode, portfolioData]);
@@ -1382,27 +1462,27 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const searchTerm = args.join(' ').toLowerCase();
     if (!searchTerm) {
       addNode(
-        <SectionBox title="SEARCH USAGE" centerTitle>
+        <Block title="// search">
           <div>
-            <div className="text-terminal-yellow font-bold mb-2">📋 USAGE</div>
-            <div className="ml-2 space-y-1">
-              <div className="text-white bg-terminal-green/5 p-2 rounded">
-                <span className="text-terminal-bright-green font-semibold">search</span>{' '}
-                <span className="text-terminal-yellow">[term]</span>
+            <div className="text-tui-accent-dim text-xs mb-2">// usage</div>
+            <div className="ml-1">
+              <div className="text-white border-l-2 border-tui-accent-dim/40 pl-3 py-1">
+                <span className="text-terminal-bright-green">search</span>{' '}
+                <span className="text-tui-accent-dim">[term]</span>
               </div>
             </div>
           </div>
           <div>
-            <div className="text-terminal-yellow font-bold mb-2">💡 EXAMPLES</div>
-            <div className="ml-2 space-y-1">
+            <div className="text-tui-accent-dim text-xs mb-2">// examples</div>
+            <div className="ml-1 space-y-0.5">
               {['python', 'react', 'machine learning'].map((ex) => (
-                <div key={ex} className="text-white bg-terminal-green/5 p-2 rounded">
+                <div key={ex} className="text-white/80 border-l-2 border-tui-accent-dim/40 pl-3 py-0.5 text-xs">
                   <span className="text-terminal-bright-green">search</span> {ex}
                 </div>
               ))}
             </div>
           </div>
-        </SectionBox>,
+        </Block>,
         'w-full',
       );
       return;
@@ -1505,7 +1585,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     };
 
     addNode(
-      <SectionBox title="SEARCH RESULTS" centerTitle>
+      <SectionBox title="// search results">
         <div className="bg-terminal-green/5 p-2 rounded flex flex-wrap gap-x-3 gap-y-1">
           <span>
             <span className="text-terminal-yellow font-semibold">Search term:</span>
@@ -1565,7 +1645,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     if (!theme) {
       addNode(
-        <SectionBox title="AVAILABLE THEMES" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
+        <SectionBox title="// themes" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
           {colorThemes.map((t) => {
             const [r, g, b] = t.accentRgb;
             return (
@@ -1595,7 +1675,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       storage.remove(storageConfig.keys.theme);
       localStorage.removeItem('gui-color-theme');
       applyColorTheme(colorThemes[0]);
-      addLine('Theme reset.', 'text-terminal-yellow');
+      addLine('// theme → reset', 'text-tui-accent-dim');
       return;
     }
 
@@ -1609,11 +1689,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (matchedTheme && themes[matchedTheme.key]) {
       const selectedTheme = themes[matchedTheme.key];
       applyColorTheme(matchedTheme);
-      addLine(`Switched to ${selectedTheme.name}.`, 'text-terminal-bright-green');
+      addLine(`// theme → ${selectedTheme.name.toLowerCase()}`, 'text-terminal-bright-green');
     } else {
       addLine(
-        'Theme not found. Use "theme" to see available themes.',
-        'text-terminal-red',
+        'theme not found. run `theme` to list available.',
+        'text-tui-error',
       );
     }
   }, [addLine, addNode]);
@@ -1631,26 +1711,24 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox
-        title="CONTACT INFORMATION"
+        title="// contact"
         centerTitle
         bodyClassName="p-3 space-y-3 text-xs sm:text-sm"
       >
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">📞 PERSONAL DETAILS</div>
-          <div className="space-y-1 ml-2">
+          <div className="text-tui-accent-dim text-xs mb-2">// personal</div>
+          <div className="space-y-1 ml-1">
             <Row label="Name" value={cv.name} />
             <Row label="Location" value={cv.location} />
-            <Row label="Email" value={cv.email} />
+            <Row
+              label="Email"
+              value={<ExtLink href={`mailto:${cv.email}`}>{cv.email}</ExtLink>}
+            />
             <Row
               label="Phone"
               value={
                 cv.phone ? (
-                  <a
-                    href={cv.phone}
-                    className="text-terminal-bright-green hover:text-terminal-yellow cursor-pointer"
-                  >
-                    {cv.phone.replace(/[^\d+]/g, '')}
-                  </a>
+                  <ExtLink href={cv.phone}>{cv.phone.replace(/[^\d+]/g, '')}</ExtLink>
                 ) : (
                   ''
                 )
@@ -1659,36 +1737,31 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           </div>
         </div>
         <div>
-          <div className="text-terminal-bright-green font-bold mb-2">🌐 SOCIAL NETWORKS</div>
-          <div className="space-y-1 ml-2">
-            {cv.social_networks?.map((social) => (
-              <Row
-                key={social.network}
-                label={social.network}
-                value={getSocialNetworkUrl(social.network, social.username)}
-              />
-            ))}
+          <div className="text-tui-accent-dim text-xs mb-2">// social</div>
+          <div className="space-y-1 ml-1">
+            {cv.social_networks?.map((social) => {
+              const url = getSocialNetworkUrl(social.network, social.username);
+              return (
+                <Row
+                  key={social.network}
+                  label={social.network}
+                  value={<ExtLink href={url}>{social.username}</ExtLink>}
+                />
+              );
+            })}
           </div>
         </div>
-        <div className="border-t border-terminal-green/30 pt-3">
-          <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-          <div className="space-y-1 ml-2 text-xs">
-            <div className="text-white leading-relaxed bg-terminal-green/5 p-2 rounded">
-              Feel free to reach out for collaborations, opportunities, or just to connect!
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="about">about</CmdLink> to learn more about me
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="projects">projects</CmdLink> to see my work
-            </div>
-            <div>
-              <span className="text-white">• </span>
-              Try <CmdLink cmd="experience">experience</CmdLink> for my professional background
-            </div>
+        <div className="border-t border-tui-accent-dim/30 pt-3">
+          <div className="text-white/80 leading-relaxed text-xs mb-3 border-l-2 border-tui-accent-dim/50 pl-3">
+            open to collaborations, new work, or a slow coffee chat.
           </div>
+          <ExploreMore
+            items={[
+              { cmd: 'about', suffix: 'to learn more about me' },
+              { cmd: 'projects', suffix: 'to see my work' },
+              { cmd: 'experience', suffix: 'for my professional background' },
+            ]}
+          />
         </div>
       </SectionBox>,
       'w-full',
@@ -1701,15 +1774,30 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return;
     }
     const role = portfolioData.cv.sections?.experience?.[0]?.position || uiText.labels.professional;
+    const firstCompany = portfolioData.cv.sections?.experience?.[0]?.company;
     const Row = ({ label, value }: { label: string; value: string | undefined }) => (
-      <CompactRow label={label} value={value ?? '—'} labelWidth="w-20" />
+      <CompactRow label={label} value={value ?? '—'} labelWidth="w-24" />
     );
+    // Rough uptime: time since the page loaded (session duration).
+    const uptimeSec = Math.floor(performance.now() / 1000);
+    const uptimeStr =
+      uptimeSec < 60
+        ? `${uptimeSec}s`
+        : uptimeSec < 3600
+          ? `${Math.floor(uptimeSec / 60)}m ${uptimeSec % 60}s`
+          : `${Math.floor(uptimeSec / 3600)}h ${Math.floor((uptimeSec % 3600) / 60)}m`;
     addNode(
-      <SectionBox title="WHOAMI" bodyClassName="p-3 space-y-1 text-xs sm:text-sm">
-        <Row label="User" value={portfolioData.cv.name} />
-        <Row label="Location" value={portfolioData.cv.location} />
-        <Row label="Role" value={role} />
-      </SectionBox>,
+      <Block title="// whoami">
+        <div className="space-y-1 font-mono">
+          <Row label="user" value={portfolioData.cv.name?.toLowerCase().replace(/\s+/g, '')} />
+          <Row label="display" value={portfolioData.cv.name} />
+          <Row label="role" value={role} />
+          {firstCompany && <Row label="company" value={firstCompany} />}
+          <Row label="location" value={portfolioData.cv.location} />
+          <Row label="shell" value="nagoya · portfolio tui v2.0" />
+          <Row label="uptime" value={uptimeStr} />
+        </div>
+      </Block>,
       'w-full',
     );
   }, [addLine, addNode, portfolioData]);
@@ -1718,27 +1806,25 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     const filename = args[0];
     if (!filename) {
       addNode(
-        <SectionBox title="CAT COMMAND" centerTitle bodyClassName="p-3 space-y-2 text-xs sm:text-sm">
-          <div className="text-terminal-yellow font-semibold">Usage: cat [filename]</div>
-          <div className="text-white">Available files: resume.txt</div>
-        </SectionBox>,
+        <Block title="// cat">
+          <div className="text-tui-accent-dim text-xs mb-1">// usage</div>
+          <div className="text-white text-xs border-l-2 border-tui-accent-dim/40 pl-3 mb-2">
+            cat <span className="text-tui-accent-dim">[filename]</span>
+          </div>
+          <div className="text-tui-accent-dim text-xs mb-1">// available</div>
+          <div className="text-white text-xs border-l-2 border-tui-accent-dim/40 pl-3">
+            resume.txt
+          </div>
+        </Block>,
         'w-full',
       );
       return;
     }
 
     if (filename !== 'resume.txt') {
-      addNode(
-        <div className="border border-terminal-red/50 rounded-sm mb-4 terminal-glow max-w-4xl">
-          <div className="border-b border-terminal-red/30 px-3 py-1 text-center">
-            <span className="text-terminal-red text-sm font-bold">ERROR</span>
-          </div>
-          <div className="p-3 text-xs sm:text-sm">
-            <span className="text-terminal-red">cat: {filename}: No such file or directory</span>
-          </div>
-        </div>,
-        'w-full',
-      );
+      // Unix-literal — no bespoke red box. Matches the terse tone of
+      // every other shell error ("bash: foo: command not found").
+      addLine(`cat: ${filename}: no such file or directory`, 'text-tui-error');
       return;
     }
 
@@ -1749,11 +1835,13 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     const { cv } = portfolioData;
 
-    const Bullet = ({ html }: { html: string }) => (
-      <div
-        className="text-white text-xs leading-relaxed bg-terminal-green/10 p-2 rounded"
-        dangerouslySetInnerHTML={{ __html: `• ${html}` }}
-      />
+    const Bullet = ({ md }: { md: string }) => (
+      <div className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3 flex gap-2">
+        <span className="text-tui-accent-dim shrink-0">·</span>
+        <div className="flex-1">
+          <MarkdownBlock source={md} inline />
+        </div>
+      </div>
     );
 
     const items: CollapsibleItemData[] = [];
@@ -1761,15 +1849,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (cv.sections?.intro?.length) {
       items.push({
         id: 'about',
-        header: <span className="text-terminal-yellow font-semibold">About</span>,
+        header: <span className="text-tui-accent-dim font-semibold">about</span>,
         content: (
-          <div className="space-y-1">
+          <div className="space-y-2">
             {cv.sections.intro.map((line, i) => (
               <div
                 key={i}
-                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
-                dangerouslySetInnerHTML={{ __html: inlineMd(line) }}
-              />
+                className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
+              >
+                <MarkdownBlock source={line} inline />
+              </div>
             ))}
           </div>
         ),
@@ -1779,17 +1868,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     if (cv.sections?.technologies?.length) {
       items.push({
         id: 'technologies',
-        header: <span className="text-terminal-yellow font-semibold">Technologies</span>,
+        header: <span className="text-tui-accent-dim font-semibold">technologies</span>,
         content: (
           <div className="space-y-1">
             {cv.sections.technologies.map((tech, i) => (
               <div
                 key={i}
-                className="text-white text-xs leading-relaxed bg-terminal-green/5 p-2 rounded"
+                className="text-xs leading-relaxed border-l-2 border-tui-accent-dim/40 pl-3"
               >
-                <span className="text-terminal-yellow font-semibold">• {tech.label}</span>
-                <span className="text-white">
-                  {' '}- <span dangerouslySetInnerHTML={{ __html: inlineMd(tech.details) }} />
+                <span className="text-terminal-bright-green">{tech.label}</span>
+                <span className="text-white/80"> — </span>
+                <span className="text-white/90">
+                  <MarkdownBlock source={tech.details} inline />
                 </span>
               </div>
             ))}
@@ -1819,7 +1909,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                   {exp.highlights?.length > 0 && (
                     <div className="space-y-1">
                       {exp.highlights.map((h, j) => (
-                        <Bullet key={j} html={inlineMd(h)} />
+                        <Bullet key={j} md={h} />
                       ))}
                     </div>
                   )}
@@ -1849,7 +1939,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 {(edu.highlights?.length ?? 0) > 0 && (
                   <div className="space-y-1 mt-2">
                     {edu.highlights?.map((h, j) => (
-                      <Bullet key={j} html={inlineMd(h)} />
+                      <Bullet key={j} md={h} />
                     ))}
                   </div>
                 )}
@@ -1881,7 +1971,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
                 {project.highlights?.length > 0 && (
                   <div className="space-y-1">
                     {project.highlights.map((h, j) => (
-                      <Bullet key={j} html={inlineMd(h)} />
+                      <Bullet key={j} md={h} />
                     ))}
                   </div>
                 )}
@@ -2036,8 +2126,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         )}
         <div>└{border}┘</div>
         <div>{'\u00A0'}</div>
-        <div className="text-terminal-dim">
-          💡 Tip: Create a custom banner by adding client/public/data/neofetch.txt
+        <div className="text-tui-muted">
+          tip: create a custom banner by adding client/public/data/neofetch.txt
         </div>
         <div>{'\u00A0'}</div>
       </div>,
@@ -2065,7 +2155,12 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       // render at the same width as figure space in most monospace fonts,
       // which jags the right edges of the ASCII boxes. Normalise any
       // Unicode space variant to a regular space inside the <pre>.
-      const normalised = neofetchContent.replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ');
+      const normalised = neofetchContent
+        .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+        // Strip inline markdown — the <pre> doesn't parse it,
+        // so `[text](url)` leaked into the rendered banner as
+        // literal brackets. Collapse to bare text.
+        .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '$1');
 
       addNode(
         <pre className="font-mono text-terminal-green whitespace-pre text-xs sm:text-sm leading-tight overflow-x-auto">
@@ -2079,35 +2174,40 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
   }, [addLine, addNode, portfolioData, showNeofetchFallback]);
 
   const listCommands = useCallback(() => {
-    const commands = getAllCommandNames();
+    // Visible-only: hidden commands (quote/coffee/matrix/konami/rm/
+    // sudo/open/o/g) are discoverable via autocomplete, not ls.
+    const visible = getAvailableCommands()
+      .filter((c) => !c.hidden)
+      .map((c) => c.name);
     addNode(
-      <div>
-        <div className="text-terminal-yellow font-bold mb-1">Available commands:</div>
-        <div className="space-y-0.5">
-          {commands.map((cmd) => (
-            <div key={cmd}>
-              <CmdLink cmd={cmd} className="text-terminal-green font-normal">
-                {cmd}
-              </CmdLink>
-            </div>
+      <Block title="// ls">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-0.5 text-xs sm:text-sm font-mono">
+          {visible.map((cmd) => (
+            <CmdLink key={cmd} cmd={cmd} className="text-terminal-green font-normal">
+              {cmd}
+            </CmdLink>
           ))}
         </div>
-      </div>,
+        <div className="pt-2 mt-2 border-t border-tui-accent-dim/30 text-xs text-tui-muted">
+          {visible.length} commands · try <CmdLink cmd="help" className="text-tui-accent-dim">help</CmdLink> for descriptions
+        </div>
+      </Block>,
+      'w-full',
     );
-  }, [addNode, getAllCommandNames]);
+  }, [addNode, getAvailableCommands]);
 
   const showHistory = useCallback((args: string[]) => {
     if (args[0] === 'clear') {
       setCommandHistory([]);
       setHistoryIndex(-1);
       storage.remove(storageConfig.keys.commandHistory);
-      addLine('Command history cleared.', 'text-terminal-yellow');
+      addLine('command history cleared.', 'text-tui-accent-dim');
       return;
     }
 
     if (commandHistory.length === 0) {
       addNode(
-        <SectionBox title="COMMAND HISTORY" centerTitle>
+        <SectionBox title="// history">
           <div className="text-terminal-yellow">No commands in history yet.</div>
           <div className="text-white/70 text-xs">
             Commands you run are saved to local storage; they'll show up here.
@@ -2125,7 +2225,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
     addNode(
       <SectionBox
-        title="COMMAND HISTORY"
+        title="// history"
         centerTitle
         bodyClassName="p-3 space-y-0.5 text-xs sm:text-sm font-mono"
       >
@@ -2155,10 +2255,316 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     );
   }, [addLine, addNode, commandHistory]);
 
+  // ── Hidden-command handlers (phase 9 easter eggs) ──
+
+  const QUOTES = [
+    'the best way to predict the future is to implement it.',
+    'simplicity is the soul of efficiency.',
+    'a user interface is like a joke — if you have to explain it, it\'s not that good.',
+    'programs must be written for people to read, and only incidentally for machines to execute.',
+    'the computer was born to solve problems that did not exist before.',
+    'first, solve the problem. then, write the code.',
+    'debugging is twice as hard as writing the code in the first place.',
+    'code is read far more often than it is written.',
+    'make it work, make it right, make it fast.',
+    'there are only two hard things in computer science: cache invalidation, naming things, and off-by-one errors.',
+  ];
+
+  const showQuote = useCallback(() => {
+    const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    addNode(
+      <Block title="// quote">
+        <div className="border-l-2 border-tui-accent-dim/60 pl-3 italic text-white/90 leading-relaxed">
+          {q}
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addNode]);
+
+  const showCoffee = useCallback(() => {
+    // Hidden ASCII cup — emoji is ok here because it's a deliberate
+    // easter egg moment, not decorative chrome.
+    addNode(
+      <Block title="// coffee">
+        <pre className="text-terminal-bright-green text-xs leading-tight whitespace-pre font-mono">{`
+      ( (
+       ) )
+    ........
+    |      |]
+    \\      /
+     \`----'`}</pre>
+        <div className="text-white/80 text-xs mt-2">
+          ☕ thanks for visiting. caffeine sent telepathically.
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addNode]);
+
+  const showRmRf = useCallback(async () => {
+    // Theatrical `rm -rf /` — hybrid of Permission-denied wall + rapid
+    // fake deletions + recovery wink. Two acts:
+    //
+    //   Act 1 (D): Unix-faithful "Permission denied" wall. System looks
+    //              resistant. User expects the joke to end here.
+    //   Act 2 (A): transition shows privilege "escalation", then a
+    //              cascade of fake deletions. Climax wipes the screen.
+    //              Recovery line restores context with a dry joke.
+    //
+    // The whole theater takes ~3.2s — short enough that users watch it
+    // rather than type through it.
+    const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    // The default scroll-anchor pins the command at the top of the
+    // viewport, which means the theater cascade flows off-screen. For
+    // this show specifically, override by scrolling the pane to the
+    // bottom after each beat.
+    const stickBottom = () => {
+      const pane = document.querySelector<HTMLElement>('[role="log"]');
+      if (pane) pane.scrollTop = pane.scrollHeight;
+    };
+    const beat = (text: string, cls: string) => {
+      addLine(text, cls);
+      // Defer to the next paint so the scrollHeight includes the line.
+      requestAnimationFrame(stickBottom);
+    };
+
+    // --- Act 1: permission denied --------------------------------------
+    const protectedPaths = [
+      '/boot/grub',
+      '/etc/shadow',
+      '/usr/bin',
+      '/var/log/syslog',
+      '/sys/kernel',
+      '/dev/sda',
+      '/root',
+      '/home/subhayu',
+    ];
+    for (const p of protectedPaths) {
+      beat(`rm: cannot remove '${p}': Permission denied`, 'text-tui-error');
+      await delay(55);
+    }
+    await delay(350);
+
+    // --- Transition: escalate ------------------------------------------
+    beat('escalating privileges…', 'text-tui-warn');
+    await delay(650);
+    beat('[sudo] password for visitor: ········', 'text-tui-muted');
+    await delay(250);
+    beat(
+      'authentication bypass: portfolio_mode=true',
+      'text-terminal-bright-green',
+    );
+    await delay(450);
+
+    // --- Act 2: rapid fake deletions -----------------------------------
+    const condemned = [
+      '/bin', '/etc', '/lib', '/lib64', '/opt', '/proc', '/root',
+      '/sbin', '/sys', '/tmp', '/usr', '/var',
+      '/home/subhayu/.ssh',
+      '/home/subhayu/.bash_history',
+      '/home/subhayu/portfolio',
+      '/home/subhayu/portfolio/about',
+      '/home/subhayu/portfolio/experience',
+      '/home/subhayu/portfolio/projects',
+      '/home/subhayu/portfolio/skills',
+      '/home/subhayu',
+      '/',
+    ];
+    for (const p of condemned) {
+      beat(`removing ${p}`, 'text-tui-error');
+      await delay(30);
+    }
+    await delay(250);
+    beat('!!! filesystem vanished !!!', 'text-terminal-bright-green');
+    await delay(800);
+
+    // --- Recovery ------------------------------------------------------
+    clearTerminal();
+    addLine('// restored from backup (3.2s). nothing actually broke.', 'text-terminal-bright-green');
+    addLine(
+      "// turns out you can't delete a read-only portfolio. try `help`.",
+      'text-tui-accent-dim',
+    );
+  }, [addLine, clearTerminal]);
+
+  const showSudo = useCallback((args: string[]) => {
+    const sub = args.join(' ').trim();
+    if (!sub) {
+      addLine('usage: sudo <command>', 'text-tui-muted');
+      return;
+    }
+    if (/^rm\s+-r?f?\s*\/?/i.test(sub)) {
+      // Route the classic meme through the actual `rm -rf /` theater —
+      // `sudo rm -rf /` gets a brief wink before the show starts.
+      addLine(
+        'sudo: privilege escalation acknowledged. unleashing…',
+        'text-tui-warn',
+      );
+      setTimeout(() => void showRmRf(), 250);
+      return;
+    }
+    if (/shutdown|reboot|halt/i.test(sub)) {
+      addLine('i would if i could.', 'text-tui-accent-dim');
+      return;
+    }
+    addLine(
+      `[sudo] password for visitor: ········`,
+      'text-tui-muted',
+    );
+    addLine('sorry, no sudo for you.', 'text-tui-accent-dim');
+  }, [addLine]);
+
+  const showMatrix = useCallback((mode?: 'on' | 'off') => {
+    if (mode === 'off') {
+      if (onDismissMatrix) onDismissMatrix();
+      addLine('// matrix — rain dismissed.', 'text-tui-accent-dim');
+      return;
+    }
+    if (!onTriggerMatrix) {
+      addLine('matrix screensaver: idle for 30s to see it.', 'text-tui-accent-dim');
+      return;
+    }
+    if (mode === 'on') {
+      addLine(
+        '// matrix — rain pinned. type `matrix off` to dismiss.',
+        'text-terminal-bright-green',
+      );
+      onTriggerMatrix({ persist: true });
+    } else {
+      addLine('// matrix — rain summoned. any key dismisses.', 'text-terminal-bright-green');
+      onTriggerMatrix({ persist: false });
+    }
+  }, [addLine, onTriggerMatrix, onDismissMatrix]);
+
+  const showStats = useCallback(async () => {
+    // Fetch the live pypi-stats.json; same source as the GUI hero.
+    let pypi: PyPIStatsData | null = null;
+    try {
+      pypi = await loadPyPIStats();
+    } catch {
+      pypi = null;
+    }
+
+    // Fall back to a synthesized demo series if the stats file is
+    // missing (pre-deploy / template clones / first-run). The sparkline
+    // command should always demo SOMETHING — a useful feature shouldn't
+    // silently vanish when real data isn't around.
+    const isDemo = !pypi || Object.keys(pypi.packages).length === 0;
+    if (isDemo) {
+      pypi = buildDemoPypi();
+    }
+
+    const packages = Object.values(pypi!.packages);
+    // Sort by total downloads descending so the headline number leads.
+    packages.sort((a, b) => b.total_all_time - a.total_all_time);
+
+    const fetchedDate = pypi!.fetched_at
+      ? new Date(pypi!.fetched_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : '';
+
+    addNode(
+      <Block title="// stats" wide>
+        <div className="mb-3 flex items-baseline gap-3 text-xs sm:text-sm font-mono">
+          <span className="text-tui-accent-dim">pypi</span>
+          <span className="text-terminal-bright-green text-lg tabular-nums">
+            {formatCompact(pypi!.total_downloads)}
+          </span>
+          <span className="text-tui-muted text-xs">total downloads</span>
+          {isDemo && (
+            <span className="text-tui-warn/80 text-[10px] uppercase tracking-wide">
+              · demo data
+            </span>
+          )}
+          {fetchedDate && (
+            <span className="text-tui-muted/70 text-[10px] ml-auto">
+              as of {fetchedDate}
+            </span>
+          )}
+        </div>
+
+        <div className="text-tui-accent-dim text-xs mb-2">// packages</div>
+        <div className="space-y-1.5 font-mono text-xs">
+          {packages.map((pkg) => {
+            const weekly = pkg.weekly.map((w) => w.downloads);
+            const last = weekly[weekly.length - 1] ?? pkg.last_week;
+            return (
+              <div
+                key={pkg.name}
+                className="grid grid-cols-12 items-baseline gap-2 border-l-2 border-tui-accent-dim/40 pl-3"
+              >
+                <span className="col-span-4 sm:col-span-3 text-terminal-bright-green truncate">
+                  {pkg.name}
+                </span>
+                <span className="col-span-5 sm:col-span-6">
+                  <BrailleSparkline data={weekly} width={28} />
+                </span>
+                <span className="col-span-3 sm:col-span-3 text-right text-tui-muted tabular-nums">
+                  {formatCompact(last)}/wk
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-tui-accent-dim/30 text-xs text-tui-muted">
+          sparklines show weekly downloads for the last{' '}
+          {packages[0]?.weekly.length ?? 0} weeks. data refreshed daily.
+        </div>
+      </Block>,
+      'w-full',
+    );
+  }, [addLine, addNode]);
+
+  const showKonami = useCallback(() => {
+    // Reuse the GUI's cycleTheme helper so the flash affects both views.
+    const next = cycleTheme();
+    addLine(`// theme → ${next.name.toLowerCase()}`, 'text-terminal-bright-green');
+  }, [addLine]);
+
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
-    
-    addLine(`guest@portfolio:~$ ${command}`, 'text-terminal-green font-semibold', true);
+
+    // Vim-style `:cmd args` aliases. Normalise `:q` → `gui`, `:wq` →
+    // an easter-egg flourish, `:theme x` → `theme x`, etc. This runs
+    // before the command echo so the scrollback shows the canonical
+    // form the handler actually ran.
+    let normalised = command.trim();
+    if (normalised.startsWith(':')) {
+      const raw = normalised.slice(1).trim().toLowerCase();
+      if (raw === 'q' || raw === 'quit') {
+        normalised = 'gui';
+      } else if (raw === 'wq') {
+        // Shell out to gui after the flourish — the echo line shows :wq,
+        // then the gui command executes.
+        addLine('nothing to save. you\'re a read-only visitor here.', 'text-tui-accent-dim');
+        normalised = 'gui';
+      } else if (raw === 'help' || raw === 'h') {
+        normalised = 'help';
+      } else if (raw === 'clear' || raw === 'cls') {
+        normalised = 'clear';
+      } else if (raw.startsWith('theme')) {
+        normalised = raw;
+      } else if (raw === 'palette' || raw === 'k') {
+        // `:palette` / `:k` would open the command palette — handled at
+        // the Terminal level via Ctrl+K. Print a nudge here.
+        addLine('press ⌃K to open the command palette.', 'text-tui-muted');
+        return;
+      } else {
+        // Unknown colon shortcut — fall through to treat as regular cmd.
+        normalised = raw;
+      }
+    }
+    const effectiveCommand = normalised;
+
+    // Derive user slug from cv.name so the echoed line matches the
+    // live prompt. Falls back to 'guest' if data isn't loaded yet.
+    const user = derivePromptUser(portfolioData?.cv.name);
+    addLine(`${user}@portfolio ${currentDir} $ ${command}`, 'text-terminal-green font-semibold', true);
     setCommandHistory(prev => {
       // Collapse duplicates at the top so spamming the same command doesn't
       // fill history. Cap at `maxHistoryItems` from storage config.
@@ -2166,8 +2572,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       return deduped.slice(0, storageConfig.limits.maxHistoryItems);
     });
     setHistoryIndex(-1);
-    
-    const args = command.trim().split(' ');
+
+    // `args` + `cmd` are parsed from the :-normalised string — that's
+    // what handlers actually see and route on.
+    const args = effectiveCommand.trim().split(' ');
     const cmd = args[0].toLowerCase();
 
     // Check if command is available (exists in registry and passes availability check)
@@ -2179,14 +2587,41 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       );
 
       if (commandInRegistry && commandInRegistry.isAvailable && !commandInRegistry.isAvailable(portfolioData)) {
-        addLine(`Command '${cmd}' is not available (no data found)`, 'text-terminal-yellow');
+        addLine(`command '${cmd}' is not available (no data found)`, 'text-tui-accent-dim');
+        setLastExitCode(1);
         return;
       }
 
       // Command doesn't exist at all
-      addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
+      addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-tui-error');
+      setLastExitCode(127);
       return;
     }
+
+    // Navigation commands move the prompt dir; utility commands don't.
+    if (DESTINATION_COMMANDS.has(cmd)) {
+      // Normalise aliases to their canonical dir (clone/fork → replicate).
+      const canonical = cmd === 'clone' || cmd === 'fork' ? 'replicate' : cmd;
+      // Already viewing this section — re-running just duplicates the
+      // identical block. Friendly nudge instead of redundant output.
+      // No-arg only; with args (e.g. `theme blue`) the command is doing
+      // real work, not just navigating.
+      if (currentDir === `~/${canonical}` && args.length === 1) {
+        addLine(
+          `// already viewing ${canonical} — type 'clear' to reset, or scroll up`,
+          'text-tui-muted',
+        );
+        setLastExitCode(0);
+        return;
+      }
+      setCurrentDir(`~/${canonical}`);
+    } else if (cmd === 'welcome') {
+      setCurrentDir('~');
+    } else if (cmd === 'cat' && args[1] === 'resume.txt') {
+      setCurrentDir('~/docs');
+    }
+    // Success by default; specific commands override below if they fail.
+    setLastExitCode(0);
 
     switch (cmd) {
       case 'help':
@@ -2238,7 +2673,8 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         listCommands();
         break;
       case 'pwd':
-        addLine('/home/user/portfolio', 'text-white');
+        // Mirror Unix: strip leading `~` and render as an absolute path.
+        addLine(`/home/${user}/portfolio${currentDir.replace(/^~/, '')}`, 'text-white');
         break;
       case 'cat':
         showCat(args.slice(1));
@@ -2248,7 +2684,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
         break;
       case 'gui':
         if (onSwitchToGUI) {
-          addLine('Switching to GUI view...', 'text-terminal-yellow');
+          addLine('switching to gui…', 'text-tui-accent-dim');
           // One paint to flush the banner, then hand off — no arbitrary delay.
           requestAnimationFrame(() => onSwitchToGUI());
         } else {
@@ -2266,6 +2702,111 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
       case 'history':
         showHistory(args.slice(1));
         break;
+      case 'quote':
+        showQuote();
+        break;
+      case 'coffee':
+        showCoffee();
+        break;
+      case 'sudo':
+        showSudo(args.slice(1));
+        break;
+      case 'matrix': {
+        const sub = (args[1] ?? '').toLowerCase();
+        if (sub === 'on' || sub === '--keep' || sub === '-k') {
+          showMatrix('on');
+        } else if (sub === 'off' || sub === 'stop' || sub === 'dismiss') {
+          showMatrix('off');
+        } else {
+          showMatrix();
+        }
+        break;
+      }
+      case 'konami':
+        showKonami();
+        break;
+      case 'rm': {
+        // The infamous command. Unix-faithful for anything that
+        // isn't `-rf /`; full theater for the classic.
+        const restArgs = args.slice(1);
+        // Split flags (anything starting with `-`) from operands so the
+        // error message reads like a real shell ("cannot remove 'd'",
+        // not "cannot remove '-rf d'"). Also lets us detect `-rf /`
+        // regardless of flag/operand order.
+        const flagTokens = restArgs.filter((a) => a.startsWith('-'));
+        const operandTokens = restArgs.filter((a) => !a.startsWith('-') && a !== '');
+        const flagChars = flagTokens
+          .filter((f) => !f.startsWith('--'))
+          .map((f) => f.slice(1).toLowerCase())
+          .join('');
+        const hasR = flagChars.includes('r') || flagTokens.includes('--recursive');
+        const hasF = flagChars.includes('f') || flagTokens.includes('--force');
+        const targetsRoot = operandTokens.some((t) => t === '/' || t === '/*');
+        if (hasR && hasF && targetsRoot) {
+          void showRmRf();
+        } else if (restArgs.length === 0) {
+          addLine('rm: missing operand', 'text-tui-error');
+          addLine("try 'rm --help' for more information.", 'text-tui-muted');
+          setLastExitCode(1);
+        } else if (flagTokens.includes('--help') || flagChars.includes('h')) {
+          // Real `rm` shows usage. Ours plays along — reads as a real
+          // shell page, with a wink at the bottom for the curious.
+          // Wrapped in <pre> so multi-space alignment survives.
+          addNode(
+            <pre className="font-mono whitespace-pre text-xs sm:text-sm leading-relaxed overflow-x-auto">
+              <span className="text-terminal-green">Usage: rm [OPTION]... FILE...{'\n'}</span>
+              <span className="text-tui-muted">
+                Remove (unlink) the FILE(s).{'\n'}
+                {'\n'}
+                {'  '}-f, --force            ignore nonexistent files, never prompt{'\n'}
+                {'  '}-i                     prompt before every removal{'\n'}
+                {'  '}-r, -R, --recursive    remove directories recursively{'\n'}
+                {'  '}-v, --verbose          explain what is being done{'\n'}
+                {'      '}--help             display this help and exit{'\n'}
+                {'\n'}
+              </span>
+              <span className="text-tui-accent-dim">
+                // note: this is a read-only portfolio. no file is ever actually removed.
+              </span>
+            </pre>,
+          );
+          setLastExitCode(0);
+        } else if (operandTokens.length === 0) {
+          // Only flags, no file — same error real `rm` gives.
+          addLine('rm: missing operand', 'text-tui-error');
+          addLine("try 'rm --help' for more information.", 'text-tui-muted');
+          setLastExitCode(1);
+        } else {
+          // Show one error per operand, just like real rm.
+          for (const op of operandTokens) {
+            addLine(`rm: cannot remove '${op}': Permission denied`, 'text-tui-error');
+          }
+          setLastExitCode(1);
+        }
+        break;
+      }
+      case 'stats':
+        showStats();
+        break;
+      case 'open':
+      case 'o':
+      case 'g': {
+        const n = parseInt(args[1] ?? '', 10);
+        if (Number.isNaN(n)) {
+          addLine('usage: o <N>  — open link number N in view', 'text-tui-muted');
+          setLastExitCode(1);
+          break;
+        }
+        const link = linkRegistry.resolve(n);
+        if (link) {
+          window.open(link.href, '_blank', 'noopener,noreferrer');
+          addLine(`→ opening ${link.label}`, 'text-tui-accent-dim');
+        } else {
+          addLine(`no link #${n} in view`, 'text-tui-error');
+          setLastExitCode(1);
+        }
+        break;
+      }
       default:
         // Check if this is a dynamic section command
         if (portfolioData?.cv?.sections) {
@@ -2276,15 +2817,16 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
           }
         }
         // Command not found
-        addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-terminal-red');
+        addLine(formatMessage(uiText.messages.error.commandNotFound, { cmd }), 'text-tui-error');
         addNode(
-          <span className="text-terminal-yellow">
-            Type <code className="font-mono"><CmdLink cmd="help" className="text-terminal-yellow">help</CmdLink></code>{' '}
-            or click on a command above to get started.
+          <span className="text-tui-accent-dim text-xs">
+            type <CmdLink cmd="help">help</CmdLink>{' '}
+            or click a command to get started.
           </span>,
         );
+        setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, portfolioData, onSwitchToGUI]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
@@ -2305,22 +2847,52 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
 
   const getCommandSuggestions = useCallback((input: string) => {
     if (!input.trim()) return [];
-    const commands = getAllCommandNames();
-    // Source theme subcommands from the palette itself so new themes show
-    // up automatically. `reset` is kept as an explicit sentinel.
-    const themeSubCommands = [...colorThemes.map((t) => t.key), 'reset'];
-    const subCommands = ['cat resume.txt', ...themeSubCommands.map((color) => `theme ${color}`)];
+    // Subcommand maps — only surface AFTER the user has typed the
+    // base command followed by a space. Real shells don't suggest
+    // `matrix on` while you're still typing `matrix`.
+    const themeSubs = [...colorThemes.map((t) => t.key), 'reset'].map((c) => `theme ${c}`);
+    const matrixSubs = ['matrix on', 'matrix off'];
+    const catSubs = ['cat resume.txt'];
+    const subcommandGroups: Array<{ base: string; subs: string[] }> = [
+      { base: 'theme', subs: themeSubs },
+      { base: 'matrix', subs: matrixSubs },
+      { base: 'cat', subs: catSubs },
+    ];
+
     const lower = input.toLowerCase();
-    let matched = commands.filter((cmd) => cmd.startsWith(lower));
-    if (matched.length === 0) {
-      matched = subCommands.filter((cmd) => cmd.startsWith(lower));
+    const matched = new Set<string>();
+
+    // 1. Direct command-name matches — only when no space yet (i.e.,
+    // user is still picking the base command). Once a space is typed
+    // the user has committed to that command and is typing args.
+    if (!lower.includes(' ')) {
+      const commands = getAllCommandNames();
+      for (const cmd of commands) {
+        if (cmd.startsWith(lower)) matched.add(cmd);
+      }
     }
-    return matched;
+
+    // 2. Subcommand matches — gated on `${base} ` (with trailing space)
+    // so the dropdown stays empty while the base name is still being
+    // typed. Real terminals don't autosuggest subcommands; they wait
+    // for the base + space.
+    for (const { base, subs } of subcommandGroups) {
+      if (lower.startsWith(`${base} `)) {
+        for (const sub of subs) {
+          if (sub.startsWith(lower)) matched.add(sub);
+        }
+      }
+    }
+
+    return Array.from(matched);
   }, [getAllCommandNames]);
 
   const getAllCommands = useCallback(() => {
     return getAllCommandNames();
   }, [getAllCommandNames]);
+
+  // Username slug for prompt display — derived from cv.name once loaded.
+  const promptUser = derivePromptUser(portfolioData?.cv.name);
 
   return {
     lines,
@@ -2338,5 +2910,18 @@ export function useTerminal({ portfolioData, onSwitchToGUI }: UseTerminalProps) 
     setCurrentInput,
     clearTerminal,
     showWelcomeMessage,
+    // Starship-style prompt context.
+    currentDir,
+    lastExitCode,
+    promptUser,
+    promptHost: terminalConfig.prompt.hostname,
+    // Used by the status bar to render live counts.
+    historyLength: commandHistory.length,
+    // Exposed for the command palette (phase 6).
+    getCommandMetadata: getAvailableCommands,
+    recentCommands: commandHistory,
+    // Link registry — consumed by NumberedLink + Terminal.tsx's
+    // `o N` / `g N` keyboard resolver (phase 7).
+    linkRegistry,
   };
 }

@@ -12,19 +12,19 @@ interface ExploreMoreProps {
 }
 
 /**
- * The "💡 EXPLORE MORE" footer block that lives at the bottom of most
+ * The "// explore more" footer block that lives at the bottom of most
  * command outputs. Each item is a bullet with an internal CmdLink and
- * a short description. Matches the visual conventions used site-wide.
+ * a short description. Matches the GUI's `// comment` label idiom.
  */
 export function ExploreMore({ items }: ExploreMoreProps) {
   return (
-    <div className="border-t border-terminal-green/30 pt-3">
-      <div className="text-terminal-yellow font-bold mb-2">💡 EXPLORE MORE</div>
-      <div className="space-y-1 ml-2 text-xs">
+    <div className="border-t border-tui-accent-dim/30 pt-3">
+      <div className="text-tui-accent-dim text-xs mb-2">// explore more</div>
+      <div className="space-y-0.5 ml-1 text-xs">
         {items.map((it) => (
-          <div key={it.cmd}>
-            <span className="text-white">• </span>
-            Try <CmdLink cmd={it.cmd}>{it.label ?? it.cmd}</CmdLink>
+          <div key={it.cmd} className="text-white/80">
+            <span className="text-tui-accent-dim">· </span>
+            try <CmdLink cmd={it.cmd}>{it.label ?? it.cmd}</CmdLink>
             {it.suffix ? ' ' : ''}
             {it.suffix}
           </div>
