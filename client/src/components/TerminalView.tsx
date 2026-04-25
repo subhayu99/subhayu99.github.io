@@ -12,7 +12,7 @@ function TerminalView() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full h-screen overflow-hidden relative"
+      className="w-full h-dvh overflow-hidden relative"
     >
       <Terminal onSwitchToGUI={() => switchTo('gui')} />
 
