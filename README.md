@@ -1,6 +1,6 @@
-# 🖥️ Terminal Portfolio Template
+# 🖥️ Portfolio Template
 
-> Create your own interactive terminal-style portfolio in minutes—no coding required!
+> Create your own interactive portfolio in minutes — terminal mode + editorial GUI mode, one `resume.yaml`, deployed to GitHub Pages with zero code.
 
 **Live Demo:** [subhayu99.github.io](https://subhayu99.github.io)
 
@@ -10,7 +10,7 @@
 [![Last commit](https://img.shields.io/github/last-commit/subhayu99/subhayu99.github.io/main?style=flat-square&color=2ea043)](https://github.com/subhayu99/subhayu99.github.io/commits/main)
 [![License](https://img.shields.io/github/license/subhayu99/subhayu99.github.io?style=flat-square&color=2ea043)](./LICENSE)
 
-![Terminal Portfolio Screencast](client/public/screenshots/short-demo.gif)
+![Portfolio Template Screencast](client/public/screenshots/short-demo.gif)
 
 ---
 

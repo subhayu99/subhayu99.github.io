@@ -15,8 +15,8 @@ export function ReplicatePage() {
         {/* Pitch — sets the payoff + time before any steps. Two ETAs
             because "have a resume?" vs "starting fresh?" diverge here. */}
         <div className="text-white/80 text-xs sm:text-sm mb-1">
-          fork this portfolio. drop in a{' '}
-          <Code>resume.yaml</Code>, deploy.
+          fork this portfolio template. drop in a{' '}
+          <Code>resume.yaml</Code>, deploy. terminal + editorial GUI, one source.
         </div>
         <div className="text-tui-muted text-xs mb-3">
           ~5 min if you have a resume · ~10 min from scratch

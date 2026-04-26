@@ -25,8 +25,8 @@ const siteMetadataPlugin = (): Plugin => {
   return {
     name: 'site-metadata-injector',
     transformIndexHtml(html) {
-      let title = 'Terminal Portfolio';
-      let description = 'Interactive terminal-style portfolio showcasing professional experience and projects';
+      let title = 'Portfolio';
+      let description = 'Interactive portfolio — terminal mode + editorial GUI mode';
 
       try {
         // Try to read from resume.json (generated from resume.yaml)
@@ -36,7 +36,7 @@ const siteMetadataPlugin = (): Plugin => {
           const resumeData = JSON.parse(readFileSync(resumePath, 'utf-8'));
 
           if (resumeData?.cv?.name) {
-            title = `${resumeData.cv.name} - Terminal Portfolio`;
+            title = `${resumeData.cv.name} - Portfolio`;
           }
 
           if (resumeData?.cv?.sections?.intro && Array.isArray(resumeData.cv.sections.intro)) {
@@ -55,7 +55,7 @@ const siteMetadataPlugin = (): Plugin => {
 
       // Also use VITE_SITE_AUTHOR if provided (for backward compatibility)
       if (process.env.VITE_SITE_AUTHOR && !process.env.VITE_SITE_TITLE) {
-        title = `${process.env.VITE_SITE_AUTHOR} - Terminal Portfolio`;
+        title = `${process.env.VITE_SITE_AUTHOR} - Portfolio`;
       }
 
       // Replace placeholders

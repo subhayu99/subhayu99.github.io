@@ -172,7 +172,8 @@ export default function ReplicateSheet({ active, onClose }: ReplicateSheetProps)
             <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-xl">
               this site is a template — fork it, drop in a{' '}
               <span className="text-white">resume.yaml</span>, and you have a
-              terminal-style portfolio deployed to GitHub Pages in under ten minutes.
+              full portfolio deployed to GitHub Pages in under ten minutes:
+              splash → terminal mode → editorial GUI mode, one source of truth.
             </p>
 
             {/* Headline count + stats line */}
