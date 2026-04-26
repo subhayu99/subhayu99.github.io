@@ -89,7 +89,12 @@ function ErrorState({ error }: { error: string }) {
 }
 
 function Populated({ stats }: { stats: TemplateStats }) {
-  const headlineCount = stats.deployed_forks > 0 ? stats.deployed_forks : stats.forks;
+  // Headline = real forks + orphan-detected derivatives. Until the fork
+  // flow has accumulated, orphans (pre-fork-flow "Use this template"
+  // clones) are the dominant signal. Both are disjoint sets — fetchOrphans
+  // already filters out repos already counted as forks.
+  const orphans = stats.orphan_derivatives ?? 0;
+  const headlineCount = stats.forks + orphans;
   const sinceYear = stats.since ? new Date(stats.since).getFullYear() : null;
   const updated = formatRelative(stats.last_updated);
   const deployedShowcase = stats.showcase.filter((f) => f.has_pages);
@@ -114,6 +119,9 @@ function Populated({ stats }: { stats: TemplateStats }) {
         <Stat icon="⭐" value={stats.stars} label="stars" />
         <Stat icon="🍴" value={stats.forks} label="forks" />
         <Stat icon="🌐" value={stats.deployed_forks} label="deployed" />
+        {orphans > 0 && (
+          <Stat icon="🔍" value={orphans} label="detected" />
+        )}
         {stats.traffic && (
           <Stat
             icon="📥"
@@ -143,17 +151,16 @@ function Populated({ stats }: { stats: TemplateStats }) {
         </div>
       )}
 
-      {/* Orphan derivatives — pre-fork "Use this template" deployments
-          detected via code search. Lower bound, indexing-lagged. */}
-      {stats.orphan_derivatives && stats.orphan_derivatives > 0 ? (
+      {/* Orphan derivatives footnote — only when we have forks to compare
+          against; otherwise the headline already conveys the count. */}
+      {orphans > 0 && stats.forks > 0 ? (
         <div className="text-tui-muted text-[11px] mt-1">
-          + {stats.orphan_derivatives} unlinked deployment
-          {stats.orphan_derivatives > 1 ? 's' : ''} detected (pre-fork-flow)
+          + {orphans} unlinked deployment{orphans > 1 ? 's' : ''} detected via code search
         </div>
       ) : null}
 
-      {/* Empty state CTA */}
-      {stats.showcase.length === 0 && (
+      {/* Empty state CTA — only when there's truly no signal at all */}
+      {stats.showcase.length === 0 && orphans === 0 && (
         <div className="border border-tui-accent-dim/30 bg-terminal-bright-green/5 px-3 py-3 text-xs sm:text-sm text-white/80 mt-3">
           <div className="text-terminal-bright-green font-semibold mb-1">
             be the first to fork

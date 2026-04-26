@@ -41,6 +41,7 @@
     "generate-resume:ci": "NODE_ENV=ci node scripts/generate-resume.js",
     "generate-ai-prompt": "node scripts/generate-ai-prompt.js",
     "generate-template-config": "node scripts/generate-template-config.js",
+    "hydrate": "./scripts/hydrate-personal-data.sh",
     "type-check": "tsc --noEmit",
     "setup": "npm install && npm run generate-template-config && npm run generate-resume && npm run generate-ai-prompt",
     "clean": "rm -rf dist node_modules client/public/data/*.json client/public/resume.* rendercv_output"

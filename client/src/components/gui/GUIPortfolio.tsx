@@ -190,7 +190,7 @@ export default function GUIPortfolio() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       data-gui-portfolio
-      className="min-h-screen bg-black text-gui-text font-sans"
+      className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
     >
       <WireframeGrid />
       <MatrixRain />
