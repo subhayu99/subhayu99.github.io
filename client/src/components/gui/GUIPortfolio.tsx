@@ -29,7 +29,7 @@ import RacerGame from './RacerGame';
 import HelpSheet from './HelpSheet';
 import ReplicateSheet from './ReplicateSheet';
 
-const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
+const SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');

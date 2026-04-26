@@ -894,6 +894,25 @@ function Terminal({ onSwitchToGUI }: TerminalProps) {
             // (doesn't auto-dismiss on next keypress).
             matrix: toggleMatrix,
             clear: () => clearTerminal(),
+            // Search-mode chip taps — let touch users drive the
+            // reverse-search the same way desktop users drive it
+            // with Ctrl+R / Enter / Tab / Esc.
+            searchNext: () => {
+              setSearchMatchIndex((i) =>
+                searchMatches.length > 0 ? (i + 1) % searchMatches.length : 0,
+              );
+            },
+            searchRun: () => {
+              if (activeSearchMatch) {
+                exitSearchMode(null);
+                setInput('');
+                executeCommand(activeSearchMatch);
+              } else {
+                exitSearchMode('');
+              }
+            },
+            searchEdit: () => exitSearchMode(activeSearchMatch ?? ''),
+            searchCancel: () => exitSearchMode(''),
           }}
         />
       </div>
