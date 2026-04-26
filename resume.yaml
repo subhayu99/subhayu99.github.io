@@ -189,6 +189,17 @@ cv:
           - "Created and managed CI/CD pipelines on Azure DevOps, impacting over 50k daily users."
 
     personal_projects:
+      # Open-sourced 2026 — this very portfolio
+      - name: "Terminal Portfolio Template"
+        date: "Apr 2026"
+        show_on_resume: true
+        highlights:
+          - "Open-sourced **this very portfolio** because people kept asking how I built it — a zero-code terminal-style template that deploys to GitHub Pages in under 10 minutes."
+          - "Single source of truth: drop in a `resume.yaml`, GitHub Actions auto-generates the PDF resume + JSON data + an interactive terminal UI (with PWA install support, AI resume converter, custom themes)."
+          - "Type `showcase` in the terminal for the live fork list + deployed sites; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
+        github_repo: "https://github.com/subhayu99/subhayu99.github.io"
+        showcase_command: "showcase"
+
       # Resume + Website projects
       - name: "SQLStream"
         date: "Nov 2025"
