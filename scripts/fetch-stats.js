@@ -61,9 +61,12 @@ const REPO = UPSTREAM_TEMPLATE_REPO;
  *                 unrelated portfolios (only used to corroborate)
  *
  * Confidence per repo:
- *   - high:   matched ≥2 specific queries  (very likely a derivative)
- *   - medium: matched 1 specific query     (likely a derivative)
- *   - low:    matched only weak queries    (skipped from the count)
+ *   - high:   matched ≥2 specific queries
+ *             OR matched 1 specific query AND repo name ends in
+ *             `.github.io` (the canonical user-pages naming convention
+ *             — README tells everyone to rename to <user>.github.io)
+ *   - medium: matched 1 specific query (non-`.github.io` repo name)
+ *   - low:    matched only weak queries (skipped from the count)
  *
  * Reported orphan count = high + medium.
  */
@@ -191,9 +194,14 @@ async function fetchOrphans(forks) {
       if (repo === REPO) continue;
       if (knownForks.has(repo)) continue;
       if (!candidates.has(repo)) {
+        const name = item.repository.name;
         candidates.set(repo, {
           repo,
           owner: item.repository.owner.login,
+          name,
+          // user-pages naming convention boosts confidence — README tells
+          // forkers to rename to <user>.github.io for root-path deploys.
+          is_user_pages: name.endsWith('.github.io'),
           html_url: item.repository.html_url,
           matched: new Set(),
           tiers: new Set(),
@@ -217,6 +225,7 @@ async function fetchOrphans(forks) {
     );
     let confidence;
     if (specificMatches.length >= 2) confidence = 'high';
+    else if (specificMatches.length === 1 && c.is_user_pages) confidence = 'high';
     else if (specificMatches.length === 1) confidence = 'medium';
     else confidence = 'low';
 
@@ -226,6 +235,7 @@ async function fetchOrphans(forks) {
       repo: c.repo,
       owner: c.owner,
       html_url: c.html_url,
+      is_user_pages: c.is_user_pages,
       confidence,
       matched_via: [...c.matched],
     });
