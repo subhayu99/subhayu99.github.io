@@ -6,6 +6,7 @@ import { useViewMode } from '../../hooks/useViewMode';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import StatCard from './StatCard';
 import SocialIcon from './SocialIcon';
+import ReplicateButton from './ReplicateButton';
 
 interface HeroSectionProps {
   data: PortfolioData;
@@ -180,6 +181,7 @@ export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRac
               <SocialIcon network={sn.network} size={18} />
             </a>
           ))}
+          <ReplicateButton size={18} />
         </div>
       </div>
 
