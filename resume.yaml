@@ -190,14 +190,15 @@ cv:
 
     personal_projects:
       # Open-sourced 2026 — this very portfolio
-      - name: "Terminal Portfolio Template"
+      - name: "Portfolio Template"
         date: "Apr 2026"
         show_on_resume: true
         highlights:
-          - "Open-sourced **this very portfolio** because people kept asking how I built it — a zero-code terminal-style template that deploys to GitHub Pages in under 10 minutes."
-          - "Single source of truth: drop in a `resume.yaml`, GitHub Actions auto-generates the PDF resume + JSON data + an interactive terminal UI (with PWA install support, AI resume converter, custom themes)."
-          - "Type `showcase` in the terminal for the live fork list + deployed sites; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
+          - "Open-sourced **this very portfolio** because people kept asking how I built it — zero-code template that deploys to GitHub Pages in under 10 minutes."
+          - "One `resume.yaml`, two views: a retro **terminal mode** with live commands (theme switcher, AI resume converter, hidden games) and an editorial **GUI mode** with scroll-pinned animations + sparklines + PWA install."
+          - "Click the title to see live adoption stats and how to replicate; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
         github_repo: "https://github.com/subhayu99/subhayu99.github.io"
+        live_url: "#fork"
         showcase_command: "showcase"
 
       # Resume + Website projects
