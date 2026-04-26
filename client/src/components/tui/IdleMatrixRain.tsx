@@ -5,6 +5,10 @@ import { getAccentRgb } from '../../config/gui-theme.config';
 interface IdleMatrixRainProps {
   /** When true, the overlay fades in and animates. When false, fades out. */
   active: boolean;
+  /** Rainbow mode — each column gets its own hue distributed across
+   *  the spectrum, animated with a slow drift. Off by default; flipped
+   *  on by the `rainbow` command. */
+  rainbow?: boolean;
 }
 
 const KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
@@ -59,10 +63,12 @@ function randomChar() {
  * Positioned `fixed inset-0 z-30` so it overlays the entire viewport
  * regardless of scroll. Pointer-events: none so clicks fall through.
  */
-export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
+export function IdleMatrixRain({ active, rainbow = false }: IdleMatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   activeRef.current = active;
+  const rainbowRef = useRef(rainbow);
+  rainbowRef.current = rainbow;
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -147,7 +153,13 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
         return;
       }
 
-      const [r, g, b] = getAccentRgb();
+      const isRainbow = rainbowRef.current;
+      // Theme-coloured baseline; ignored when rainbow mode is on.
+      const [r, g, b] = isRainbow ? [0, 0, 0] : getAccentRgb();
+      // Rainbow drift — slowly rotate the hue assignment so columns
+      // breathe through the spectrum instead of being statically
+      // assigned. ~0.02 hue/ms ≈ full cycle every ~18s.
+      const hueOffset = isRainbow ? (now * 0.02) % 360 : 0;
       ctx.clearRect(0, 0, w, h);
       ctx.font = `${colWidth - 4}px 'JetBrains Mono', 'Fira Code', monospace`;
       ctx.textAlign = 'center';
@@ -181,6 +193,13 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
 
         const colX = i * colWidth + colWidth / 2;
         const trailLen = 18;
+        // Per-column hue when rainbow is on — distributed evenly across
+        // the spectrum so adjacent columns are visibly different. The
+        // hueOffset above adds a slow drift on top of the per-column
+        // assignment.
+        const colHue = isRainbow
+          ? (i * (360 / Math.max(columns.length, 1)) + hueOffset) % 360
+          : 0;
 
         for (let j = 0; j < trailLen; j++) {
           const charY = col.y - j * (colWidth - 2);
@@ -195,13 +214,15 @@ export function IdleMatrixRain({ active }: IdleMatrixRainProps) {
 
           // Uniform fade — j=0 is the brightest point on the trail
           // ramp (≈ 0.5 × opacity) but no longer gets a special "head"
-          // boost. The boosted head used to punch much brighter than
-          // the surrounding glyphs which read as inconsistent /
-          // distracting; a continuous ramp is calmer and easier on
-          // any theme.
+          // boost.
           const trailOpacity = (1 - j / trailLen) * 0.5 * opacity;
           if (trailOpacity < 0.002) continue;
-          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
+          if (isRainbow) {
+            // hsla — saturated and bright so glyphs pop on black.
+            ctx.fillStyle = `hsla(${colHue}, 100%, 60%, ${trailOpacity})`;
+          } else {
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${trailOpacity})`;
+          }
           ctx.fillText(ch, colX, charY);
         }
       }
