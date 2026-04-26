@@ -4,6 +4,7 @@ import { useViewMode } from '../../hooks/useViewMode';
 import type { PortfolioData } from '../../../../shared/schema';
 import { getSocialNetworkUrl } from '../../config/social.config';
 import SocialIcon from './SocialIcon';
+import ReplicateButton from './ReplicateButton';
 import { toggleFullscreen } from '../../lib/fullscreen';
 import * as audio from '../../lib/audio';
 
@@ -138,6 +139,8 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
                   <SocialIcon network={sn.network} size={16} />
                 </a>
               ))}
+              {/* Replicate trigger — discoverable without opening help. */}
+              <ReplicateButton size={16} />
               {/* Audio mute toggle — also triggerable via "M" key. */}
               <MuteButton />
               {/* Fullscreen toggle — also triggerable via "F" key. */}
