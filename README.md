@@ -4,6 +4,12 @@
 
 **Live Demo:** [subhayu99.github.io](https://subhayu99.github.io)
 
+[![Stars](https://img.shields.io/github/stars/subhayu99/subhayu99.github.io?style=flat-square&logo=github&color=2ea043)](https://github.com/subhayu99/subhayu99.github.io/stargazers)
+[![Forks](https://img.shields.io/github/forks/subhayu99/subhayu99.github.io?style=flat-square&logo=github&color=2ea043)](https://github.com/subhayu99/subhayu99.github.io/network/members)
+[![Deployed forks](https://img.shields.io/endpoint?url=https://subhayu.in/data/template-stats-badge.json&style=flat-square)](https://subhayu.in/?cmd=showcase)
+[![Last commit](https://img.shields.io/github/last-commit/subhayu99/subhayu99.github.io/main?style=flat-square&color=2ea043)](https://github.com/subhayu99/subhayu99.github.io/commits/main)
+[![License](https://img.shields.io/github/license/subhayu99/subhayu99.github.io?style=flat-square&color=2ea043)](./LICENSE)
+
 ![Terminal Portfolio Screencast](client/public/screenshots/short-demo.gif)
 
 ---
@@ -15,7 +21,7 @@ This repository uses a **dual-branch strategy**:
 - **`main` branch** (you are here) → Clean template with .example files only
 - **`personal` branch** → Maintainer's actual portfolio (deployed to subhayu99.github.io)
 
-**For template users:** You're in the right place! When you click "Use this template", you'll get this clean main branch.
+**For template users:** You're in the right place! Fork this repo and GitHub will copy `main` only (the "Copy the `main` branch only" checkbox in the fork dialog is on by default), so you skip all the maintainer's personal data.
 
 **For maintainers:** See [MAINTAINER_GUIDE.md](./MAINTAINER_GUIDE.md) for how to work with both branches.
 
@@ -92,16 +98,25 @@ If you want to prepare your resume before deploying:
 
 **Why this works:** AI excels at reformatting structured data. You get perfect YAML syntax without learning the format!
 
-### Step 2: Create Your Portfolio Repository
+### Step 2: Fork This Repo
 
-1. Click the **"Use this template"** button at the top of this page
-2. Name your repository: `yourusername.github.io`
-   - Replace `yourusername` with your GitHub username
-   - This naming is important for GitHub Pages!
-3. Choose **Public** visibility
-4. Click **"Create repository"**
+1. Click the **"Fork"** button at the top of this page (or visit
+   [`github.com/subhayu99/subhayu99.github.io/fork`](https://github.com/subhayu99/subhayu99.github.io/fork))
+2. **Rename it** to `yourusername.github.io` in the "Repository name" field
+   - Replace `yourusername` with your actual GitHub handle — GitHub checks
+     availability inline
+   - This naming is what makes GitHub Pages serve your site at the root URL
+3. Leave **"Copy the `main` branch only"** checked (it's the default) — this
+   skips the maintainer's `personal` branch
+4. Click **"Create fork"**
 
 **Time:** ~1 minute
+
+> **Why fork instead of "Use this template"?** Forks have an `upstream` remote
+> linked back to this repo for free, so you can pull future engine
+> improvements with `git fetch upstream main && git merge upstream/main` —
+> see [`docs/UPGRADING.md`](./docs/UPGRADING.md). They also count toward
+> public adoption stats (run `showcase` on the demo site to see).
 
 ### Step 3: Enable GitHub Actions & Pages
 
@@ -143,6 +158,23 @@ To update your information:
    - Upload to replace old `resume.yaml`
 
 Your site will automatically rebuild and update within 2-5 minutes!
+
+## 🔄 Pulling Engine Updates
+
+Because you forked (not used "Use this template"), your repo has an
+`upstream` remote pointing back at the template — pulling future engine
+improvements is one command:
+
+```bash
+git fetch upstream main
+git merge upstream/main
+git push origin main
+```
+
+Your `resume.yaml`, `manifest.json`, and other personal files stay
+untouched. For the auto-PR workflow, conflict recovery, and orphan
+migration (people who used the old "Use this template" button), see
+[`docs/UPGRADING.md`](./docs/UPGRADING.md).
 
 ## 🎨 Customization (Optional)
 
