@@ -82,6 +82,19 @@ try {
   console.warn('   Building without live stats...\n');
 }
 
+// Fetch GitHub template stats (forks, stars, traffic, orphans)
+console.log('📊 Fetching template adoption stats...\n');
+try {
+  execSync('node scripts/fetch-stats.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+  console.log('');
+} catch (error) {
+  console.warn('⚠️  Could not fetch template stats (no token, rate limit, or network)');
+  console.warn('   Building without live template stats...\n');
+}
+
 // Run vite build
 console.log('🏗️  Building application...\n');
 execSync('vite build', {
