@@ -12,6 +12,7 @@ export interface StatusBarActions {
   toGui: () => void;
   matrix: () => void;
   clear: () => void;
+<<<<<<< HEAD
   /** Search-mode chip handlers. On desktop these duplicate keyboard
    *  shortcuts (Ctrl+R / Enter / Tab / Esc); on touch they're the only
    *  way to drive the search since there's no physical keyboard. */
@@ -19,6 +20,8 @@ export interface StatusBarActions {
   searchRun?: () => void;
   searchEdit?: () => void;
   searchCancel?: () => void;
+=======
+>>>>>>> origin/main
 }
 
 interface StatusBarProps {
@@ -79,10 +82,17 @@ export function StatusBar({
                 ? `${searchInfo.matchIndex + 1}/${searchInfo.matchCount}`
                 : 'no match'}
             </span>
+<<<<<<< HEAD
             <Hint chip={`${ctrlKey}R`} label="next" onTap={actions.searchNext} />
             <Hint chip="↵" label="run" onTap={actions.searchRun} />
             <Hint chip="tab" label="edit" onTap={actions.searchEdit} />
             <Hint chip="esc" label="cancel" onTap={actions.searchCancel} />
+=======
+            <Hint chip={`${ctrlKey}R`} label="next" onTap={actions.recall} />
+            <Hint chip="↵" label="run" />
+            <Hint chip="tab" label="edit" />
+            <Hint chip="esc" label="cancel" />
+>>>>>>> origin/main
           </div>
         ) : (
           // Hint row — chips are buttons. Bare-key chips (?, /, :) work

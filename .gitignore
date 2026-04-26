@@ -46,6 +46,11 @@ client/public/data/ai-resume-prompt.txt
 # Template config (user-specific)
 template.config.yaml
 client/public/manifest.json
+client/public/data/skill-graph.json
+client/public/logo.png
+
+# Generated client-side modules (build artifact)
+client/src/generated/
 
 # Generated client-side modules (build artifact)
 client/src/generated/

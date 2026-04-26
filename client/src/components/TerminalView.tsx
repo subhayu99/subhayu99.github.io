@@ -16,6 +16,7 @@ function TerminalView() {
     >
       <Terminal onSwitchToGUI={() => switchTo('gui')} />
 
+<<<<<<< HEAD
       {/* Floating GUI switch button — desktop only. On mobile the
           `gui` chip in the status bar already covers this, and the
           floating button overlaps the prompt + chip strip awkwardly. */}
@@ -23,6 +24,13 @@ function TerminalView() {
         onClick={() => switchTo('gui')}
         className="hidden sm:flex fixed bottom-5 right-5 z-50 w-10 h-10 rounded-lg bg-zinc-900/80 border border-zinc-700
                    items-center justify-center text-terminal-green/60 hover:text-terminal-green hover:border-terminal-green hover:bg-terminal-green/10
+=======
+      {/* Floating GUI switch button */}
+      <motion.button
+        onClick={() => switchTo('gui')}
+        className="fixed bottom-5 right-5 z-50 w-10 h-10 rounded-lg bg-zinc-900/80 border border-zinc-700
+                   flex items-center justify-center text-terminal-green/60 hover:text-terminal-green hover:border-terminal-green hover:bg-terminal-green/10
+>>>>>>> origin/main
                    transition-colors duration-200 backdrop-blur-sm group"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}

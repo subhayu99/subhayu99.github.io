@@ -298,6 +298,10 @@ interface MiniStats {
   stars: number;
   forks: number;
   deployed_forks: number;
+<<<<<<< HEAD
+=======
+  orphan_derivatives?: number;
+>>>>>>> origin/main
 }
 
 function StatsLine() {
@@ -323,9 +327,25 @@ function StatsLine() {
   }, []);
 
   if (!stats) return null;
+<<<<<<< HEAD
   const headline = stats.deployed_forks > 0 ? stats.deployed_forks : stats.forks;
   if (headline === 0 && stats.stars === 0) return null;
 
+=======
+  const orphans = stats.orphan_derivatives ?? 0;
+  const headline = stats.forks + orphans;
+  if (headline === 0 && stats.stars === 0) return null;
+
+  // While forks haven't accumulated, orphans dominate the count — label
+  // accordingly so the number is honest about what it represents.
+  const headlineLabel =
+    stats.forks > 0 && orphans === 0
+      ? 'forks'
+      : orphans > 0 && stats.forks === 0
+        ? 'detected'
+        : 'derivatives';
+
+>>>>>>> origin/main
   return (
     <div className="text-tui-muted text-[11px] sm:text-xs mb-5 flex flex-wrap items-baseline gap-x-3">
       <span>
@@ -334,7 +354,11 @@ function StatsLine() {
       <span>·</span>
       <span>
         <span className="text-terminal-bright-green tabular-nums">{headline}</span>{' '}
+<<<<<<< HEAD
         {headline === stats.deployed_forks ? 'deployed forks' : 'forks'}
+=======
+        {headlineLabel}
+>>>>>>> origin/main
       </span>
       <span>·</span>
       <span className="text-tui-muted">

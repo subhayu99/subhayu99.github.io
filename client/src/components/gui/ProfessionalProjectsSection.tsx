@@ -2,7 +2,11 @@ import { useRef, useState, useMemo, useEffect } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import type { PortfolioData, Project } from '../../../../shared/schema';
 import SectionWrapper from './SectionWrapper';
+<<<<<<< HEAD
 import { renderGuiMarkdown } from '../../lib/guiMarkdown';
+=======
+import { renderGuiMarkdown, extractMetric } from '../../lib/guiMarkdown';
+>>>>>>> origin/main
 import ScrambleText from './ScrambleText';
 
 interface ProfessionalProjectsSectionProps {

@@ -8,7 +8,11 @@ import ReplicateButton from './ReplicateButton';
 import { toggleFullscreen } from '../../lib/fullscreen';
 import * as audio from '../../lib/audio';
 
+<<<<<<< HEAD
 const NAV_SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
+=======
+const NAV_SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
+>>>>>>> origin/main
 
 const SOCIAL_CODES: Record<string, string> = {
   LinkedIn: 'IN',
@@ -29,7 +33,10 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
   const { switchTo } = useViewMode();
   const [visible, setVisible] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+<<<<<<< HEAD
   const [hasLogo, setHasLogo] = useState(true);
+=======
+>>>>>>> origin/main
 
   const cv = data?.cv;
   const monogram = cv?.name
@@ -45,6 +52,7 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
   }, []);
 
   const scrollToSection = (id: string) => {
+<<<<<<< HEAD
     setMobileOpen(false);
     // Delay scroll so the menu close animation settles first
     setTimeout(() => {
@@ -54,6 +62,10 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
       const top = el.getBoundingClientRect().top + window.scrollY - navHeight;
       window.scrollTo({ top, behavior: 'smooth' });
     }, 350);
+=======
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setMobileOpen(false);
+>>>>>>> origin/main
   };
 
   return (
@@ -81,11 +93,17 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
 
             {/* Center: monogram + dot indicators (desktop) */}
             <div className="hidden sm:flex items-center gap-4">
+<<<<<<< HEAD
               {hasLogo ? (
                 <img src="/logo.png" alt={monogram || 'Logo'} className="h-6 w-6 mr-4 object-contain" onError={() => setHasLogo(false)} />
               ) : monogram ? (
                 <span className="text-white font-display text-lg tracking-wider mr-4">{monogram}</span>
               ) : null}
+=======
+              {monogram && (
+                <span className="text-white font-display text-lg tracking-wider mr-4">{monogram}</span>
+              )}
+>>>>>>> origin/main
               {NAV_SECTIONS.map((section) => (
                 <button
                   key={section}
@@ -107,6 +125,7 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
               ))}
             </div>
 
+<<<<<<< HEAD
             {/* Mobile center logo/monogram */}
             {hasLogo ? (
               <img src="/logo.png" alt={monogram || 'Logo'} className="sm:hidden h-6 w-6 object-contain" onError={() => setHasLogo(false)} />
@@ -114,6 +133,8 @@ export default function Navbar({ activeSection, data }: NavbarProps) {
               <span className="sm:hidden text-white font-display text-lg tracking-wider">{monogram}</span>
             ) : null}
 
+=======
+>>>>>>> origin/main
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
