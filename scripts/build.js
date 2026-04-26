@@ -21,6 +21,20 @@ const rootDir = join(__dirname, '..');
 
 const resumePath = join(rootDir, 'resume.yaml');
 
+// Generate template-config.ts first — every other build step (and the dev
+// server) imports it, so it must exist before anything else runs.
+console.log('🧩 Generating template-config.ts...\n');
+try {
+  execSync('node scripts/generate-template-config.js', {
+    stdio: 'inherit',
+    cwd: rootDir,
+  });
+  console.log('');
+} catch (error) {
+  console.error('❌ Failed to generate template-config.ts');
+  throw error;
+}
+
 if (existsSync(resumePath)) {
   console.log('📄 resume.yaml found - generating resume files...\n');
 
