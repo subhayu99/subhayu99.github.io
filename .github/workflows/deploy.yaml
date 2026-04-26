@@ -123,6 +123,10 @@ jobs:
       env:
         VITE_BASE_PATH: ${{ steps.compute-base-path.outputs.BASE_PATH }}
         VITE_SITE_URL: ${{ steps.compute-base-path.outputs.SITE_URL }}
+        # scripts/fetch-stats.js needs auth for /search/code (any token
+        # works) and /traffic/* (owner-only, will gracefully no-op if the
+        # workflow's GITHUB_TOKEN lacks `administration: read`).
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
     - name: ⚙️  Configure GitHub Pages
