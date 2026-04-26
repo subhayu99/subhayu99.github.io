@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiConfig } from '../../config';
+import { templateConfig } from '../../generated/template-config';
 import { Block } from './Block';
 import { NumberedLink } from './NumberedLink';
+
+const { site, docs } = templateConfig;
 
 export function ReplicatePage() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -15,9 +18,13 @@ export function ReplicatePage() {
           fork this portfolio. drop in a{' '}
           <Code>resume.yaml</Code>, deploy.
         </div>
-        <div className="text-tui-muted text-xs mb-5">
+        <div className="text-tui-muted text-xs mb-3">
           ~5 min if you have a resume · ~10 min from scratch
         </div>
+
+        {/* Inline stats line — quiet, fades in once data loads. Renders
+            nothing if the stats file is missing (early dev / pre-fetch). */}
+        <StatsLine />
 
         {/* ── Step 1 ── */}
         <PhaseHeader n={1} title="get your resume.yaml" eta="~2 min" />
@@ -48,35 +55,35 @@ export function ReplicatePage() {
 
           <ul className="mt-3 space-y-1 text-xs sm:text-sm text-white/80 list-none">
             <AltRow>
-              <NumberedLink href="https://app.rendercv.com">rendercv builder</NumberedLink>
+              <NumberedLink href={docs.renderCv}>rendercv builder</NumberedLink>
               <span className="text-tui-muted"> — start from scratch in your browser</span>
             </AltRow>
             <AltRow>
               <span className="text-terminal-bright-green">write yaml manually</span>
               <span className="text-tui-muted"> — see schema in </span>
-              <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/ADVANCED.md">
-                ADVANCED.md
-              </NumberedLink>
+              <NumberedLink href={docs.advanced}>ADVANCED.md</NumberedLink>
             </AltRow>
           </ul>
         </PhaseBody>
 
         {/* ── Step 2 ── */}
-        <PhaseHeader n={2} title="deploy" eta="~3 min" />
+        <PhaseHeader n={2} title="fork &amp; deploy" eta="~3 min" />
         <PhaseBody>
-          {/* Default path: zero-code via template. The advanced path is
-              tucked inside <details> below to keep the easy flow clean. */}
+          {/* Default path: GitHub fork (not template) — gives forkers an
+              upstream remote so future engine updates are a `git merge`
+              away. Advanced (clone + npm) tucked in <details> below. */}
           <Steps>
             <Step n={1}>
               click{' '}
-              <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/generate">
-                "use this template"
+              <NumberedLink href={site.templateForkUrl}>
+                "fork this repo"
               </NumberedLink>
-              {' '}→ name it{' '}
+              {' '}→ rename it to{' '}
               <Code>&lt;your-username&gt;.github.io</Code>
+              {' '}in the "Repository name" field
               <div className="text-tui-muted text-[11px] mt-1">
-                replace <Code>&lt;your-username&gt;</Code> with your actual github handle
-                — angle brackets aren't part of the name.
+                replace <Code>&lt;your-username&gt;</Code> with your actual github handle.
+                github checks availability inline — leave "copy the main branch only" checked.
               </div>
             </Step>
             <Step n={2}>
@@ -114,10 +121,10 @@ export function ReplicatePage() {
             <div className="mt-3 pl-5">
               <Steps>
                 <Step n={1}>
-                  clone + install:
+                  fork on github first (step 1 above), then clone <em>your fork</em> locally:
                   <Pre>
-{`git clone https://github.com/subhayu99/subhayu99.github.io.git
-cd subhayu99.github.io
+{`git clone https://github.com/<your-username>/<your-username>.github.io.git
+cd <your-username>.github.io
 npm install`}
                   </Pre>
                 </Step>
@@ -130,7 +137,7 @@ cp client/public/manifest.json.example client/public/manifest.json`}
                   </Pre>
                 </Step>
                 <Step n={3}>add your resume + customise themes / commands</Step>
-                <Step n={4}>push + enable github pages</Step>
+                <Step n={4}>push to your fork — github actions deploys automatically</Step>
               </Steps>
             </div>
           </details>
@@ -151,30 +158,40 @@ cp client/public/manifest.json.example client/public/manifest.json`}
           </div>
         </PhaseBody>
 
+        {/* ── Keep up to date ── (forker upgrade flow). Forks get an
+             upstream remote for free; merging future engine work is one
+             command. UPGRADING.md spells out conflict-recovery. */}
+        <PhaseHeader title="keep up to date" />
+        <PhaseBody>
+          <div className="text-xs sm:text-sm text-white/80 mb-2">
+            forks have an <Code>upstream</Code> remote pointing at this template by default —
+            pull future engine improvements without losing your <Code>resume.yaml</Code>:
+          </div>
+          <Pre>
+{`git fetch upstream main
+git merge upstream/main
+git push origin main`}
+          </Pre>
+          <div className="text-tui-muted text-[11px] mt-2">
+            full guide (auto-PR workflow, conflict recovery, orphan migration):{' '}
+            <NumberedLink href={docs.upgrading}>UPGRADING.md</NumberedLink>
+          </div>
+        </PhaseBody>
+
         {/* ── Help / docs ── */}
         <div className="mt-2 pt-3 border-t border-tui-accent-dim/30">
           <div className="text-tui-accent-dim text-xs mb-2">// docs</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
-            <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io#readme">
-              easy mode guide
-            </NumberedLink>
-            <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/ADVANCED.md">
-              advanced customisation
-            </NumberedLink>
-            <NumberedLink href="https://app.rendercv.com">
-              rendercv builder
-            </NumberedLink>
-            <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/TROUBLESHOOTING.md">
-              troubleshooting
-            </NumberedLink>
+            <NumberedLink href={docs.easyMode}>easy mode guide</NumberedLink>
+            <NumberedLink href={docs.advanced}>advanced customisation</NumberedLink>
+            <NumberedLink href={docs.renderCv}>rendercv builder</NumberedLink>
+            <NumberedLink href={docs.troubleshooting}>troubleshooting</NumberedLink>
           </div>
         </div>
 
         <div className="mt-4 pt-3 border-t border-tui-accent-dim/30 text-center text-xs text-tui-muted">
           built with love and a little obsession ·{' '}
-          <NumberedLink href="https://github.com/subhayu99/subhayu99.github.io">
-            star on github
-          </NumberedLink>
+          <NumberedLink href={site.templateRepoUrl}>star on github</NumberedLink>
         </div>
       </Block>
       {modalOpen && <AIPromptModal onClose={() => setModalOpen(false)} />}
@@ -272,6 +289,58 @@ function Pre({ children }: { children: React.ReactNode }) {
     <pre className="border-l-2 border-tui-accent-dim/50 mt-1.5 pl-3 font-mono text-[11px] sm:text-xs text-terminal-green whitespace-pre-wrap">
       {children}
     </pre>
+  );
+}
+
+// ── Inline live stats — quiet headline, links to full `showcase` ──
+
+interface MiniStats {
+  stars: number;
+  forks: number;
+  deployed_forks: number;
+}
+
+function StatsLine() {
+  const [stats, setStats] = useState<MiniStats | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${apiConfig.basePath}/template-stats.json`);
+        if (!res.ok) return;
+        const text = await res.text();
+        if (text.trimStart().startsWith('<!DOCTYPE')) return;
+        const data = JSON.parse(text);
+        if (!cancelled) setStats(data);
+      } catch {
+        /* silently skip — stats are nice-to-have, not blocking */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!stats) return null;
+  const headline = stats.deployed_forks > 0 ? stats.deployed_forks : stats.forks;
+  if (headline === 0 && stats.stars === 0) return null;
+
+  return (
+    <div className="text-tui-muted text-[11px] sm:text-xs mb-5 flex flex-wrap items-baseline gap-x-3">
+      <span>
+        <span className="text-terminal-bright-green tabular-nums">{stats.stars}</span> stars
+      </span>
+      <span>·</span>
+      <span>
+        <span className="text-terminal-bright-green tabular-nums">{headline}</span>{' '}
+        {headline === stats.deployed_forks ? 'deployed forks' : 'forks'}
+      </span>
+      <span>·</span>
+      <span className="text-tui-muted">
+        type <code className="text-terminal-bright-green">showcase</code> for the full list
+      </span>
+    </div>
   );
 }
 
