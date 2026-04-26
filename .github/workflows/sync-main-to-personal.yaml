@@ -1,0 +1,182 @@
+# ====================================================================
+# Sync main → personal (maintainer auto-PR)
+# ====================================================================
+# Engine work targets `main` (clean template). Whenever main moves
+# forward, this workflow opens a PR into `personal` so the deployment
+# branch can pick up the new engine without losing personal data.
+#
+# Why a PR instead of auto-merge:
+#   Workflows using the default GITHUB_TOKEN can't trigger downstream
+#   workflows (well-documented GitHub limitation), so an auto-merged
+#   sync wouldn't fire deploy.yaml. Manual merge of this PR is what
+#   triggers the redeploy.
+#
+# Personal files protected during the merge:
+#   - resume.yaml, manifest.json, neofetch*.txt, etc.
+#   These are restored to the personal-side version if the merge tries
+#   to overwrite them. (Engine commits shouldn't touch personal files
+#   at all — the protection is a belt-and-suspenders safety net.)
+#
+# Gated to the upstream repo only — forkers use the parallel
+# sync-from-upstream.yaml.example workflow shipped under .github/.
+# ====================================================================
+
+name: Sync main → personal
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC (catches manual main edits)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    if: github.repository == 'subhayu99/subhayu99.github.io'
+
+    steps:
+    - name: Checkout personal (full history)
+      uses: actions/checkout@v4
+      with:
+        ref: personal
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Configure git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Check for new main commits
+      id: check
+      run: |
+        AHEAD=$(git rev-list --count HEAD..origin/main)
+        echo "ahead=$AHEAD" >> $GITHUB_OUTPUT
+        if [ "$AHEAD" -eq 0 ]; then
+          echo "No new commits on main — nothing to sync."
+        else
+          echo "$AHEAD new commit(s) on main."
+          {
+            echo "changelog<<EOF"
+            git log --pretty=format:"- %s (%h)" HEAD..origin/main | head -50
+            echo
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create sync branch + merge with personal-file protection
+      if: steps.check.outputs.ahead != '0'
+      id: merge
+      run: |
+        BRANCH="sync/main-to-personal-${{ github.run_number }}"
+        echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+        git checkout -b "$BRANCH"
+
+        # Protected paths — the personal-side version always wins.
+        PROTECTED=(
+          "resume.yaml"
+          "client/public/manifest.json"
+          "client/public/data/styled_name.txt"
+          "client/public/data/neofetch.txt"
+          "client/public/data/neofetch-small.txt"
+          "client/public/resume.pdf"
+          "client/public/resume.md"
+          "client/public/data/resume.json"
+          "client/public/data/skill-graph.json"
+          "client/public/logo.png"
+          "client/public/icons"
+        )
+
+        # Try a clean merge first.
+        set +e
+        git merge origin/main --no-edit -m "merge: main into personal (auto)"
+        MERGE_RC=$?
+        set -e
+
+        # Restore personal-side versions of any protected file the merge
+        # touched — handles both clean merges (where engine added a file
+        # at a personal path, unlikely) and conflicted merges.
+        RESTORED=0
+        for f in "${PROTECTED[@]}"; do
+          if git show "personal:$f" >/dev/null 2>&1; then
+            git checkout personal -- "$f" 2>/dev/null && RESTORED=$((RESTORED+1)) || true
+          fi
+        done
+
+        # Stage everything (resolves any merge state for protected files).
+        git add -A
+
+        if [ $MERGE_RC -ne 0 ]; then
+          # Engine-file conflicts remain. Commit so the PR can carry them
+          # and surface to the human reviewer via GitHub's conflict UI.
+          if git diff --staged --quiet; then
+            echo "status=clean" >> $GITHUB_OUTPUT
+          else
+            git commit --no-edit -m "merge: main into personal (engine conflicts; review needed)" || true
+            echo "status=conflicts" >> $GITHUB_OUTPUT
+          fi
+        else
+          if [ "$RESTORED" -gt 0 ] && ! git diff --staged --quiet; then
+            git commit -m "chore: restore personal files after merge"
+          fi
+          echo "status=clean" >> $GITHUB_OUTPUT
+        fi
+
+        # Force-push the sync branch — overwriting prior unmerged sync
+        # branches keeps the PR list clean (one PR per main batch).
+        git push -f origin "$BRANCH"
+
+    - name: Open / update PR
+      if: steps.check.outputs.ahead != '0'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        BRANCH="${{ steps.merge.outputs.branch }}"
+        STATUS="${{ steps.merge.outputs.status }}"
+        AHEAD="${{ steps.check.outputs.ahead }}"
+
+        BODY=$(cat <<BODYEOF
+        Auto-sync of \`main\` (engine) into \`personal\` (deployment branch).
+
+        **${AHEAD} new commit(s) on main.**
+        Merge status: \`${STATUS}\`
+
+        ## Changes
+
+        ${{ steps.check.outputs.changelog }}
+
+        ## Personal files protected
+
+        - \`resume.yaml\`
+        - \`client/public/manifest.json\`
+        - \`client/public/data/{neofetch*.txt, styled_name.txt, resume.json, skill-graph.json}\`
+        - \`client/public/{resume.pdf, resume.md, logo.png}\`
+        - \`client/public/icons/\`
+
+        BODYEOF
+        )
+
+        if [ "$STATUS" = "conflicts" ]; then
+          BODY="$BODY"$'\n'"⚠️ **Engine-file conflicts detected.** Resolve locally before merging — see [MAINTAINER_GUIDE.md](https://github.com/${{ github.repository }}/blob/main/MAINTAINER_GUIDE.md)."
+        else
+          BODY="$BODY"$'\n'"✅ **Clean merge.** Review and merge to redeploy your site."
+        fi
+
+        # Create the PR if it doesn't exist; otherwise the force-push
+        # already updated the branch and the open PR auto-refreshes.
+        EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' 2>/dev/null || true)
+        if [ -z "$EXISTING" ]; then
+          gh pr create \
+            --base personal \
+            --head "$BRANCH" \
+            --title "🔄 Sync main → personal (${AHEAD} commit$([ "$AHEAD" = "1" ] || echo s))" \
+            --body "$BODY"
+        else
+          gh pr edit "$EXISTING" --body "$BODY"
+          echo "Updated existing PR #${EXISTING}"
+        fi

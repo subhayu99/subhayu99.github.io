@@ -1,122 +1,127 @@
 # 🛠️ Maintainer Guide
 
-Quick guide for maintaining both your portfolio and the template.
+How to maintain this repo across the two-branch model.
 
-## 🌿 Two-Branch Setup
+## 🌿 The two branches
 
-- **`main`** = Clean template (no personal data) → Users get this
-- **`personal`** = Your portfolio (with your data) → Deploys to https://subhayu99.github.io
+- **`main`** — clean template (no personal data). Forkers `Use this template`-equivalent.
+- **`personal`** — your portfolio (`main` + your `resume.yaml` and other personal files). Deploys to https://subhayu99.github.io.
 
-## 📖 Common Tasks
+## 🔁 The flow (canonical: main, sync down to personal)
 
-### Update Your Resume
+Engine work targets `main`. Personal data lives on `personal`. `main` auto-syncs into `personal` via a workflow whenever it moves forward, so the deployed site picks up engine changes without losing your data.
+
+```
+                                                ┌──── auto-sync PR ────┐
+                                                │                      ▼
+       feature branch off main ──── PR ──→  main ──────────→  personal ──→ deploy
+                                                ▲
+                                                │
+       personal-data edits ──── direct push ────┘ (wait — see below)
+```
+
+### Why this flow
+
+The previous flow (work on `personal`, hand-cherry-pick to `main` via `sync-X-to-main` PRs) generated parallel histories where every commit had a doppelganger SHA. Cherry-picking across them produced phantom 3-way conflicts even when content was identical. Flipping the canonical direction means `personal`'s history becomes `main` + a thin layer of personal-data commits — clean, linear, no doppelgangers.
+
+## 📖 Common tasks
+
+### A. Engine work (new feature, bug fix, refactor)
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git checkout -b subhayu99/<short-description>
+
+# (optional) bring in your data so you can dev with real content:
+npm run hydrate
+
+npm run dev
+# … hack hack hack …
+git add <files> && git commit -m "feat: …"
+git push origin subhayu99/<short-description>
+gh pr create --base main
+```
+
+When the PR merges, the **`Sync main → personal`** workflow opens an auto-sync PR into `personal`. Review and merge that PR to redeploy your site.
+
+### B. Personal data update (resume, manifest, neofetch art)
 
 ```bash
 git checkout personal
+git pull --ff-only origin personal
 vim resume.yaml
-git add . && git commit -m "update: resume"
+git add resume.yaml && git commit -m "update: resume"
 git push origin personal
-# ✅ Your site auto-deploys!
+# ✅ Deploy fires automatically.
 ```
 
-### Add Feature to Template
+### C. I need real data to test on a feature branch (not personal)
 
 ```bash
-git checkout main
-# Make changes to source code
-git add . && git commit -m "feat: new theme"
-git push origin main
-
-# Apply to your portfolio
-git checkout personal
-git merge main
-git push origin personal
+git checkout subhayu99/<feature-branch>   # any non-personal branch
+npm run hydrate                            # pulls resume.yaml + manifest + neofetch from personal
+npm run dev                                # site renders with YOUR data
 ```
 
-### Sync Changes Between Branches (Recommended)
+The hydrated files are gitignored on every branch except `personal`, so they can't accidentally be committed.
 
-Use the automated sync script to cherry-pick commits while excluding personal files:
-
-```bash
-# From main → sync template improvements to personal:
-git checkout main
-./scripts/sync-branches.sh
-
-# From personal → sync bug fixes to main:
-git checkout personal
-./scripts/sync-branches.sh
-
-# Preview before applying:
-./scripts/sync-branches.sh --dry-run
-```
-
-The script automatically:
-- ✅ Finds commits to sync
-- ✅ Skips commits that touch personal files (resume.yaml, etc.)
-- ✅ Cherry-picks safe commits
-- ✅ Shows detailed summary
-
-**Alternative: Manual merge** (advanced, more merge conflicts):
+### D. Pull pending engine changes into personal manually (if the auto-sync PR isn't open yet)
 
 ```bash
 git checkout personal
-git merge main
-
-# ⚠️ If merge deletes your personal files (resume.yaml, etc):
-git checkout HEAD~1 -- resume.yaml client/public/manifest.json client/public/data/ client/public/resume.pdf
-git commit -m "restore: personal files"
-
+git fetch origin main
+git merge origin/main
 git push origin personal
 ```
 
-## ⚠️ Important Rules
+## ⚠️ Important rules
 
-**DO:**
-- Work on `personal` for resume/content updates
-- Work on `main` for template improvements
-- Sync `main → personal` to get improvements (use sync script)
+**DO**
+- Open engine PRs against `main`.
+- Merge the auto-sync PRs into `personal` to redeploy after engine work lands.
+- Edit personal data directly on `personal`.
 
-**DON'T:**
-- Commit personal data to `main`
-- Sync `personal → main` with personal files
-- Force push to either branch
+**DON'T**
+- Commit personal data (resume.yaml, manifest.json, neofetch*.txt, etc.) to `main` — they're gitignored there for a reason.
+- Force-push to either branch.
+- Cherry-pick `personal → main` for engine work — use a branch off `main` instead. The legacy `subhayu99/sync-X-to-main` pattern is now obsolete.
 
-## 🔧 Useful Commands
+## 🛠 Useful commands
 
 ```bash
-# Check current branch
-git branch
+# What's on main but not yet synced to personal:
+git log --oneline personal..main
 
-# See differences between branches
+# What personal-only files differ from their engine counterparts:
 git diff main personal --name-only
 
-# Verify file not in main
-git show main:resume.yaml  # Should error (good!)
+# Dry-run the deploy locally:
+npm run hydrate && npm run build && npm run preview
 
-# Sync branches automatically (recommended)
-./scripts/sync-branches.sh --dry-run  # Preview first
-./scripts/sync-branches.sh            # Apply changes
+# Re-fetch the showcase stats (forks + orphans) without a deploy:
+node scripts/fetch-stats.js
 ```
 
-**💡 Pro Tip:** Run `head -70 scripts/sync-branches.sh` to see full documentation for the sync script.
+## 📚 Files structure
 
-## 📚 Files Structure
-
-**In both branches:**
+**Tracked on both `main` and `personal`:**
 - Source code (`client/src/`, `scripts/`, etc.)
-- `.example` files
-- Documentation
+- `.example` files (`resume.yaml.example`, etc.)
+- Documentation (`README.md`, `docs/`, etc.)
+- Workflows (`.github/workflows/`)
 
-**Only in `personal`:**
+**Tracked only on `personal` (gitignored everywhere else):**
 - `resume.yaml`
 - `client/public/manifest.json`
-- `client/public/resume.pdf`
-- `client/public/data/resume.json`
-- Other personal configs
+- `client/public/data/{styled_name.txt, neofetch.txt, neofetch-small.txt, skill-graph.json}`
+- `client/public/logo.png`
 
-**Only in `main`:**
-- Nothing extra - just template
+**Generated (regenerated by `npm run build`, never committed):**
+- `client/public/resume.{pdf, md}`
+- `client/public/data/{resume.json, ai-resume-prompt.txt, template-stats.json, template-stats-badge.json, pypi-stats.json}`
+- `client/src/generated/template-config.ts`
 
----
+## 🔄 The legacy `sync-branches.sh` script
 
-**That's it!** Keep it simple: `main` for template, `personal` for your portfolio.
+The old `scripts/sync-branches.sh` still works for one-off cherry-picks but is superseded by the auto-sync workflow for routine main → personal sync. Use the script only when you specifically need to cherry-pick a *subset* of commits in either direction.
