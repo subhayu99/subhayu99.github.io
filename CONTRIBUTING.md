@@ -1,4 +1,4 @@
-# Contributing to Terminal Portfolio Template
+# Contributing to Portfolio Template
 
 Thank you for considering contributing to this project! We welcome contributions from everyone, whether you're fixing a bug, adding a feature, or improving documentation.
 

@@ -1,7 +1,7 @@
 {
   "name": "subhayu99.github.io",
   "version": "1.0.0",
-  "description": "Interactive terminal-style portfolio website with zero-code deployment",
+  "description": "Interactive portfolio template — terminal mode + editorial GUI mode from one resume.yaml, zero-code deployment to GitHub Pages",
   "type": "module",
   "license": "MIT",
   "author": "Subhayu Kumar Bala <balasubhayu99@gmail.com>",
@@ -30,7 +30,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "predev": "node scripts/generate-ai-prompt.js",
+    "predev": "node scripts/generate-template-config.js && node scripts/generate-ai-prompt.js",
     "dev": "vite",
     "build": "node scripts/build.js",
     "preview": "vite preview",
@@ -40,8 +40,9 @@
     "generate-resume:prod": "NODE_ENV=production node scripts/generate-resume.js",
     "generate-resume:ci": "NODE_ENV=ci node scripts/generate-resume.js",
     "generate-ai-prompt": "node scripts/generate-ai-prompt.js",
+    "generate-template-config": "node scripts/generate-template-config.js",
     "type-check": "tsc --noEmit",
-    "setup": "npm install && npm run generate-resume && npm run generate-ai-prompt",
+    "setup": "npm install && npm run generate-template-config && npm run generate-resume && npm run generate-ai-prompt",
     "clean": "rm -rf dist node_modules client/public/data/*.json client/public/resume.* rendercv_output"
   },
   "dependencies": {

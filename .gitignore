@@ -30,6 +30,9 @@ client/public/data/styled_name.txt
 client/public/data/neofetch.txt
 client/public/data/neofetch-small.txt
 client/public/data/pypi-stats.json
+client/public/data/template-stats.json
+client/public/data/template-stats-badge.json
+client/public/build-version.json
 
 # Generated resume files (Actions will regenerate)
 client/public/resume.pdf
@@ -43,6 +46,9 @@ client/public/data/ai-resume-prompt.txt
 # Template config (user-specific)
 template.config.yaml
 client/public/manifest.json
+
+# Generated client-side modules (build artifact)
+client/src/generated/
 
 # User's personal notes/docs
 profile.md

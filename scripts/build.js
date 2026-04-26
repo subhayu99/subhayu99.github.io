@@ -21,6 +21,20 @@ const rootDir = join(__dirname, '..');
 
 const resumePath = join(rootDir, 'resume.yaml');
 
+// Generate template-config.ts first — every other build step (and the dev
+// server) imports it, so it must exist before anything else runs.
+console.log('🧩 Generating template-config.ts...\n');
+try {
+  execSync('node scripts/generate-template-config.js', {
+    stdio: 'inherit',
+    cwd: rootDir,
+  });
+  console.log('');
+} catch (error) {
+  console.error('❌ Failed to generate template-config.ts');
+  throw error;
+}
+
 if (existsSync(resumePath)) {
   console.log('📄 resume.yaml found - generating resume files...\n');
 
@@ -66,6 +80,19 @@ try {
 } catch (error) {
   console.warn('⚠️  Could not fetch PyPI stats (network issue or rate limit)');
   console.warn('   Building without live stats...\n');
+}
+
+// Fetch GitHub template stats (forks, stars, traffic, orphans)
+console.log('📊 Fetching template adoption stats...\n');
+try {
+  execSync('node scripts/fetch-stats.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+  console.log('');
+} catch (error) {
+  console.warn('⚠️  Could not fetch template stats (no token, rate limit, or network)');
+  console.warn('   Building without live template stats...\n');
 }
 
 // Run vite build

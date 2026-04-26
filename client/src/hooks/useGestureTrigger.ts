@@ -5,6 +5,10 @@ const SNAKE_TRIGGER = 'snake';
 const REFLEX_TRIGGER = 'reflex';
 const RACER_TRIGGER = 'racer';
 const HELP_TRIGGER = 'help';
+// Both open the same sheet. Note: `fork` is intentionally NOT a keyboard
+// trigger — `f` is bound to fullscreen toggle, which would fire mid-type
+// before the buffer could match. URL hash `#fork` still works.
+const REPLICATE_TRIGGERS = ['replicate', 'clone'] as const;
 
 // Shake detection thresholds
 const SHAKE_THRESHOLD = 25;
@@ -21,6 +25,7 @@ export function useGestureTrigger(motionEnabled = false) {
   const [reflexActive, setReflexActive] = useState(false);
   const [racerActive, setRacerActive] = useState(false);
   const [helpActive, setHelpActive] = useState(false);
+  const [replicateActive, setReplicateActive] = useState(false);
 
   const snakeBufferRef = useRef('');
   const tTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -31,6 +36,7 @@ export function useGestureTrigger(motionEnabled = false) {
   const resetReflex = useCallback(() => setReflexActive(false), []);
   const resetRacer = useCallback(() => setRacerActive(false), []);
   const resetHelp = useCallback(() => setHelpActive(false), []);
+  const resetReplicate = useCallback(() => setReplicateActive(false), []);
 
   const triggerThemeCycle = useCallback(() => {
     const next = cycleTheme();
@@ -142,6 +148,13 @@ export function useGestureTrigger(motionEnabled = false) {
           tTimerRef.current = null;
           triggerThemeCycle();
         }, T_KEY_WINDOW_MS);
+        // Also feed the 't' into the word buffer so multi-letter triggers
+        // containing 't' (e.g. "replicate") can still match. Theme-cycle
+        // gesture is unaffected — the buffer only feeds word triggers below.
+        snakeBufferRef.current += 't';
+        if (snakeBufferRef.current.length > 12) {
+          snakeBufferRef.current = snakeBufferRef.current.slice(-12);
+        }
         return;
       }
 
@@ -159,11 +172,11 @@ export function useGestureTrigger(motionEnabled = false) {
         tPendingRef.current = false;
       }
 
-      // Word triggers (snake, reflex, racer, help)
-      if (snakeActive || reflexActive || racerActive || helpActive) return;
+      // Word triggers (snake, reflex, racer, help, replicate/fork/clone)
+      if (snakeActive || reflexActive || racerActive || helpActive || replicateActive) return;
       snakeBufferRef.current += key.toLowerCase();
-      if (snakeBufferRef.current.length > 10) {
-        snakeBufferRef.current = snakeBufferRef.current.slice(-10);
+      if (snakeBufferRef.current.length > 12) {
+        snakeBufferRef.current = snakeBufferRef.current.slice(-12);
       }
       if (snakeBufferRef.current.endsWith(SNAKE_TRIGGER)) {
         setSnakeActive(true);
@@ -177,6 +190,9 @@ export function useGestureTrigger(motionEnabled = false) {
       } else if (snakeBufferRef.current.endsWith(HELP_TRIGGER)) {
         setHelpActive(true);
         snakeBufferRef.current = '';
+      } else if (REPLICATE_TRIGGERS.some((t) => snakeBufferRef.current.endsWith(t))) {
+        setReplicateActive(true);
+        snakeBufferRef.current = '';
       }
     };
 
@@ -185,14 +201,15 @@ export function useGestureTrigger(motionEnabled = false) {
       window.removeEventListener('keydown', handleKey);
       if (tTimerRef.current) clearTimeout(tTimerRef.current);
     };
-  }, [snakeActive, reflexActive, racerActive, helpActive, triggerThemeCycle, triggerThemeJump]);
+  }, [snakeActive, reflexActive, racerActive, helpActive, replicateActive, triggerThemeCycle, triggerThemeJump]);
 
   return {
-    themeFlash, snakeActive, reflexActive, racerActive, helpActive,
-    resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp,
+    themeFlash, snakeActive, reflexActive, racerActive, helpActive, replicateActive,
+    resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, resetReplicate,
     triggerSnake: () => setSnakeActive(true),
     triggerReflex: () => setReflexActive(true),
     triggerRacer: () => setRacerActive(true),
     triggerHelp: () => setHelpActive(true),
+    triggerReplicate: () => setReplicateActive(true),
   };
 }

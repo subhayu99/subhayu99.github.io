@@ -1,0 +1,125 @@
+# ====================================================================
+# Sync from upstream template (forker-installed, optional)
+# ====================================================================
+# Opens a PR every Monday with new commits from the upstream template
+# repo. The PR stays open for your review — manual merge only, by design.
+#
+# Why no auto-merge: workflows using the default GITHUB_TOKEN cannot
+# trigger downstream workflows (well-documented GitHub limitation), so
+# an auto-merged sync PR wouldn't fire deploy.yaml. Your manual merge
+# commit is human-authored and triggers deploys normally.
+#
+# To install:
+#   cp .github/workflows/sync-from-upstream.yaml.example \
+#      .github/workflows/sync-from-upstream.yaml
+#   git add .github/workflows/sync-from-upstream.yaml
+#   git commit -m "chore: install upstream sync workflow"
+#   git push
+#
+# To trigger manually: Actions tab → "Sync from upstream" → Run workflow
+# ====================================================================
+
+name: Sync from upstream
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # Skip on the upstream template repo itself
+    if: github.repository != 'subhayu99/subhayu99.github.io'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Add upstream remote
+      run: |
+        git remote add upstream https://github.com/subhayu99/subhayu99.github.io.git || true
+        git fetch upstream main
+
+    - name: Check for new upstream commits
+      id: check
+      run: |
+        AHEAD=$(git rev-list --count HEAD..upstream/main)
+        echo "ahead=$AHEAD" >> $GITHUB_OUTPUT
+        if [ "$AHEAD" -eq 0 ]; then
+          echo "Already in sync with upstream"
+        else
+          echo "$AHEAD new commits upstream"
+          # Capture short summary for the PR body
+          {
+            echo "changelog<<EOF"
+            git log --pretty=format:"- %s (%h)" HEAD..upstream/main | head -50
+            echo
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+        fi
+
+    - name: Read engine version from upstream
+      id: version
+      if: steps.check.outputs.ahead != '0'
+      run: |
+        VERSION=$(git show upstream/main:VERSION 2>/dev/null | tr -d '[:space:]' || echo "unknown")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create branch + merge
+      if: steps.check.outputs.ahead != '0'
+      run: |
+        BRANCH="sync/upstream-${{ github.run_number }}"
+        echo "branch=$BRANCH" >> $GITHUB_ENV
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git checkout -b "$BRANCH"
+        # Try a clean merge; if conflicts surface, leave them for the human
+        if git merge upstream/main --no-edit; then
+          echo "merge_status=clean" >> $GITHUB_ENV
+        else
+          # Restore protected files first so they don't appear in conflict markers
+          for f in resume.yaml template.config.yaml client/public/manifest.json; do
+            git checkout HEAD -- "$f" 2>/dev/null || true
+          done
+          # Stage what's clean, leave the rest for review
+          git add -A
+          git commit -m "merge: upstream/main (with conflicts — review needed)" || true
+          echo "merge_status=conflicts" >> $GITHUB_ENV
+        fi
+        git push origin "$BRANCH"
+
+    - name: Open PR
+      if: steps.check.outputs.ahead != '0'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        branch: ${{ env.branch }}
+        base: main
+        title: "🔄 Sync from upstream — engine v${{ steps.version.outputs.version }}"
+        body: |
+          Automated sync from the upstream template
+          (`subhayu99/subhayu99.github.io`).
+
+          **${{ steps.check.outputs.ahead }} new commits upstream.**
+          Merge status: `${{ env.merge_status }}`
+
+          ## Changes
+
+          ${{ steps.check.outputs.changelog }}
+
+          ## What's protected
+
+          Your `resume.yaml`, `client/public/manifest.json`, and
+          `client/public/data/*` files are kept as-is by this workflow.
+
+          ${{ env.merge_status == 'conflicts' && '⚠️ **Conflicts detected.** Resolve locally before merging — see [UPGRADING.md](https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/UPGRADING.md#when-merge-conflicts-happen).' || '✅ **Clean merge.** Review and merge when ready — your site redeploys automatically on merge.' }}
+
+          ---
+
+          *Manual merge only by design — see [UPGRADING.md](https://github.com/subhayu99/subhayu99.github.io/blob/main/docs/UPGRADING.md#optional-auto-pr-sync-workflow) for why.*

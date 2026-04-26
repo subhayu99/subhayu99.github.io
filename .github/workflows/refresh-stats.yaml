@@ -1,0 +1,34 @@
+# Refresh template adoption stats daily
+#
+# Same pattern as refresh-pypi-stats.yaml — triggers the deploy workflow
+# which runs `node scripts/fetch-stats.js` during build, pulling fresh
+# data from the GitHub forks/traffic/code-search APIs.
+#
+# Gated to upstream repo only — forkers don't need this.
+
+name: Refresh Template Stats
+
+on:
+  schedule:
+    # Daily at 05:00 UTC
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    # Only run on the upstream template repo
+    if: github.repository == 'subhayu99/subhayu99.github.io'
+
+    steps:
+    - name: Trigger deploy workflow
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'deploy.yaml',
+            ref: 'personal',
+          });
+          console.log('Triggered deploy workflow on personal branch');

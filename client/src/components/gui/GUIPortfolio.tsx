@@ -27,6 +27,7 @@ import SnakeGame from './SnakeGame';
 import ReflexGame from './ReflexGame';
 import RacerGame from './RacerGame';
 import HelpSheet from './HelpSheet';
+import ReplicateSheet from './ReplicateSheet';
 
 const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
 
@@ -39,9 +40,9 @@ export default function GUIPortfolio() {
     return localStorage.getItem('motionPermission') === 'granted';
   });
   const [showMotionToast, setShowMotionToast] = useState(false);
-  const { themeFlash, snakeActive, reflexActive, racerActive, helpActive, resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, triggerSnake, triggerReflex, triggerRacer, triggerHelp } = useGestureTrigger(motionEnabled);
+  const { themeFlash, snakeActive, reflexActive, racerActive, helpActive, replicateActive, resetThemeFlash, resetSnake, resetReflex, resetRacer, resetHelp, resetReplicate, triggerSnake, triggerReflex, triggerRacer, triggerHelp, triggerReplicate } = useGestureTrigger(motionEnabled);
 
-  // URL-hash deep links: #snake / #racer / #reflex / #help opens the game.
+  // URL-hash deep links: games + replicate-sheet hashes open the matching overlay.
   // Works on direct page load AND when navigating back/forward through history.
   useEffect(() => {
     const check = () => {
@@ -50,17 +51,19 @@ export default function GUIPortfolio() {
       else if (h === 'racer') triggerRacer();
       else if (h === 'reflex') triggerReflex();
       else if (h === 'help') triggerHelp();
+      else if (h === 'replicate' || h === 'fork' || h === 'clone') triggerReplicate();
     };
     check();
     window.addEventListener('hashchange', check);
     return () => window.removeEventListener('hashchange', check);
-  }, [triggerSnake, triggerReflex, triggerRacer, triggerHelp]);
+  }, [triggerSnake, triggerReflex, triggerRacer, triggerHelp, triggerReplicate]);
 
-  // When a game closes, reset the hash back to #gui so a browser refresh
-  // doesn't re-open the game and the URL reflects current state.
+  // When a sheet/game closes, reset the hash back to #gui so a browser refresh
+  // doesn't re-open the overlay and the URL reflects current state.
   const clearGameHash = useCallback(() => {
     const h = window.location.hash.toLowerCase();
-    if (h === '#snake' || h === '#racer' || h === '#reflex' || h === '#help') {
+    const overlayHashes = ['#snake', '#racer', '#reflex', '#help', '#replicate', '#fork', '#clone'];
+    if (overlayHashes.includes(h)) {
       window.history.replaceState(null, '', '#gui');
     }
   }, []);
@@ -68,6 +71,7 @@ export default function GUIPortfolio() {
   const handleResetReflex = useCallback(() => { resetReflex(); clearGameHash(); }, [resetReflex, clearGameHash]);
   const handleResetRacer = useCallback(() => { resetRacer(); clearGameHash(); }, [resetRacer, clearGameHash]);
   const handleResetHelp = useCallback(() => { resetHelp(); clearGameHash(); }, [resetHelp, clearGameHash]);
+  const handleResetReplicate = useCallback(() => { resetReplicate(); clearGameHash(); }, [resetReplicate, clearGameHash]);
 
   // Show motion permission toast on mobile if not yet granted
   useEffect(() => {
@@ -216,6 +220,7 @@ export default function GUIPortfolio() {
         <FloatingTerminalButton />
       </div>
       <HelpSheet active={helpActive} onClose={handleResetHelp} />
+      <ReplicateSheet active={replicateActive} onClose={handleResetReplicate} />
       {/* Motion permission toast */}
       {showMotionToast && (
         <div className="fixed bottom-6 left-4 right-4 z-[90] flex items-center justify-between

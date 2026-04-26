@@ -44,6 +44,11 @@ const TRIGGERS: TriggerRow[] = [
     mobile: 'tap the 🔊 icon in the navbar',
   },
   {
+    label: 'Replicate (build your own)',
+    desktop: 'type "replicate" or "clone" — or open #fork in the URL',
+    mobile: 'open #replicate · #fork · #clone in the URL',
+  },
+  {
     label: 'Drop a Planet',
     desktop: 'click-and-hold empty space, release to drop — flick to throw',
     mobile: 'press-and-hold empty space (≈¼ sec), release to drop',
@@ -134,7 +139,7 @@ export default function HelpSheet({ active, onClose }: HelpSheetProps) {
             </div>
 
             <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/5 text-[9px] tracking-[0.2em] uppercase text-zinc-600 text-center leading-[1.7]">
-              deep-link: <span className="text-zinc-400">#snake · #racer · #reflex · #help</span> at url end
+              deep-link: <span className="text-zinc-400">#snake · #racer · #reflex · #replicate · #help</span> at url end
             </div>
           </motion.div>
         </motion.div>
