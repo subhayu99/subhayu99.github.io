@@ -4,6 +4,10 @@ import path from "path";
 import { readFileSync, existsSync, writeFileSync } from "fs";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { themes } from "./client/src/lib/themes";
+import {
+  loadTemplateConfig,
+  renderSignatureComment,
+} from "./scripts/utils/load-template-config.js";
 
 const themeInjectorPlugin = (): Plugin => {
   return {
@@ -63,6 +67,18 @@ const siteMetadataPlugin = (): Plugin => {
   };
 };
 
+const templateSignaturePlugin = (): Plugin => {
+  return {
+    name: 'template-signature',
+    transformIndexHtml(html) {
+      const config = loadTemplateConfig();
+      if (!config.tracking.signature) return html;
+      const comment = renderSignatureComment(config);
+      return html.replace('<!DOCTYPE html>', `<!DOCTYPE html>\n${comment}`);
+    },
+  };
+};
+
 const buildVersionPlugin = (): Plugin => {
   return {
     name: 'build-version',
@@ -91,6 +107,7 @@ export default defineConfig({
     runtimeErrorOverlay(),
     themeInjectorPlugin(),
     siteMetadataPlugin(),
+    templateSignaturePlugin(),
     buildVersionPlugin(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
