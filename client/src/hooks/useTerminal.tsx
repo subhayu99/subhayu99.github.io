@@ -12,6 +12,7 @@ import { UsageHint } from '../components/tui/UsageHint';
 import { ExploreMore } from '../components/tui/ExploreMore';
 import { CollapsibleGroup, type CollapsibleItemData } from '../components/tui/Collapsible';
 import { ReplicatePage } from '../components/tui/ReplicatePage';
+import { StatsPage } from '../components/tui/StatsPage';
 import { LabeledRow, CompactRow } from '../components/tui/LabeledRow';
 import { MarkdownBlock } from '../components/tui/MarkdownBlock';
 import { BrailleSparkline, formatCompact } from '../components/tui/BrailleSparkline';
@@ -433,6 +434,7 @@ const COMMAND_REGISTRY: CommandMetadata[] = [
   { name: 'theme', description: 'Change terminal color theme', category: 'tools', argsHint: '[name]' },
   { name: 'gui', description: 'Switch to the GUI portfolio view', category: 'tools' },
   { name: 'replicate', description: 'Create your own terminal portfolio', category: 'tools', aliases: ['clone', 'fork'] },
+  { name: 'showcase', description: "Forks deployed using this template", category: 'tools', aliases: ['forks', 'adopters'] },
   { name: 'stats', description: 'Live PyPI download sparklines', category: 'tools' },
 
   // TERMINAL Commands (always available)
@@ -746,6 +748,10 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
 
   const showReplicate = useCallback(() => {
     addNode(<ReplicatePage />, 'w-full');
+  }, [addNode]);
+
+  const showShowcase = useCallback(() => {
+    addNode(<StatsPage />, 'w-full');
   }, [addNode]);
 
   const showAbout = useCallback(() => {
@@ -2713,6 +2719,11 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
       case 'fork':
         showReplicate();
         break;
+      case 'showcase':
+      case 'forks':
+      case 'adopters':
+        showShowcase();
+        break;
       case 'clear':
         clearTerminal();
         break;
@@ -2846,7 +2857,7 @@ export function useTerminal({ portfolioData, onSwitchToGUI, onTriggerMatrix, onD
         );
         setLastExitCode(127);
     }
-  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showRainbow, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
+  }, [addLine, addNode, showHelp, openResumePdf, showWelcomeMessage, showAbout, showSkills, showExperience, showEducation, showProjects, showPersonalProjects, showContact, showPublications, showTimeline, showSearch, showTheme, showWhoAmI, listCommands, showCat, showNeofetch, showReplicate, showShowcase, showHistory, clearTerminal, showGenericSection, showQuote, showCoffee, showSudo, showMatrix, showRainbow, showKonami, showStats, showRmRf, linkRegistry, portfolioData, onSwitchToGUI, currentDir]);
 
   const navigateHistory = useCallback((direction: 'up' | 'down') => {
     if (commandHistory.length === 0) return currentInput;
