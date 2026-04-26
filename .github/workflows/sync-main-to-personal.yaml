@@ -73,7 +73,11 @@ jobs:
       if: steps.check.outputs.ahead != '0'
       id: merge
       run: |
-        BRANCH="sync/main-to-personal-${{ github.run_number }}"
+        # Stable branch name — every workflow run force-pushes to the same
+        # branch so multiple main pushes coalesce into ONE rolling sync PR
+        # instead of stacking up. (The previous run-number'd name created
+        # a fresh PR on every run.)
+        BRANCH="sync/main-to-personal"
         echo "branch=$BRANCH" >> $GITHUB_OUTPUT
         git checkout -b "$BRANCH"
 
@@ -174,9 +178,14 @@ jobs:
           gh pr create \
             --base personal \
             --head "$BRANCH" \
-            --title "🔄 Sync main → personal (${AHEAD} commit$([ "$AHEAD" = "1" ] || echo s))" \
+            --title "🔄 Sync main → personal" \
             --body "$BODY"
         else
-          gh pr edit "$EXISTING" --body "$BODY"
-          echo "Updated existing PR #${EXISTING}"
+          # Force-push from the merge step has already updated the diff;
+          # we just refresh the PR body so the commit count + changelog
+          # in the description stay current.
+          gh pr edit "$EXISTING" \
+            --title "🔄 Sync main → personal (${AHEAD} commit$([ "$AHEAD" = "1" ] || echo s) ahead)" \
+            --body "$BODY"
+          echo "Updated existing PR #${EXISTING} (now ${AHEAD} commit$([ "$AHEAD" = "1" ] || echo s) ahead)"
         fi
