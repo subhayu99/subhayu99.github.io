@@ -52,9 +52,6 @@ client/public/logo.png
 # Generated client-side modules (build artifact)
 client/src/generated/
 
-# Generated client-side modules (build artifact)
-client/src/generated/
-
 # User's personal notes/docs
 profile.md
 profile1.md

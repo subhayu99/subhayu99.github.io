@@ -118,16 +118,11 @@ export default function ReplicateSheet({ active, onClose }: ReplicateSheetProps)
     };
   }, [active, stats]);
 
-<<<<<<< HEAD
-  const headline =
-    stats && (stats.deployed_forks > 0 ? stats.deployed_forks : stats.forks);
-=======
   // Until forks accumulate, orphan-detected derivatives (pre-fork-flow
   // "Use this template" clones) are the primary adoption signal. Sum
   // them — fetchOrphans already excludes anything counted as a fork.
   const orphans = stats?.orphan_derivatives ?? 0;
   const headline = stats ? stats.forks + orphans : null;
->>>>>>> origin/main
   const sinceYear = stats?.since
     ? new Date(stats.since).getFullYear()
     : null;
@@ -201,15 +196,12 @@ export default function ReplicateSheet({ active, onClose }: ReplicateSheetProps)
               <Stat label="forks" value={stats?.forks} />
               <span className="text-zinc-700">/</span>
               <Stat label="deployed" value={stats?.deployed_forks} />
-<<<<<<< HEAD
-=======
               {orphans > 0 && (
                 <>
                   <span className="text-zinc-700">/</span>
                   <Stat label="detected" value={orphans} />
                 </>
               )}
->>>>>>> origin/main
               {sinceYear && (
                 <>
                   <span className="text-zinc-700">/</span>

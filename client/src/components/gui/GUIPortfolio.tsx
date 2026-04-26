@@ -29,11 +29,7 @@ import RacerGame from './RacerGame';
 import HelpSheet from './HelpSheet';
 import ReplicateSheet from './ReplicateSheet';
 
-<<<<<<< HEAD
 const SECTIONS = ['about', 'skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
-=======
-const SECTIONS = ['skills', 'experience', 'work', 'projects', 'education', 'publication', 'contact'];
->>>>>>> origin/main
 
 export default function GUIPortfolio() {
   const [activeSection, setActiveSection] = useState<string>('');
@@ -194,11 +190,7 @@ export default function GUIPortfolio() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       data-gui-portfolio
-<<<<<<< HEAD
-      className="min-h-screen bg-black text-gui-text font-sans"
-=======
       className="min-h-screen bg-black text-gui-text font-sans overflow-y-auto"
->>>>>>> origin/main
     >
       <WireframeGrid />
       <MatrixRain />

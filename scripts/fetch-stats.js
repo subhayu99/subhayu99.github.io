@@ -31,9 +31,6 @@ const OUT_FILE = join(OUT_DIR, 'template-stats.json');
 const BADGE_FILE = join(OUT_DIR, 'template-stats-badge.json');
 
 const REPO = UPSTREAM_TEMPLATE_REPO;
-<<<<<<< HEAD
-const SIGNATURE_QUERY = `terminal-portfolio-template:${REPO}`;
-=======
 
 /**
  * Code-search queries that catch derivatives of this template.
@@ -91,7 +88,6 @@ const ORPHAN_QUERIES = [
 ];
 
 const ORPHAN_QUERY_DELAY_MS = 2500;
->>>>>>> origin/main
 
 function safeGhAuthToken() {
   try {
@@ -171,8 +167,6 @@ async function tryFetch(label, fn) {
   }
 }
 
-<<<<<<< HEAD
-=======
 /**
  * Run every ORPHAN_QUERY, dedupe by repo full_name, exclude the upstream
  * and any repo already counted via the forks API.
@@ -256,7 +250,6 @@ async function fetchOrphans(forks) {
   return orphans;
 }
 
->>>>>>> origin/main
 async function main() {
   console.log(`📊 Fetching stats for ${REPO}...`);
   console.log(`   auth: ${TOKEN ? 'token present' : 'unauthenticated (60 req/hr)'}\n`);
@@ -273,15 +266,6 @@ async function main() {
   const deployedForks = showcase.filter((f) => f.has_pages);
   console.log(`  🌐 ${deployedForks.length} forks have GitHub Pages enabled`);
 
-<<<<<<< HEAD
-  const orphanResult = await tryFetch('code search (orphans)', () =>
-    ghApi(`/search/code?q=${encodeURIComponent(SIGNATURE_QUERY)}&per_page=1`),
-  );
-  const orphanDerivatives = orphanResult?.total_count ?? null;
-  console.log(
-    `  🔍 ${orphanDerivatives ?? 'unknown'} orphan derivatives (code search; lower bound, weeks-lagged)`,
-  );
-=======
   const orphanRepos = await fetchOrphans(forks);
   const orphanDerivatives = orphanRepos.length;
   const highCount = orphanRepos.filter((o) => o.confidence === 'high').length;
@@ -297,7 +281,6 @@ async function main() {
   });
   if (orphanRepos.length > 5)
     console.log(`     · …and ${orphanRepos.length - 5} more`);
->>>>>>> origin/main
 
   const cloneTraffic = await tryFetch('traffic/clones', () =>
     ghApi(`/repos/${REPO}/traffic/clones`),
@@ -317,10 +300,7 @@ async function main() {
     watchers: repo.subscribers_count,
     deployed_forks: deployedForks.length,
     orphan_derivatives: orphanDerivatives,
-<<<<<<< HEAD
-=======
     orphan_repos: orphanRepos.slice(0, 50), // capped to keep JSON small
->>>>>>> origin/main
     traffic:
       cloneTraffic && viewTraffic
         ? {

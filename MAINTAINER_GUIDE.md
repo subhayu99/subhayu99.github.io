@@ -4,13 +4,8 @@ How to maintain this repo across the two-branch model.
 
 ## 🌿 The two branches
 
-<<<<<<< HEAD
-- **`main`** = Clean template (no personal data) → Users get this
-- **`personal`** = Your portfolio (with your data) → Deploys to https://subhayu.in
-=======
 - **`main`** — clean template (no personal data). Forkers `Use this template`-equivalent.
-- **`personal`** — your portfolio (`main` + your `resume.yaml` and other personal files). Deploys to https://subhayu99.github.io.
->>>>>>> origin/main
+- **`personal`** — your portfolio (`main` + your `resume.yaml` and other personal files). Deploys to https://subhayu.in.
 
 ## 🔁 The flow (canonical: main, sync down to personal)
 
