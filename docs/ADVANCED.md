@@ -611,6 +611,85 @@ export const uiText = {
 };
 ```
 
+## ✨ GUI Mode Customization
+
+GUI mode (the editorial/scroll view) shares the same data and accent-color theming as terminal mode but has its own typography, animations, and section layouts. Most customization happens in code — there is no single config file that controls everything — but the entry points are documented here so you know where to look.
+
+### Accent Color (shared with terminal)
+
+The accent color is **single source of truth** for both modes. Themes are defined in `client/src/config/gui-theme.config.ts`:
+
+```typescript
+export const colorThemes: ColorTheme[] = [
+  { key: 'matrix',  name: 'Matrix Green',     accentRgb: [0, 255, 0],     accentHoverRgb: [0, 200, 0] },
+  { key: 'amber',   name: 'Vintage Amber',    accentRgb: [255, 120, 0],   accentHoverRgb: [210, 95, 0] },
+  // ...add your own theme here
+];
+```
+
+Calling `applyColorTheme(theme)` (already wired up via the `theme` terminal command) propagates the RGB tuple into all of these CSS variables in `client/src/index.css`:
+
+```
+--gui-accent          /* the bright accent (CTAs, headings, dots) */
+--gui-accent-hover    /* slightly darker variant for hover states */
+--gui-accent-rgb      /* "r, g, b" for use in rgba() */
+--gui-accent-ch       /* HSL channel for terminal scanline glow */
+```
+
+Plus the terminal HSL variables (`--terminal-bright-green` etc.). To add a custom theme, append a new entry to `colorThemes` — that's it; no other code changes required.
+
+### Splash Page
+
+The splash page shows on first visit (per browser session) and lets the visitor pick TERMINAL or GUI. Behavior lives in `client/src/hooks/useViewMode.ts`:
+
+- **Disable splash entirely / change default mode:** edit `getInitialViewMode()` to return `'gui'` or `'terminal'` instead of `'splash'`.
+- **Auto-advance timing:** `client/src/components/SplashPage.tsx` defines `IDLE_MS` (default `6000`). After that many ms of inactivity, the splash auto-progresses to GUI.
+- **Tagline:** auto-derived from your CV data via `deriveTagline()` in `SplashPage.tsx` (e.g. `"Data Engineer | 4 Years | 43k+ PyPI Downloads"`). Numbers come from PyPI stats + experience date math; no hardcoded text to edit.
+
+URL hashes bypass the splash on direct load: linking someone to `https://your-site.github.io/#gui` mounts GUI mode immediately.
+
+### Section Visibility
+
+GUI sections **auto-hide when their data is empty** — no flag needed. Each section component returns `null` if its data array is missing or empty, e.g. in `client/src/components/gui/ExperienceSection.tsx`:
+
+```typescript
+if (!experience?.length) return null;
+```
+
+So if your `resume.yaml` has no `publications`, the GUI Publications section silently disappears. Note that **`show_on_resume: false`** only excludes an entry from the **PDF** — GUI mode still renders it.
+
+### Animations
+
+Framer Motion configs are hardcoded inline in components (no central config). The most useful single file is `client/src/components/gui/SectionWrapper.tsx`, which defines the six entrance variants used across all sections:
+
+```typescript
+'fade-up': {
+  initial: { opacity: 0, y: 60, filter: 'blur(4px)' },
+  animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+  transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1] },
+},
+// also: 'fade-left', 'fade-right', 'scale-up', 'split-open', 'blur-rise'
+```
+
+To slow everything down, bump the `duration` values; to disable entrance animations entirely, pass `variant="none"` from the consuming sections.
+
+### Hero Typography & Stats
+
+The hero's massive name typography (`text-7xl` / `text-[12rem]` responsive) lives in `client/src/components/gui/HeroSection.tsx` — Tailwind utility classes, not configurable via YAML. The font stack itself is set in `client/src/index.css` via the `font-display` class.
+
+Hero stat boxes (Years / Clients / Downloads / Packages) are derived automatically by `deriveStats()` in `HeroSection.tsx`. The function picks the top 4 stats by priority from your CV data (experience years, professional project count, PyPI downloads, etc.). To force a specific stat or hide one, edit the priority list directly in that function.
+
+### Summary
+
+| What you want to change | Where to edit |
+|---|---|
+| Add a custom accent color | `client/src/config/gui-theme.config.ts` |
+| Default to GUI/terminal (skip splash) | `client/src/hooks/useViewMode.ts` |
+| Splash auto-advance timing | `client/src/components/SplashPage.tsx` (`IDLE_MS`) |
+| Animation timing/easing | `client/src/components/gui/SectionWrapper.tsx` |
+| Hero stat selection | `client/src/components/gui/HeroSection.tsx` (`deriveStats`) |
+| Hide a GUI-only section | Just remove the data from `resume.yaml` |
+
 ## 🌐 API Integrations
 
 ### GitHub Stats (Live Repo Data)
