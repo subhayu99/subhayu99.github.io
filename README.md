@@ -44,6 +44,22 @@ This repository uses a **dual-branch strategy**:
 - 🔒 **Secure & Accessible** - XSS protection, Content Security Policy, ARIA labels, keyboard nav
 - 🔄 **Auto-Deploy** - push to GitHub, site rebuilds automatically
 
+## 🔧 How It Works
+
+```mermaid
+flowchart LR
+    yaml["📝 resume.yaml<br/><i>single source of truth</i>"]
+
+    yaml -->|rendercv| pdf["📄 resume.pdf<br/><i>downloadable</i>"]
+    yaml -->|build| json["📦 resume.json<br/><i>website data</i>"]
+
+    json --> splash["🎬 splash page"]
+    splash --> terminal["💻 terminal mode<br/><i>retro CRT</i>"]
+    splash --> gui["✨ editorial GUI<br/><i>scroll-pinned</i>"]
+```
+
+The build pipeline turns one YAML into both a PDF resume and a multi-mode website. `rendercv` produces the PDF; the same data flows into `resume.json`, which the splash page reads. Visitors pick **terminal mode** (retro CRT with commands, themes, hidden games) or **editorial GUI mode** (scroll-pinned animations, sparklines, PWA install). Both modes render from the same JSON, so they never drift from the PDF — that's the "always in sync" guarantee.
+
 ## 🌟 Easy Mode - Get Started in 10 Minutes
 
 Perfect for non-technical users! No installation of npm, Python, or any tools required.
