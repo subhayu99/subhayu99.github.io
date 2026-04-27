@@ -194,9 +194,9 @@ cv:
         date: "Apr 2026"
         show_on_resume: true
         highlights:
-          - "Open-sourced **this very portfolio** because people kept asking how I built it — zero-code template that deploys to GitHub Pages in under 10 minutes."
-          - "One `resume.yaml`, two views: a retro **terminal mode** with live commands (theme switcher, AI resume converter, hidden games) and an editorial **GUI mode** with scroll-pinned animations + sparklines + PWA install."
-          - "Click the title to see live adoption stats and how to replicate; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
+          - "Open-sourced **this very portfolio** to fix resume↔website drift — `resume.yaml` is the single source: one file → PDF resume + multi-mode portfolio site (splash · terminal · GUI), always in sync."
+          - "Zero-code: fork, drop in YAML, deploy to GitHub Pages in <10 min — themes, AI converter, hidden games, scroll animations, sparklines, PWA install all included."
+          - "Click the title for live adoption stats; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
         github_repo: "https://github.com/subhayu99/subhayu99.github.io"
         live_url: "#fork"
         showcase_command: "showcase"
