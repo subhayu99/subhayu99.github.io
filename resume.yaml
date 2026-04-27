@@ -195,7 +195,7 @@ cv:
         show_on_resume: true
         highlights:
           - "Open-sourced **this very portfolio** to fix resume↔website drift — `resume.yaml` is the single source: one file → PDF resume + multi-mode portfolio site (splash · terminal · GUI), always in sync."
-          - "Zero-code: fork, drop in YAML, deploy to GitHub Pages in <10 min — themes, AI converter, hidden games, scroll animations, sparklines, PWA install all included."
+          - "Zero-code: fork, drop in YAML, deploy to GitHub Pages in \\<10 min — themes, AI converter, hidden games, scroll animations, sparklines, PWA install all included."
           - "Click the title for live adoption stats; full source on [GitHub](https://github.com/subhayu99/subhayu99.github.io)."
         github_repo: "https://github.com/subhayu99/subhayu99.github.io"
         live_url: "#fork"
