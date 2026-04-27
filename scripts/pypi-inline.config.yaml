@@ -1,0 +1,61 @@
+# scripts/pypi-inline.config.yaml
+#
+# Each rule rewrites a hardcoded PyPI download count in resume.yaml at build
+# time. The first capture group of `pattern` is replaced with the resolved
+# `value`. Available value tokens:
+#
+#   {{TOTAL}}                — sum of all packages' total_all_time
+#   {{PACKAGE:<name>}}       — that specific package's total_all_time
+#   {{PACKAGE_180D:<name>}}  — that specific package's last 180 days
+#
+# `<name>` is the JSON object key in client/public/data/pypi-stats.json
+# (the lowercase pypi_package value, e.g. `sqlstream`, `smart-commit-ai`).
+# Note: `<name>` may differ from the PyPI URL slug if pypi_package uses
+# different casing than the URL — always use the pypi_package value, not
+# the URL slug. (e.g. URL is `BetterPassphrase`, `<name>` is `betterpassphrase`.)
+#
+# Numbers are formatted compactly:
+#   < 1000:    "123"
+#   1000-9999: "5.7k"   (one decimal)
+#   10000+:    "43k"    (no decimal, rounded to nearest 1000)
+#
+# Trailing "+" is part of the value template, not added automatically.
+#
+# Patterns whose regex matches nothing are SKIPPED silently — no error.
+# Run `npm run inline-pypi -- --dry-run` to preview without writing.
+#
+# Patterns intentionally accept BOTH the comma form (43,000+) and compact form
+# (43k+) so the very first run from a freshly-edited resume.yaml still matches.
+
+rules:
+  - description: "Intro grand total (cv.sections.intro)"
+    pattern: 'open-source tools with (\d[\d,.kK]*\+?) PyPI downloads'
+    value: '{{TOTAL}}+'
+
+  - description: "QxLab experience bullet → DatasetPipeline mention"
+    pattern: 'DatasetPipeline \((\d[\d,.kK]*\+?) downloads\)'
+    value: '{{PACKAGE:datasetpipeline}}+'
+
+  - description: "SQLStream project highlight"
+    pattern: 'pypi\.org/project/sqlstream\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:sqlstream}}+'
+
+  - description: "Smart Commit AI project highlight"
+    pattern: 'pypi\.org/project/smart-commit-ai\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:smart-commit-ai}}+'
+
+  - description: "DatasetPipeline project highlight"
+    pattern: 'pypi\.org/project/datasetpipeline\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:datasetpipeline}}+'
+
+  - description: "Creatree project highlight"
+    pattern: 'pypi\.org/project/creatree\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:creatree}}+'
+
+  - description: "BetterPassphrase project highlight"
+    pattern: 'pypi\.org/project/BetterPassphrase\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:betterpassphrase}}+'
+
+  - description: "JSONDBin project highlight"
+    pattern: 'pypi\.org/project/jsondbin\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:jsondbin}}+'

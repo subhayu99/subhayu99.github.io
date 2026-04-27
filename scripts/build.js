@@ -35,6 +35,34 @@ try {
   throw error;
 }
 
+// Fetch PyPI download stats
+console.log('📊 Fetching PyPI download statistics...\n');
+try {
+  execSync('node scripts/fetch-pypi-stats.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+  console.log('\n✅ PyPI stats fetched\n');
+} catch (error) {
+  console.warn('⚠️  Could not fetch PyPI stats (network issue or rate limit)');
+  console.warn('   Building without live stats...\n');
+}
+
+// Inline fresh PyPI counts into resume.yaml prose (so generate-resume sees them)
+if (existsSync(resumePath)) {
+  console.log('🔢 Inlining PyPI counts into resume.yaml...\n');
+  try {
+    execSync('node scripts/inline-pypi-stats.js', {
+      stdio: 'inherit',
+      cwd: rootDir
+    });
+    console.log('');
+  } catch (error) {
+    console.warn('⚠️  inline-pypi-stats failed (config error?)');
+    console.warn('   Continuing build with current resume.yaml...\n');
+  }
+}
+
 if (existsSync(resumePath)) {
   console.log('📄 resume.yaml found - generating resume files...\n');
 
@@ -67,19 +95,6 @@ try {
 } catch (error) {
   console.warn('⚠️  Could not generate AI prompt');
   console.warn('   Continuing with build...\n');
-}
-
-// Fetch PyPI download stats
-console.log('📊 Fetching PyPI download statistics...\n');
-try {
-  execSync('node scripts/fetch-pypi-stats.js', {
-    stdio: 'inherit',
-    cwd: rootDir
-  });
-  console.log('\n✅ PyPI stats fetched\n');
-} catch (error) {
-  console.warn('⚠️  Could not fetch PyPI stats (network issue or rate limit)');
-  console.warn('   Building without live stats...\n');
 }
 
 // Fetch GitHub template stats (forks, stars, traffic, orphans)
