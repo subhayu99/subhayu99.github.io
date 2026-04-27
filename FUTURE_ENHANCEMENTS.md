@@ -350,8 +350,8 @@ sections: z.object({
 
 Custom fields are fully supported with automatic compatibility handling:
 
-1. **Web Interface**: Custom fields are preserved in `resume.json` and accessible in the terminal portfolio
-2. **Terminal Display**: Custom fields automatically render in terminal portfolio via dynamic field renderer
+1. **Web Interface**: Custom fields are preserved in `resume.json` and surface in both terminal and GUI modes
+2. **Terminal Display**: Custom fields automatically render in terminal mode via dynamic field renderer
 3. **PDF Generation**: Custom fields are automatically stripped by `scripts/generate-resume.js` before passing to RenderCV
 4. **Schema Validation**: Zod schemas use `.passthrough()` to accept any extra fields
 5. **Backward Compatibility**: RenderCV's strict Pydantic schema doesn't break the build
@@ -365,7 +365,7 @@ This "best of both worlds" approach means:
 **Benefits Achieved**:
 
 - ✅ Users can add custom fields to any entry (profile_url, tech_stack, gpa, etc.)
-- ✅ Custom fields automatically display in terminal interface (no hardcoding needed)
+- ✅ Custom fields automatically display in terminal mode (no hardcoding needed); GUI mode reads them from the same JSON
 - ✅ Type-aware rendering makes data more readable and interactive
 - ✅ Support for non-traditional career paths (remote workers, freelancers)
 - ✅ Better alignment with RenderCV's philosophy of minimal requirements

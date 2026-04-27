@@ -1,7 +1,7 @@
 {
   "name": "subhayu99.github.io",
   "version": "1.0.0",
-  "description": "Interactive portfolio template — terminal mode + editorial GUI mode from one resume.yaml, zero-code deployment to GitHub Pages",
+  "description": "One resume.yaml emits a PDF resume + a multi-mode portfolio site (splash → terminal → editorial GUI). Always in sync, zero-code GitHub Pages deploy.",
   "type": "module",
   "license": "MIT",
   "author": "Subhayu Kumar Bala <balasubhayu99@gmail.com>",

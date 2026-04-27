@@ -173,10 +173,11 @@ export default function ReplicateSheet({ active, onClose }: ReplicateSheetProps)
               Build your own
             </h2>
             <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed mb-5 max-w-xl">
-              this site is a template — fork it, drop in a{' '}
-              <span className="text-white">resume.yaml</span>, and you have a
-              full portfolio deployed to GitHub Pages in under ten minutes:
-              splash → terminal mode → editorial GUI mode, one source of truth.
+              your resume and portfolio site, always in sync. one{' '}
+              <span className="text-white">resume.yaml</span> drives a PDF
+              resume + a multi-mode portfolio (splash → terminal → editorial
+              GUI). fork it, drop in your YAML, and deploy to GitHub Pages in
+              under ten minutes.
             </p>
 
             {/* Headline count + stats line */}

@@ -26,7 +26,7 @@ const siteMetadataPlugin = (): Plugin => {
     name: 'site-metadata-injector',
     transformIndexHtml(html) {
       let title = 'Portfolio';
-      let description = 'Interactive portfolio — terminal mode + editorial GUI mode';
+      let description = 'Resume + portfolio site, always in sync — one resume.yaml drives both';
 
       try {
         // Try to read from resume.json (generated from resume.yaml)

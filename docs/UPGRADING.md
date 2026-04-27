@@ -45,7 +45,7 @@ git merge upstream/main
 git push origin main
 ```
 
-If the merge is clean, GitHub Actions redeploys your site automatically.
+If the merge is clean, GitHub Actions redeploys your site automatically. After deploy, smoke-test both surfaces: open your site, exercise terminal mode (default load) and GUI mode (splash toggle or `/#gui`) — engine upgrades occasionally touch shared rendering paths, so a quick parity check catches regressions early.
 
 ### When merge conflicts happen
 

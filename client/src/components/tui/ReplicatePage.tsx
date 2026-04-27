@@ -15,8 +15,9 @@ export function ReplicatePage() {
         {/* Pitch — sets the payoff + time before any steps. Two ETAs
             because "have a resume?" vs "starting fresh?" diverge here. */}
         <div className="text-white/80 text-xs sm:text-sm mb-1">
-          fork this portfolio template. drop in a{' '}
-          <Code>resume.yaml</Code>, deploy. terminal + editorial GUI, one source.
+          your resume and portfolio site, always in sync. one{' '}
+          <Code>resume.yaml</Code> drives a PDF resume + a multi-mode portfolio
+          site (splash → terminal → editorial GUI). fork, drop in your YAML, deploy.
         </div>
         <div className="text-tui-muted text-xs mb-3">
           ~5 min if you have a resume · ~10 min from scratch
@@ -149,12 +150,12 @@ cp client/public/manifest.json.example client/public/manifest.json`}
         <PhaseHeader title="what you get" />
         <PhaseBody>
           <div className="text-xs sm:text-sm text-white/80 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+            <Bullet>auto-rendered pdf resume</Bullet>
             <Bullet>live at <Code>&lt;your-username&gt;.github.io</Code></Bullet>
             <Bullet>pwa-installable (offline-ready)</Bullet>
-            <Bullet>auto-rendered pdf resume</Bullet>
+            <Bullet>themes + custom commands</Bullet>
             <Bullet>ascii name banner</Bullet>
             <Bullet>neofetch system info</Bullet>
-            <Bullet>themes + custom commands</Bullet>
           </div>
         </PhaseBody>
 
