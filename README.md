@@ -1,6 +1,8 @@
 # 🖥️ Portfolio Template
 
-> Create your own interactive portfolio in minutes — terminal mode + editorial GUI mode, one `resume.yaml`, deployed to GitHub Pages with zero code.
+### One YAML. Resume + portfolio. Always in sync.
+
+Stop maintaining your resume and portfolio site in parallel. `resume.yaml` is the single source of truth — the same file emits a PDF resume **and** a multi-mode portfolio site (splash → terminal → editorial GUI). Update once; both stay in sync. Use `show_on_resume` to control which entries appear where.
 
 **Live Demo:** [subhayu.in](https://subhayu.in)
 
@@ -29,21 +31,18 @@ This repository uses a **dual-branch strategy**:
 
 ## ✨ Features
 
-- 🎨 **Beautiful Terminal UI** - Retro-style terminal interface with multiple themes
-- 📱 **Fully Responsive** - Works perfectly on desktop, tablet, and mobile
-- 🚀 **Zero-Code Setup** - Use visual resume builder, no programming needed
-- 🤖 **AI Resume Converter** - Convert existing resumes to YAML with AI (built-in!)
-- ⚡ **Lightning Fast** - Built with React and Vite for optimal performance
-- 📄 **Auto-Generated PDF** - Your resume automatically converts to downloadable PDF
-- 🎭 **Multiple Themes** - Matrix, Blue, Purple, Amber, Red, and more
-- 🔍 **Smart Search** - Search across all your content instantly
-- 📊 **Interactive Commands** - Explore your portfolio through terminal commands
-- 💾 **PWA Support** - Installable as a progressive web app with offline capabilities
-- 🔒 **Secure** - Built-in XSS protection and Content Security Policy
-- ♿ **Accessible** - ARIA labels and keyboard navigation support
-- 🔄 **Auto-Deploy** - Push changes to GitHub, site updates automatically
-- 🎨 **Custom Fields Support** - Add any custom fields to personalize your resume beyond the standard schema
-- 📂 **Dynamic Sections** - Create custom sections (certifications, awards, etc.) that become terminal commands automatically
+- 📄 **Single Source of Truth** - `resume.yaml` drives a PDF resume *and* a portfolio site — no more drift between them
+- 🖨️ **Auto-Rendered PDF Resume** - rendercv-powered, downloadable, regenerates on every push
+- 🎭 **Multi-Mode Portfolio** - splash page picks between retro terminal and editorial GUI; both render from the same data
+- 🚀 **Zero-Code Setup** - visual resume builder + AI converter, no programming needed
+- 📊 **`show_on_resume` Flag** - mark which projects/entries land in the PDF vs. site-only
+- 🤖 **AI Resume Converter** - paste an existing resume, get clean `resume.yaml`
+- 🎨 **Themes & Polish** - matrix/blue/purple/amber terminal themes; scroll-pinned animations + sparklines + PWA install in GUI mode
+- 📱 **Fully Responsive** - works on desktop, tablet, and mobile
+- 🔍 **Smart Search** - search across all your content instantly
+- 📂 **Custom Fields & Dynamic Sections** - add any field/section; appears in GUI and becomes a terminal command automatically
+- 🔒 **Secure & Accessible** - XSS protection, Content Security Policy, ARIA labels, keyboard nav
+- 🔄 **Auto-Deploy** - push to GitHub, site rebuilds automatically
 
 ## 🌟 Easy Mode - Get Started in 10 Minutes
 
@@ -220,7 +219,7 @@ Customize the PWA (installable app) settings:
 
    ```json
    {
-     "name": "Your Name - Terminal Portfolio",
+     "name": "Your Name - Portfolio",
      "short_name": "Your Portfolio",
      "description": "Your description here"
    }
@@ -293,7 +292,7 @@ languages:
 
 - ✅ **Custom Fields:** Add any extra fields to standard sections - they appear in your portfolio automatically
 - ✅ **Dynamic Sections:** Create new sections (like certifications, awards, languages) - they become terminal commands!
-- ✅ **Web Interface:** Custom fields and sections are fully accessible in your terminal portfolio
+- ✅ **Web Interface:** Custom fields and sections appear in both terminal and GUI modes
 - ✅ **PDF Generation:** Custom fields are automatically stripped for RenderCV compatibility
 - ✅ **Zero Errors:** No manual management needed - it just works!
 - ✅ **Fully Backward Compatible:** All existing resumes continue to work

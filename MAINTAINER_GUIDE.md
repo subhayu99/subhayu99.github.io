@@ -66,6 +66,8 @@ npm run dev                                # site renders with YOUR data
 
 The hydrated files are gitignored on every branch except `personal`, so they can't accidentally be committed.
 
+> **Smoke-test both modes.** Terminal mode and GUI mode render from the same `resume.json`. After any engine change that touches data shape, rendering, or the splash flow, hit both: type `terminal` (or default-load) for terminal mode, then click the splash GUI toggle (or visit `/#gui`) for GUI mode. A change that breaks parity is a regression.
+
 ### D. Pull pending engine changes into personal manually (if the auto-sync PR isn't open yet)
 
 ```bash

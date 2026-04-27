@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This guide explains how your terminal portfolio is automatically deployed to GitHub Pages.
+This guide explains how your portfolio is automatically deployed to GitHub Pages. The deploy workflow runs `rendercv` on `resume.yaml` to emit both `resume.pdf` and `resume.json` — terminal mode and GUI mode then render from the same JSON, so a single push updates both surfaces in lockstep with the PDF.
 
 ## 🌟 Easy Mode (Zero-Code Deployment)
 

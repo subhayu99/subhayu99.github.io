@@ -1,6 +1,6 @@
 # Advanced Customization Guide
 
-This guide is for developers who want to customize the terminal portfolio beyond just updating the resume.
+This guide is for developers who want to customize the portfolio template beyond just updating the resume — terminal mode, GUI mode, splash page, and the build pipeline that emits both the PDF resume and the website JSON from `resume.yaml`.
 
 ## 🎯 Prerequisites
 
@@ -106,7 +106,7 @@ terminal:
 
 pwa:
   enabled: true
-  name: "Your Name - Terminal Portfolio"
+  name: "Your Name - Portfolio"
   shortcuts:
     - name: "About Me"
       command: "about"
@@ -318,7 +318,7 @@ const RENDERCV_ALLOWED_FIELDS = {
 
 ### Accessing Custom Fields in Code
 
-If you want to display custom fields in the terminal interface:
+If you want to display custom fields in terminal mode (GUI mode renders them automatically from the JSON):
 
 **In `client/src/hooks/useTerminal.ts`:**
 
@@ -679,7 +679,7 @@ Edit `client/public/manifest.json`:
 {
   "name": "Your Name - Developer Portfolio",
   "short_name": "Portfolio",
-  "description": "Interactive terminal portfolio showcasing my work",
+  "description": "Interactive portfolio showcasing my work",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

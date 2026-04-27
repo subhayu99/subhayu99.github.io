@@ -21,7 +21,7 @@ Have an idea for a new feature? [Open a feature request](https://github.com/subh
 
 - A clear description of the feature
 - Why it would be useful
-- How it aligns with the template's goals (ease of use, zero-code deployment)
+- How it aligns with the template's goals (single source of truth, ease of use, zero-code deployment, terminal/GUI mode parity)
 - Examples or mockups (if applicable)
 
 ### Improving Documentation

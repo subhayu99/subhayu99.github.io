@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-Common issues and solutions for your terminal portfolio.
+Common issues and solutions for your portfolio.
 
 ## 🚫 Deployment Issues
 
