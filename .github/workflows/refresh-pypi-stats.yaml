@@ -27,5 +27,11 @@ jobs:
             repo: context.repo.repo,
             workflow_id: 'deploy.yaml',
             ref: 'personal',
+            inputs: {
+              // Force-refresh the PyPI cache; otherwise the deploy would
+              // hit the cache helper and skip the actual fetch this cron
+              // exists to perform.
+              force_refresh: 'true',
+            },
           });
-          console.log('Triggered deploy workflow on personal branch');
+          console.log('Triggered deploy workflow on personal branch (force_refresh=true)');
