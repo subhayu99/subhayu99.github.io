@@ -6,12 +6,17 @@
  * - pypistats.org: 180-day time series for sparkline charts (free API)
  *
  * Writes result to client/public/data/pypi-stats.json.
+ *
+ * Skips the remote fetch if a recent JSON exists locally OR on the deployed
+ * site (within CACHE_MAX_AGE_MS). Set FORCE_REFRESH=1 to bypass the cache.
  */
 
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import { fileURLToPath } from 'url';
+import { tryLoadCache, isForceRefresh } from './utils/cache-helper.js';
+import { detectBaseUrl } from './utils/detect-repo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -19,6 +24,9 @@ const PYPISTATS_BASE = 'https://pypistats.org/api/packages';
 const PEPY_BASE = 'https://pepy.tech/projects';
 const DELAY_MS = 3000; // Base delay between requests
 const MAX_RETRIES = 3;
+
+// Cache window: PyPI download counts move slowly (daily granularity is plenty).
+const CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12 hours
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -83,6 +91,28 @@ async function main() {
   if (!fs.existsSync(yamlPath)) {
     console.warn('[pypi-stats] resume.yaml not found, skipping');
     return;
+  }
+
+  const outPath = path.join(ROOT, 'client', 'public', 'data', 'pypi-stats.json');
+
+  // Cache check — skip remote fetch entirely if recent data is available
+  // either locally on this runner or on the deployed site itself.
+  const baseUrl = detectBaseUrl();
+  const cached = await tryLoadCache({
+    localPath: outPath,
+    remoteUrl: baseUrl ? `${baseUrl}/data/pypi-stats.json` : undefined,
+    freshnessKey: 'fetched_at',
+    maxAgeMs: CACHE_MAX_AGE_MS,
+  });
+  if (cached) {
+    console.log(
+      `[pypi-stats] ✓ using cached data (${cached.ageHours}h old, source=${cached.source}); skipping remote fetch`,
+    );
+    console.log(`[pypi-stats] (set FORCE_REFRESH=1 to override)`);
+    return;
+  }
+  if (isForceRefresh()) {
+    console.log('[pypi-stats] FORCE_REFRESH=1 — bypassing cache');
   }
 
   const doc = yaml.load(fs.readFileSync(yamlPath, 'utf8'));
@@ -172,7 +202,6 @@ async function main() {
     packages: stats,
   };
 
-  const outPath = path.join(ROOT, 'client', 'public', 'data', 'pypi-stats.json');
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(output, null, 2));
   console.log(`[pypi-stats] Wrote ${outPath}`);

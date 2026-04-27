@@ -27,6 +27,12 @@ on:
   pull_request:
     branches: [ main, personal ]
   workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Bypass build-time API caches (PyPI + GitHub stats). Used by the daily/weekly refresh workflows.'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -127,6 +133,10 @@ jobs:
         # works) and /traffic/* (owner-only, will gracefully no-op if the
         # workflow's GITHUB_TOKEN lacks `administration: read`).
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Set to 1 by the daily/weekly refresh workflows to bypass the
+        # cache helpers. On normal pushes this stays unset, so each deploy
+        # reuses fresh JSON from the previous run / the live site.
+        FORCE_REFRESH: ${{ github.event.inputs.force_refresh == 'true' && '1' || '' }}
 
 
     - name: ⚙️  Configure GitHub Pages

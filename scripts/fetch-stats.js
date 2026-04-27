@@ -15,6 +15,11 @@
  *
  * Owner-scoped endpoints (traffic/clones, traffic/views) silently skip
  * when the token lacks `repo` scope or the script runs unauthenticated.
+ *
+ * Skips the remote fetch if a recent JSON exists locally OR on the deployed
+ * site (within CACHE_MAX_AGE_MS). Set FORCE_REFRESH=1 to bypass the cache.
+ * The /search/code orphan queries are the 429 hotspot — caching this file
+ * is the primary lever for staying under GitHub's secondary rate limits.
  */
 
 import { writeFileSync, mkdirSync } from 'fs';
@@ -22,6 +27,13 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { UPSTREAM_TEMPLATE_REPO } from './utils/load-template-config.js';
+import { tryLoadCache, isForceRefresh } from './utils/cache-helper.js';
+import { detectBaseUrl } from './utils/detect-repo.js';
+
+// 6 hours: stars/forks/traffic move slowly; orphan-search results are
+// weeks-lagged anyway, so this threshold trades freshness for staying
+// well clear of GitHub's secondary /search/code rate limit.
+const CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -250,9 +262,50 @@ async function fetchOrphans(forks) {
   return orphans;
 }
 
+function makeBadge(stats) {
+  // shields.io endpoint badge: https://shields.io/badges/endpoint-badge
+  // Headline = deployed forks if known, else total forks (fallback for very
+  // early data); 0 when neither is set yet.
+  const headlineCount = stats.deployed_forks || stats.forks || 0;
+  return {
+    schemaVersion: 1,
+    label: 'forks deployed',
+    message: headlineCount > 0 ? `${headlineCount}+` : '0',
+    color: headlineCount > 0 ? 'brightgreen' : 'lightgrey',
+    cacheSeconds: 3600,
+  };
+}
+
 async function main() {
   console.log(`📊 Fetching stats for ${REPO}...`);
   console.log(`   auth: ${TOKEN ? 'token present' : 'unauthenticated (60 req/hr)'}\n`);
+
+  // Cache check — every JSON we wrote in a previous deploy is publicly served
+  // at <site>/data/template-stats.json, so we use the deployed site as a
+  // remote cache. This keeps us well clear of GitHub's /search/code rate
+  // limit on every-push deploys.
+  const baseUrl = detectBaseUrl();
+  const cached = await tryLoadCache({
+    localPath: OUT_FILE,
+    remoteUrl: baseUrl ? `${baseUrl}/data/template-stats.json` : undefined,
+    freshnessKey: 'last_updated',
+    maxAgeMs: CACHE_MAX_AGE_MS,
+  });
+  if (cached) {
+    console.log(
+      `  ✓ using cached stats (${cached.ageHours}h old, source=${cached.source}); skipping GitHub API`,
+    );
+    console.log(`    (set FORCE_REFRESH=1 to override)`);
+    // Cache helper already wrote the local stats file; regenerate the badge
+    // from cached numbers so it stays consistent with the headline count.
+    const badge = makeBadge(cached.data);
+    writeFileSync(BADGE_FILE, JSON.stringify(badge, null, 2));
+    console.log(`  ✅ Regenerated ${BADGE_FILE} from cache`);
+    return;
+  }
+  if (isForceRefresh()) {
+    console.log('  FORCE_REFRESH=1 — bypassing cache\n');
+  }
 
   const repo = await ghApi(`/repos/${REPO}`);
   console.log(
@@ -318,16 +371,7 @@ async function main() {
   writeFileSync(OUT_FILE, JSON.stringify(stats, null, 2));
   console.log(`\n✅ Wrote ${OUT_FILE}`);
 
-  // shields.io endpoint badge: https://shields.io/badges/endpoint-badge
-  const headlineCount = deployedForks.length || forks.length;
-  const badge = {
-    schemaVersion: 1,
-    label: 'forks deployed',
-    message: headlineCount > 0 ? `${headlineCount}+` : '0',
-    color: headlineCount > 0 ? 'brightgreen' : 'lightgrey',
-    cacheSeconds: 3600,
-  };
-  writeFileSync(BADGE_FILE, JSON.stringify(badge, null, 2));
+  writeFileSync(BADGE_FILE, JSON.stringify(makeBadge(stats), null, 2));
   console.log(`✅ Wrote ${BADGE_FILE}`);
 }
 
