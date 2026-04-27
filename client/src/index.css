@@ -220,11 +220,11 @@ html {
   }
   .secret-text::selection {
     color: var(--gui-accent);
-    background: rgba(0, 255, 0, 0.15);
+    background: rgba(var(--gui-accent-rgb), 0.15);
   }
   .secret-text::-moz-selection {
     color: var(--gui-accent);
-    background: rgba(0, 255, 0, 0.15);
+    background: rgba(var(--gui-accent-rgb), 0.15);
   }
 
   /* Film grain overlay — applied site-wide on both TUI and GUI so

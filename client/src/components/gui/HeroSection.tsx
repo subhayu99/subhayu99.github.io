@@ -196,7 +196,7 @@ export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRac
             className="block text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] transition-all duration-150 ease-out will-change-transform"
             style={{
               transform: `translate(${mouse.x * 12}px, ${mouse.y * 6}px)`,
-              textShadow: `${mouse.x * -3}px ${mouse.y * -2}px 0 rgba(0,255,0,0.25), ${mouse.x * 3}px ${mouse.y * 2}px 0 rgba(0,100,255,0.12)`,
+              textShadow: `${mouse.x * -3}px ${mouse.y * -2}px 0 rgba(var(--gui-accent-rgb),0.25), ${mouse.x * 3}px ${mouse.y * 2}px 0 rgba(0,100,255,0.12)`,
             }}
           >
             {firstName}
@@ -205,7 +205,7 @@ export default function HeroSection({ data, pypiStats, onTripleTap, onTriggerRac
             className="block text-5xl sm:text-6xl md:text-[7rem] lg:text-[8rem] sm:ml-[10%] md:ml-[15%] transition-all duration-300 ease-out will-change-transform"
             style={{
               transform: `translate(${mouse.x * -8}px, ${mouse.y * -4}px)`,
-              textShadow: `${mouse.x * 2}px ${mouse.y * 1.5}px 0 rgba(0,255,0,0.2), ${mouse.x * -2}px ${mouse.y * -1.5}px 0 rgba(0,100,255,0.1)`,
+              textShadow: `${mouse.x * 2}px ${mouse.y * 1.5}px 0 rgba(var(--gui-accent-rgb),0.2), ${mouse.x * -2}px ${mouse.y * -1.5}px 0 rgba(0,100,255,0.1)`,
             }}
           >
             {restName}
