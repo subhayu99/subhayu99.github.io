@@ -192,7 +192,7 @@ cv:
       # Open-sourced 2026 — this very portfolio
       - name: "Portfolio Template"
         date: "Apr 2026"
-        show_on_resume: true
+        show_on_resume: false
         highlights:
           - "Open-sourced **this very portfolio** to fix resume↔website drift — `resume.yaml` is the single source: one file → PDF resume + multi-mode portfolio site (splash · terminal · GUI), always in sync."
           - "Zero-code: fork, drop in YAML, deploy to GitHub Pages in \\<10 min — themes, AI converter, hidden games, scroll animations, sparklines, PWA install all included."
