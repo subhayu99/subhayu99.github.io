@@ -137,6 +137,10 @@ jobs:
         # cache helpers. On normal pushes this stays unset, so each deploy
         # reuses fresh JSON from the previous run / the live site.
         FORCE_REFRESH: ${{ github.event.inputs.force_refresh == 'true' && '1' || '' }}
+        # Cloudflare Web Analytics beacon token. Optional — when unset, the
+        # build no-ops the analytics plugin and the template's tight CSP
+        # stays in place. Set as a repo secret to enable tracking.
+        VITE_CF_BEACON_TOKEN: ${{ secrets.VITE_CF_BEACON_TOKEN }}
 
 
     - name: ⚙️  Configure GitHub Pages

@@ -79,6 +79,29 @@ const templateSignaturePlugin = (): Plugin => {
   };
 };
 
+const cloudflareAnalyticsPlugin = (): Plugin => {
+  return {
+    name: 'cloudflare-analytics-injector',
+    transformIndexHtml(html) {
+      const token = process.env.VITE_CF_BEACON_TOKEN;
+      if (!token) return html;
+
+      html = html.replace(
+        "script-src 'self' 'unsafe-inline'",
+        "script-src 'self' 'unsafe-inline' static.cloudflareinsights.com"
+      );
+      html = html.replace(
+        "connect-src 'self'",
+        "connect-src 'self' cloudflareinsights.com"
+      );
+
+      const beaconConfig = JSON.stringify({ token });
+      const snippet = `    <!-- Cloudflare Web Analytics -->\n    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='${beaconConfig}'></script>\n  `;
+      return html.replace('</body>', `${snippet}</body>`);
+    },
+  };
+};
+
 const buildVersionPlugin = (): Plugin => {
   return {
     name: 'build-version',
@@ -108,6 +131,7 @@ export default defineConfig({
     themeInjectorPlugin(),
     siteMetadataPlugin(),
     templateSignaturePlugin(),
+    cloudflareAnalyticsPlugin(),
     buildVersionPlugin(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
