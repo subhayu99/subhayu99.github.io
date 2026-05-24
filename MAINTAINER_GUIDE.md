@@ -124,6 +124,6 @@ node scripts/fetch-stats.js
 - `client/public/data/{resume.json, ai-resume-prompt.txt, template-stats.json, template-stats-badge.json, pypi-stats.json}`
 - `client/src/generated/template-config.ts`
 
-## 🔄 The legacy `sync-branches.sh` script
+## 🔄 Syncing main → personal
 
-The old `scripts/sync-branches.sh` still works for one-off cherry-picks but is superseded by the auto-sync workflow for routine main → personal sync. Use the script only when you specifically need to cherry-pick a *subset* of commits in either direction.
+The `sync-main-to-personal.yaml` GitHub Action automatically creates a PR when `main` is pushed. It merges engine changes into `personal` while restoring personal files (resume.yaml, manifest.json, etc.) to the personal-side version. Merge the PR manually to trigger deploy.
