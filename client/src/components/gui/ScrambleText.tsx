@@ -12,7 +12,6 @@ function randomGlyph() {
 interface ScrambleTextProps {
   text: string;
   className?: string;
-  /** Delay in ms before starting the decode (useful for staggering) */
   delay?: number;
 }
 
@@ -22,26 +21,29 @@ export default function ScrambleText({ text, className = '', delay = 0 }: Scramb
   const [display, setDisplay] = useState(text);
   const hasPlayed = useRef(false);
   const isHovering = useRef(false);
+  const activeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearActive = useCallback(() => {
+    if (activeInterval.current) { clearInterval(activeInterval.current); activeInterval.current = null; }
+    if (activeTimeout.current) { clearTimeout(activeTimeout.current); activeTimeout.current = null; }
+  }, []);
 
   const scramble = useCallback((targetText: string, startDelay: number) => {
-    let cancelled = false;
+    clearActive();
 
     const chars = targetText.split('');
     const resolved = new Array(chars.length).fill(false);
     const current = chars.map((ch) => (ch === ' ' ? ' ' : randomGlyph()));
 
-    // Immediately show scrambled state
-    setTimeout(() => {
-      if (cancelled) return;
+    activeTimeout.current = setTimeout(() => {
+      activeTimeout.current = null;
       setDisplay(current.join(''));
 
       let charIndex = 0;
       let cycleCount = 0;
 
-      const interval = setInterval(() => {
-        if (cancelled) { clearInterval(interval); return; }
-
-        // Cycle random glyphs for unresolved characters
+      activeInterval.current = setInterval(() => {
         for (let i = charIndex; i < chars.length; i++) {
           if (!resolved[i] && chars[i] !== ' ') {
             current[i] = randomGlyph();
@@ -50,13 +52,11 @@ export default function ScrambleText({ text, className = '', delay = 0 }: Scramb
 
         cycleCount++;
         if (cycleCount >= CYCLES) {
-          // Lock in the next character
           resolved[charIndex] = true;
           current[charIndex] = chars[charIndex];
           charIndex++;
           cycleCount = 0;
 
-          // Skip spaces
           while (charIndex < chars.length && chars[charIndex] === ' ') {
             resolved[charIndex] = true;
             current[charIndex] = ' ';
@@ -67,16 +67,18 @@ export default function ScrambleText({ text, className = '', delay = 0 }: Scramb
         setDisplay(current.join(''));
 
         if (charIndex >= chars.length) {
-          clearInterval(interval);
+          clearActive();
           setDisplay(targetText);
         }
       }, TICK_MS);
     }, startDelay);
 
-    return () => { cancelled = true; };
-  }, []);
+    return () => {
+      clearActive();
+      setDisplay(targetText);
+    };
+  }, [clearActive]);
 
-  // Scramble on scroll into view
   useEffect(() => {
     if (isInView && !hasPlayed.current) {
       hasPlayed.current = true;
@@ -85,27 +87,25 @@ export default function ScrambleText({ text, className = '', delay = 0 }: Scramb
     }
   }, [isInView, text, delay, scramble]);
 
-  // Re-scramble on hover (ripple from center outward)
   const handleMouseEnter = useCallback(() => {
     if (isHovering.current) return;
     isHovering.current = true;
+    clearActive();
 
     const chars = text.split('');
     const current = text.split('');
     const mid = Math.floor(chars.length / 2);
 
-    // Calculate distance from center for each character
     const distances = chars.map((_, i) => Math.abs(i - mid));
     const maxDist = Math.max(...distances);
     const resolved = new Array(chars.length).fill(false);
 
-    // Mark spaces as already resolved
     chars.forEach((ch, i) => { if (ch === ' ') resolved[i] = true; });
 
     let tick = 0;
     const totalTicks = (maxDist + 1) * CYCLES + CYCLES;
 
-    const interval = setInterval(() => {
+    activeInterval.current = setInterval(() => {
       tick++;
 
       for (let i = 0; i < chars.length; i++) {
@@ -122,12 +122,16 @@ export default function ScrambleText({ text, className = '', delay = 0 }: Scramb
       setDisplay(current.join(''));
 
       if (tick >= totalTicks || resolved.every(Boolean)) {
-        clearInterval(interval);
+        clearActive();
         setDisplay(text);
         isHovering.current = false;
       }
     }, TICK_MS);
-  }, [text]);
+  }, [text, clearActive]);
+
+  useEffect(() => {
+    return () => clearActive();
+  }, [clearActive]);
 
   return (
     <span
