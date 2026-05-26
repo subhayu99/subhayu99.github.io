@@ -65,7 +65,7 @@ jobs:
         python-version: '3.11'
 
     - name: 📦 Install RenderCV
-      run: pip install "rendercv[full]"
+      run: pip install "rendercv[full]==2.3" "typer==0.25.1"
 
     - name: 📦 Install npm dependencies
       run: npm ci
