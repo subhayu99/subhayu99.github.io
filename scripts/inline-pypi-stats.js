@@ -29,6 +29,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 
 const STATS_PATH = path.join(ROOT, 'client', 'public', 'data', 'pypi-stats.json');
+const NPM_STATS_PATH = path.join(ROOT, 'client', 'public', 'data', 'npm-stats.json');
 const CONFIG_PATH = path.join(ROOT, 'scripts', 'pypi-inline.config.yaml');
 const RESUME_PATH = path.join(ROOT, 'resume.yaml');
 
@@ -43,12 +44,31 @@ function fatal(msg) { console.error(`${LOG_PREFIX} ✗ ${msg}`); process.exit(1)
  * Resolve {{TOKEN}} placeholders in a value template using the stats JSON.
  * Returns null if the rule references an unknown package (caller skips it).
  */
-function resolveValue(template, stats) {
+function resolveValue(template, stats, npmStats) {
   let result = template;
   let unknown = null;
 
-  // {{TOTAL}}
+  // {{TOTAL}} — PyPI grand total
   result = result.replace(/\{\{TOTAL\}\}/g, () => formatCompact(stats.total_downloads));
+
+  // {{NPM_TOTAL}} — npm grand total
+  result = result.replace(/\{\{NPM_TOTAL\}\}/g, () => formatCompact(npmStats.total_downloads ?? 0));
+
+  // {{ALL_TOTAL}} — PyPI + npm combined, for registry-agnostic prose
+  result = result.replace(/\{\{ALL_TOTAL\}\}/g, () =>
+    formatCompact((stats.total_downloads ?? 0) + (npmStats.total_downloads ?? 0)));
+
+  // {{NPM:<name>}} and {{NPM_180D:<name>}} — <name> is the full npm_package
+  // value, scope included (e.g. @subhayu99/ccaudit).
+  result = result.replace(/\{\{NPM(_180D)?:([^}]+)\}\}/g, (_full, suffix, name) => {
+    const pkg = (npmStats.packages ?? {})[name];
+    if (!pkg) {
+      unknown = name;
+      return '__UNKNOWN__';
+    }
+    const value = suffix === '_180D' ? pkg.total_180d : pkg.total_all_time;
+    return formatCompact(value);
+  });
 
   // {{PACKAGE:<name>}} and {{PACKAGE_180D:<name>}}
   result = result.replace(/\{\{PACKAGE(_180D)?:([^}]+)\}\}/g, (_full, suffix, name) => {
@@ -95,6 +115,16 @@ async function main() {
     warn(`${path.relative(ROOT, STATS_PATH)} has no packages`);
     warn('Skipping inline step (exit 0, build continues)');
     return;
+  }
+
+  // 1b. Load npm-stats.json (soft-fail — npm rules just get skipped if absent)
+  let npmStats = { total_downloads: 0, packages: {} };
+  if (fs.existsSync(NPM_STATS_PATH)) {
+    try {
+      npmStats = JSON.parse(fs.readFileSync(NPM_STATS_PATH, 'utf8'));
+    } catch (e) {
+      warn(`${path.relative(ROOT, NPM_STATS_PATH)} is not valid JSON: ${e.message} — npm rules will be skipped`);
+    }
   }
 
   // 2. Load + validate config (hard-fail on malformed)
@@ -145,7 +175,7 @@ async function main() {
   const changeLog = []; // for dry-run preview
 
   for (const rule of compiledRules) {
-    const { resolved, unknown } = resolveValue(rule.value, stats);
+    const { resolved, unknown } = resolveValue(rule.value, stats, npmStats);
     if (resolved === null) {
       warn(`· skipped (unknown package '${unknown}'): ${rule.label}`);
       continue;

@@ -4,9 +4,17 @@
 # time. The first capture group of `pattern` is replaced with the resolved
 # `value`. Available value tokens:
 #
-#   {{TOTAL}}                — sum of all packages' total_all_time
+#   {{TOTAL}}                — sum of all PyPI packages' total_all_time
 #   {{PACKAGE:<name>}}       — that specific package's total_all_time
 #   {{PACKAGE_180D:<name>}}  — that specific package's last 180 days
+#   {{NPM_TOTAL}}            — sum of all npm packages' total_all_time
+#   {{NPM:<name>}}           — that npm package's total_all_time
+#   {{NPM_180D:<name>}}      — that npm package's last 180 days
+#   {{ALL_TOTAL}}            — PyPI + npm combined
+#
+# npm <name> is the full npm_package value, scope included
+# (e.g. `@subhayu99/ccaudit`). npm stats come from npm-stats.json; if that
+# file is absent, npm rules are skipped and PyPI rules still apply.
 #
 # `<name>` is the JSON object key in client/public/data/pypi-stats.json
 # (the lowercase pypi_package value, e.g. `sqlstream`, `smart-commit-ai`).
@@ -28,9 +36,9 @@
 # (43k+) so the very first run from a freshly-edited resume.yaml still matches.
 
 rules:
-  - description: "Intro grand total (cv.sections.intro)"
-    pattern: 'open-source tools with (\d[\d,.kK]*\+?) PyPI downloads'
-    value: '{{TOTAL}}+'
+  - description: "Intro grand total, PyPI + npm (cv.sections.intro)"
+    pattern: 'open-source tools with (\d[\d,.kK]*\+?) downloads'
+    value: '{{ALL_TOTAL}}+'
 
   - description: "QxLab experience bullet → DatasetPipeline mention"
     pattern: 'DatasetPipeline \((\d[\d,.kK]*\+?) downloads\)'
@@ -47,6 +55,14 @@ rules:
   - description: "DatasetPipeline project highlight"
     pattern: 'pypi\.org/project/datasetpipeline\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
     value: '{{PACKAGE:datasetpipeline}}+'
+
+  - description: "ccaudit project highlight (npm)"
+    pattern: 'npmjs\.com/package/@subhayu99/ccaudit\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{NPM:@subhayu99/ccaudit}}+'
+
+  - description: "Vellaris project highlight"
+    pattern: 'pypi\.org/project/vellaris\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:vellaris}}+'
 
   - description: "Creatree project highlight"
     pattern: 'pypi\.org/project/creatree\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
