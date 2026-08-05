@@ -54,6 +54,10 @@ function resolveValue(template, stats, npmStats) {
   // {{NPM_TOTAL}} — npm grand total
   result = result.replace(/\{\{NPM_TOTAL\}\}/g, () => formatCompact(npmStats.total_downloads ?? 0));
 
+  // {{ALL_TOTAL}} — PyPI + npm combined, for registry-agnostic prose
+  result = result.replace(/\{\{ALL_TOTAL\}\}/g, () =>
+    formatCompact((stats.total_downloads ?? 0) + (npmStats.total_downloads ?? 0)));
+
   // {{NPM:<name>}} and {{NPM_180D:<name>}} — <name> is the full npm_package
   // value, scope included (e.g. @subhayu99/ccaudit).
   result = result.replace(/\{\{NPM(_180D)?:([^}]+)\}\}/g, (_full, suffix, name) => {
