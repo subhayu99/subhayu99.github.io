@@ -15,9 +15,9 @@ cv:
     #   username: "0000-0001-8195-3118"
   sections:
     intro:
-      - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
-      - "Proven track record of exceptional performance optimization (reducing a financial procedure **from 27.5h to under 5s**), building production **Agentic LLM systems (>95% accuracy) on H100 clusters**, and authoring **open-source tools with 65k+ PyPI downloads**."
-      - "Delivered measurable business outcomes: data infrastructure enabling a startup's **$6M Seed round**, unblocking **investor audits for Advent International**, ensuring enterprise compliance for a Fortune 500 client, and automating workflows to save **10-15 FTEs**."
+      - "Data and infrastructure engineer, 4.5 years, currently on Loop's core platform team. Python, SQL, dbt, BigQuery, and the three major clouds (AWS/Azure/GCP)."
+      - "The recurring job is making systems cheaper or more truthful: a financial procedure **from 27.5h to under 5s**, the heaviest BigQuery scan path cut **57x**, a legacy data explosion reduced by **99%**, revenue variance from ~10% down to **0.22%**. The other half is finding the pipelines that report success while producing wrong numbers."
+      - "Also production **Agentic LLM systems (>95% accuracy) on H100 clusters**, internal platforms adopted company-wide, and **open-source tools with 66k+ downloads**. Business outcomes along the way: a **$6M Seed round**, **Advent International's due diligence** unblocked, and 10-15 people's manual workflows automated."
     technologies:
       - label: "Data Engineering"
         details: "SQL, BigQuery, ClickHouse, Databricks, MS Fabric, DuckDB, DBT, PySpark, Pandas, Airflow, Kafka, ADF, Delta Lake"
