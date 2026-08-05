@@ -30,6 +30,7 @@ client/public/data/styled_name.txt
 client/public/data/neofetch.txt
 client/public/data/neofetch-small.txt
 client/public/data/pypi-stats.json
+client/public/data/npm-stats.json
 client/public/data/template-stats.json
 client/public/data/template-stats-badge.json
 client/public/build-version.json
