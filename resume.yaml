@@ -15,9 +15,8 @@ cv:
     #   username: "0000-0001-8195-3118"
   sections:
     intro:
-      - "Data and infrastructure engineer, 4.5 years, currently on Loop's core platform team. Python, SQL, dbt, BigQuery, and the three major clouds (AWS/Azure/GCP)."
-      - "The recurring job is making systems cheaper or more truthful: a financial procedure **from 27.5h to under 5s**, the heaviest BigQuery scan path cut **57x**, a legacy data explosion reduced by **99%**, revenue variance from ~10% down to **0.22%**. The other half is finding the pipelines that report success while producing wrong numbers."
-      - "Also production **Agentic LLM systems (>95% accuracy) on H100 clusters**, internal platforms adopted company-wide, and **open-source tools with 66k+ downloads**. Business outcomes along the way: a **$6M Seed round**, **Advent International's due diligence** unblocked, and 10-15 people's manual workflows automated."
+      - "Data and infrastructure engineer, 4.5 years, now on Loop's core platform team. Python, SQL, dbt, BigQuery, AWS/Azure/GCP. Mostly making systems cheaper or more truthful: a financial procedure **from 27.5h to 5s**, a BigQuery scan cut **57x**, a legacy data explosion cut **99%**. The other half is finding pipelines that report success while producing wrong numbers."
+      - "Also **Agentic LLM systems (>95% accuracy) on H100 clusters**, internal platforms adopted company-wide, and **open-source tools with 66k+ downloads**. Outcomes: a **$6M Seed round**, **Advent International's due diligence**, and 10-15 people's workflows automated."
     technologies:
       - label: "Data Engineering"
         details: "SQL, BigQuery, ClickHouse, Databricks, MS Fabric, DuckDB, DBT, PySpark, Pandas, Airflow, Kafka, ADF, Delta Lake"
