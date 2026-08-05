@@ -16,7 +16,7 @@ cv:
   sections:
     intro:
       - "Data and infrastructure engineer with 4 years of experience bridging traditional data engineering with modern AI systems, specializing in Python, SQL, and cloud platforms (AWS/Azure/GCP). Expertise in data architecture, warehousing, data lakes, and governance."
-      - "Proven track record of exceptional performance optimization (reducing a financial procedure **from 27.5h to under 5s**), building production **Agentic LLM systems (>95% accuracy) on H100 clusters**, and authoring **open-source tools with 56,000+ PyPI downloads**."
+      - "Proven track record of exceptional performance optimization (reducing a financial procedure **from 27.5h to under 5s**), building production **Agentic LLM systems (>95% accuracy) on H100 clusters**, and authoring **open-source tools with 65k+ PyPI downloads**."
       - "Delivered measurable business outcomes: data infrastructure enabling a startup's **$6M Seed round**, unblocking **investor audits for Advent International**, ensuring enterprise compliance for a Fortune 500 client, and automating workflows to save **10-15 FTEs**."
     technologies:
       - label: "Data Engineering"
@@ -34,10 +34,10 @@ cv:
       start_date: "2026-01"
       summary: "Data engineer on Loop's core platform team, the enterprise AI platform for restaurant and retail back office serving 300+ brands across thousands of locations ($14M Series A, Feb 2026)."
       highlights:
-        - "Built **Loop Pulse**, a full-stack internal observability platform (38 views, 27 API modules) used daily by 6+ stakeholders for ingestion monitoring, SLA tracking, and incident triage across delivery providers."
-        - "Bootstrapped **TruROI Ops**, a plan-generation platform for the finance team (90 PRs in 45 days). Replaced a CDC pipeline with direct Postgres reads, cutting data lag from 13.7 hours to near-zero and query costs by 16x."
-        - "Owned **16 production incidents** with explicit root causes, including a **$14k BigQuery cost runaway** where I led response and authored the mandatory cross-repo cost-safety policy."
-        - "Optimized the heaviest BigQuery query path from **342 GB to under 6 GB** via partition pruning and incremental dbt modeling, cutting scan costs by **57x**."
+        - "Rebuilding the ingestion tracking pipeline from full-refresh to incremental, where a multi-billion-row dbt table is torn down and reconstructed from scratch several times a day. Earlier work on the same warehouse cut the two heaviest scan paths by **57x** and **19x** through partition pruning and incremental modeling."
+        - "After a **$14,386 BigQuery overrun**, wrote the cost-safety rules every repo at Loop now builds against: dry-run before merge, bytes-billed caps on every job, no unguarded polling."
+        - "Built the internal platforms this work runs on: **Loop Pulse**, a console where engineering, ops, and support see whether each restaurant's delivery data actually landed and re-run it themselves when it didn't, and **TruROI Ops**, which takes the campaign team from checking a chain is promotion-ready through to launching across delivery platforms."
+        - "Root-caused the ingestion failures that pass every check: a provider's explicit zero overwriting a valid markup rate, an error page parsing as a successful response, a run finishing early and still marked complete. Nothing alerts on these. They reach customers as numbers that look right and aren't."
 
     - company: "FiftyFive Technologies"
       position: "Data Engineer"
@@ -51,7 +51,7 @@ cv:
         - "**Johnson & Johnson (Healthcare CDP)**: Architected scalable Treasure Data pipelines for regulated healthcare markets (JP/ANZ). Engineered complex transformation logic, including a 12-scenario SQL truth table (validated via TDD) to resolve hierarchical consent conflicts and a custom Python engine to overcome SFMC platform limitations, ensuring strict **GDPR/PII compliance**."
         - "**Wade Insight (Cloud Migration)**: Led enterprise migration from Azure Data Factory to **Microsoft Fabric Data Factory**, managing ARM template adaptation. Enhanced the SaaS platform with advanced continue-on-failure orchestration and automated health-check processes, reducing manual troubleshooting by 80%."
         - "**Prospexs (GenAI Product Engineering)**: Built an AI outreach platform (Python/FastAPI/MongoDB) backed by a **700M+ contact database**. Engineered a complex 4-entity personalization engine (Sender/Receiver × Human/Company) using OpenAI/Perplexity to generate bilingual, context-aware communications, **improving response rates by 45%**."
-        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on **H100 clusters** to achieve **\\>95% accuracy** in a production DAG-based agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF). Later open-sourced as **DatasetPipeline (11.1k+ downloads)**."
+        - "**QxLab (LLM Infrastructure)**: Led a 4-person team fine-tuning Llama/Mistral models using Axolotl on **H100 clusters** to achieve **\\>95% accuracy** in a production DAG-based agentic system. Separately, architected a Terabyte-scale cascading deduplication pipeline (MinHash LSH + FAISS) to standardize datasets (SFT/DPO/RLHF). Later open-sourced as **DatasetPipeline (13k+ downloads)**."
         - "**CV Advisors (Performance Engineering)**: Replaced a 1900-line MSSQL procedure (iterative cursors) into vectorized logic (**DuckDB**/Pandas), processing 80M+ records across 150 clients. **Reduced runtime from 27.5h to \\<5s (\\>99.9% gain)**. Engineered a future-proof architecture capable of scaling beyond RAM limits via memory-optimized categorical typing and DuckDB’s out-of-core processing."
         # - "**Logical Contract (Legal Tech)**: Implemented an AI-powered legal tech system for generating tailored employment agreements and a legal chatbot for startup inquiries."
         - "**SlideNinja (GenAI RAG Architecture)**: Developed a GenAI RAG platform (LangChain/ChromaDB) for a **McKinsey partner** during the early GenAI boom, featuring a 'Self-Healing' AI orchestration layer and proprietary 'Geometric Layout Analysis' to map unstructured content into rigid corporate PowerPoint templates."
@@ -84,17 +84,18 @@ cv:
         date: "Jan 2026 – Present"
         show_on_resume: false
         highlights:
-          - "Owned end-to-end ingestion and onboarding across major delivery providers (UberEats, DoorDash, Grubhub), ensuring data freshness SLAs for restaurant chains on the platform."
-          - "Built a self-service Ingestion Ops platform from scratch with BigQuery-backed audit logging, automated pre-checks, and trigger history—eliminating engineer dependency for re-ingestion workflows and significantly reducing ops toil."
-          - "Designed ingestion observability with Grafana scorecards for module/source-level freshness, dbt snapshots for SLA aggregates, and automated alerting that enabled proactive RCA for data quality drops across providers."
-          - "Owned on-call for ingestion and onboarding incidents (PagerDuty), coordinating large-scale recovery campaigns (~28k slugs across modules) and resolving proxy, authentication, and credential issues."
-          - "Contributed to platform infrastructure initiatives including ingestion proxy design, staging environment setup (Terraform, Cloud Run, Cloud SQL), and local development tooling."
-          - "Bootstrapped **TruROI Ops** (90 PRs, 218 commits in 45 days), a mobile-first PWA for plan generation readiness, email tracking with SendGrid batch-aware status aggregation, and finance team workflows. Cut over from Datastream CDC to direct PostgreSQL read-replica, eliminating 13.7-hour replication lag."
+          - "Owned end-to-end ingestion and onboarding across major delivery providers (UberEats, DoorDash, Grubhub), from access provisioning through to data landing in the warehouse."
+          - "Built **Loop Pulse** from an empty repo into the console engineering, ops, and support use to see whether each restaurant's delivery data landed: ingestion funnels, freshness and coverage views, detection of missing days per store and source, RBAC with a visual graph editor, and re-triggering that no longer needs an engineer in the loop."
+          - "Shipped **Manual Dataload**, a guarded self-serve path for the reports automated ingestion cannot reach. Ops staff now load them directly, with provenance and grain recorded per run instead of inferred later."
+          - "Rebuilding the ingestion tracking pipeline from full-refresh to incremental. A multi-billion-row dbt table and everything downstream of it are currently torn down and reconstructed from scratch several times a day, for data that only ever moves forward."
+          - "Bootstrapped **TruROI Ops**, a mobile-first PWA the campaign team uses daily to confirm a restaurant chain is ready for a promotion, run it across DoorDash and UberEats, and track the customer emails that go out with it. Moved its reads off a change-data-capture feed so campaigns stopped launching against data that had gone stale before anyone saw it."
           - "Built **Loop Duty**, an on-call PWA with Slack-driven priority routing, FCM web push notifications, per-thread message deduplication, and slack:// deep-links across 4 responsive viewports."
-          - "Scaffolded the **Loop Ops Platform** monorepo: 8-schema PostgreSQL design, FastAPI backend with Firebase Auth + RBAC middleware, Cloud Run + Vercel CI/CD, and a React/TypeScript/MUI frontend with role-filtered module navigation."
-          - "Led engineering response to a **$14,386 BigQuery cost incident** (polling tab running 20h, 34,887 jobs). Root-caused, resolved, and authored the cross-repo cost-safety policy (mandatory dry-run, bytes-billed caps, polling-loop bans)."
-          - "Ported the **Drift Monitor** from Python CLI to a full React dashboard, and drove the **Synapse Dashboard v3** initiative consolidating ingestion status across 3 repos into a unified view."
-          - "Resolved silent data-integrity bugs across delivery platforms: DoorDash storeId type mismatch (int-vs-string affecting 140+ slugs every sync), OLO freshness drag (98% to 50%), and case-sensitive JOIN silently dropping an entire chain."
+          - "Scaffolded the **Loop Ops Platform**, a shared foundation for Loop's internal ops tools so each new one stops being built from zero: 8-schema PostgreSQL design, FastAPI backend with Firebase Auth + RBAC middleware, Cloud Run + Vercel CI/CD, and a React/TypeScript/MUI frontend with role-filtered module navigation."
+          - "Led engineering response to a **$14,386 BigQuery cost overrun**. Root-caused it, resolved it, and authored the cross-repo cost-safety policy: mandatory dry-run, bytes-billed caps, guarded polling."
+          - "Ported the **Drift Monitor**, which compares the sales figures already stored against what the delivery platforms report today so numbers changing quietly after the fact get caught, from a Python CLI to a React dashboard, and built its investigation agent on Agno with AG-UI streaming."
+          - "Built v3 of the tracker for **Synapse**, Loop's integrations with restaurant back-office systems (accounting, workforce, guest feedback), pulling each integration's status out of 3 separate repos into a single view with a terminal completion stage."
+          - "Root-caused ingestion failures that looked like outages and weren't: business-group accounts dropping out of lost-access discovery, so a fleet of healthy stores was written off as revoked; a Cloud Tasks name-tombstone bug silently rejecting most daily store-detail refreshes and quietly halving report coverage; and a configured source with no handler behind it dragging whole chains' freshness down by tens of points."
+          - "Ran the internal platform's infrastructure: DNS and TLS reverse proxies for six internal subdomains, Firebase auth with CSP-compatible domains, and CI/CD over IAP for VM-hosted apps."
       - name: "SBGC Group - Multi-Region Retail Data Platform"
         date: "Jul 2025 – Jan 2026"
         show_on_resume: false
@@ -215,6 +216,15 @@ cv:
         showcase_command: "showcase"
 
       # Resume + Website projects
+      - name: "ccaudit"
+        date: "Jun 2026"
+        npm_package: "@subhayu99/ccaudit"
+        show_on_resume: true
+        highlights:
+          - "Built a local-first reader for Claude Code session history, which otherwise sits as thousands of JSONL files scattered across clones and worktrees with earlier context buried by compaction. Indexes all of it into SQLite and makes it searchable."
+          - "Ships with **zero native dependencies** by building on Node's own `node:sqlite`, so the same install works on macOS, Linux, and Windows with nothing to compile. Core runs entirely offline."
+          - "Serves an Obsidian-style browser UI (Astro, D3 force graph, Shiki highlighting) and exposes the same index to Claude Code over **MCP**, so sessions can be queried from inside a conversation. Published on [npm](https://www.npmjs.com/package/@subhayu99/ccaudit) (**1.3k+ downloads**) and [GitHub](https://github.com/subhayu99/ccaudit) under MIT."
+
       - name: "SQLStream"
         date: "Nov 2025"
         pypi_package: "sqlstream"
@@ -222,7 +232,7 @@ cv:
         highlights:
           - "Created a **zero-setup SQL tool** to quickly analyze data files (CSV, Parquet, Markdown, HTML) via CLI or Python, streamlining repetitive data quality checks without DB overhead."
           - "Built a powerful interactive shell with syntax highlighting and history for data exploration, alongside a standard query mode for piping results into other terminal tools."
-          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**6k+ downloads**) with full [documentation](https://subhayu.in/sqlstream)."
+          - "Engineered a flexible engine that auto-switches between **DuckDB**, Pandas, or native Python to execute queries; published on [PyPI](https://pypi.org/project/sqlstream) (**7.0k+ downloads**) with full [documentation](https://subhayu.in/sqlstream)."
 
       - name: "Smart Commit"
         date: "May 2025"
@@ -231,7 +241,7 @@ cv:
         highlights:
           - "Built an AI-powered CLI tool using Python/Typer that generates context-aware git commits via OpenAI or Anthropic models, enhancing developer productivity."
           - "Intelligently adapts to different projects by analyzing the existing tech stack, commit history, and file changes, ensuring contextually relevant messages."
-          - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) (**7k+ downloads**) and [GitHub](https://github.com/subhayu99/smart-commit) with **Model Context Protocol (MCP)** integration."
+          - "Published on [PyPI](https://pypi.org/project/smart-commit-ai) (**7.8k+ downloads**) and [GitHub](https://github.com/subhayu99/smart-commit) with **Model Context Protocol (MCP)** integration."
 
       - name: "Vellaris"
         date: "Apr 2025"
@@ -240,7 +250,7 @@ cv:
         highlights:
           - "Built an end-to-end encrypted, self-hosted document sharing platform with AES-256-GCM file encryption, RSA-4096 key exchange, and Argon2id passphrase KDF. Evolved from an earlier [proof-of-concept](https://subhayu.in/DocumentAccessPOC/)."
           - "Ships three clients (CLI, Python SDK, Web SPA) sharing one on-wire protocol, with Web Worker crypto so keygen and encryption never block the UI thread."
-          - "Published on [PyPI](https://pypi.org/project/vellaris) (**7k+ downloads**) and [GitHub](https://github.com/subhayu99/vellaris) under Apache 2.0; Docker images on GHCR (**479 pulls**) with slim and full variants for self-hosting."
+          - "Published on [PyPI](https://pypi.org/project/vellaris) (**9.2k+ downloads**) and [GitHub](https://github.com/subhayu99/vellaris) under Apache 2.0; Docker images on GHCR (**479 pulls**) with slim and full variants for self-hosting."
 
       - name: "DocumentAccessPOC"
         date: "Jan 2025"
@@ -258,7 +268,7 @@ cv:
         highlights:
           - "Developed a **production-ready CLI tool** for transforming messy datasets into ML-ready formats; supports **SFT, DPO, semantic deduplication**, and quality analysis."
           - "Features smart role mapping, auto-formatting for OpenAI-style training, and reproducible workflows via YAML/JSON configuration for enterprise ML pipelines."
-          - "Published on [PyPI](https://pypi.org/project/datasetpipeline) (**11.1k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
+          - "Published on [PyPI](https://pypi.org/project/datasetpipeline) (**13k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/datasetpipeline) with extensible architecture for custom loaders, formatters, and analyzers."
 
       - name: "creatree"
         date: "Feb 2025"
@@ -267,7 +277,7 @@ cv:
         highlights:
           - "Developed a Python CLI tool and library for automating directory structure creation from tree-like strings, solving repetitive project scaffolding."
           - "Designed for maximum flexibility with both a Python library for programmatic integration and a CLI supporting stdin/pipes."
-          - "Published on [PyPI](https://pypi.org/project/creatree) (**6k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/creatree)."
+          - "Published on [PyPI](https://pypi.org/project/creatree) (**6.7k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/creatree)."
 
       - name: "BetterPassphrase"
         date: "Jan 2024"
@@ -276,7 +286,7 @@ cv:
         highlights:
           - "Built a Python CLI tool/library for generating secure, memorable passphrases using grammatically correct phrases with customizable word counts."
           - "Implemented probabilistic security analysis with entropy calculations and parts-of-speech parsing to balance memorability with cryptographic strength."
-          - "Published on [PyPI](https://pypi.org/project/BetterPassphrase) (**11.7k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) supporting batch generation."
+          - "Published on [PyPI](https://pypi.org/project/BetterPassphrase) (**13k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/BetterPassphrase) supporting batch generation."
       - name: "jsondbin"
         date: "Mar 2024"
         pypi_package: "jsondbin"
@@ -284,7 +294,7 @@ cv:
         highlights:
           - "Built a Python package providing a unified interface for managing JSON data through jsonbin.io, simplifying CRUD operations on collections and documents."
           - "Supports schema attachment, batch document retrieval, and graceful error handling for seamless integration into data workflows."
-          - "Published on [PyPI](https://pypi.org/project/jsondbin) (**7.1k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/jsondbin)."
+          - "Published on [PyPI](https://pypi.org/project/jsondbin) (**7.6k+ downloads**) and open-sourced on [GitHub](https://github.com/subhayu99/jsondbin)."
       - name: "FINADICT - Financial Prediction App"
         date: "Sep 2021"
         show_on_resume: false
