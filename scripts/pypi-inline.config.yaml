@@ -48,6 +48,14 @@ rules:
     pattern: 'pypi\.org/project/datasetpipeline\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
     value: '{{PACKAGE:datasetpipeline}}+'
 
+  - description: "ccaudit project highlight (npm)"
+    pattern: 'npmjs\.com/package/@subhayu99/ccaudit\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{NPM:@subhayu99/ccaudit}}+'
+
+  - description: "Vellaris project highlight"
+    pattern: 'pypi\.org/project/vellaris\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
+    value: '{{PACKAGE:vellaris}}+'
+
   - description: "Creatree project highlight"
     pattern: 'pypi\.org/project/creatree\) \(\*\*(\d[\d,.kK]*\+?) downloads\*\*\)'
     value: '{{PACKAGE:creatree}}+'
