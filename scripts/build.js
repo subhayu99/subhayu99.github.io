@@ -48,9 +48,22 @@ try {
   console.warn('   Building without live stats...\n');
 }
 
-// Inline fresh PyPI counts into resume.yaml prose (so generate-resume sees them)
+// Fetch npm download stats
+console.log('📦 Fetching npm download statistics...\n');
+try {
+  execSync('node scripts/fetch-npm-stats.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+  console.log('\n✅ npm stats fetched\n');
+} catch (error) {
+  console.warn('⚠️  Could not fetch npm stats (network issue or rate limit)');
+  console.warn('   Building without live stats...\n');
+}
+
+// Inline fresh PyPI + npm counts into resume.yaml prose (so generate-resume sees them)
 if (existsSync(resumePath)) {
-  console.log('🔢 Inlining PyPI counts into resume.yaml...\n');
+  console.log('🔢 Inlining PyPI + npm counts into resume.yaml...\n');
   try {
     execSync('node scripts/inline-pypi-stats.js', {
       stdio: 'inherit',
@@ -83,6 +96,18 @@ if (existsSync(resumePath)) {
   }
 } else {
   console.log('ℹ️  No resume.yaml found - building with generic metadata\n');
+}
+
+// Generate world-mode data (resume.json + world.yaml -> world.json)
+console.log('🌍 Generating world data...\n');
+try {
+  execSync('node scripts/generate-world.js', {
+    stdio: 'inherit',
+    cwd: rootDir
+  });
+} catch (error) {
+  console.warn('⚠️  Could not generate world.json (missing world.yaml or resume.json?)');
+  console.warn('   Building without world mode data...\n');
 }
 
 // Generate AI resume conversion prompt
