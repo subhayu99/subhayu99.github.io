@@ -1,0 +1,92 @@
+# ====================================================================
+# PR Preview Deployment
+# ====================================================================
+# Deploys a live preview of every PR to GitHub Pages so reviewers
+# can test changes before merging.
+#
+# NO SETUP REQUIRED - uses GitHub Pages via the gh-pages branch.
+#
+# Each PR gets its own URL:
+#   https://subhayu99.github.io/pr-preview/pr-<number>/
+#
+# Previews are automatically cleaned up when PRs are closed/merged.
+# ====================================================================
+
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main, personal]
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        if: github.event.action != 'closed'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup Python 3.11
+        if: github.event.action != 'closed'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install RenderCV
+        if: github.event.action != 'closed'
+        run: pip install "rendercv[full]"
+
+      - name: Install npm dependencies
+        if: github.event.action != 'closed'
+        run: npm ci
+
+      - name: Setup template files (if needed)
+        if: github.event.action != 'closed'
+        run: |
+          if [ ! -f "resume.yaml" ]; then
+            echo "No resume.yaml found - using example resume"
+            cp resume.yaml.example resume.yaml
+          fi
+
+          if [ ! -f "client/public/data/neofetch.txt" ]; then
+            cp client/public/data/neofetch.txt.example client/public/data/neofetch.txt
+          fi
+
+          if [ ! -f "client/public/data/neofetch-small.txt" ]; then
+            cp client/public/data/neofetch-small.txt.example client/public/data/neofetch-small.txt
+          fi
+
+      - name: Build preview
+        if: github.event.action != 'closed'
+        run: npm run build
+        env:
+          VITE_BASE_PATH: "/pr-preview/pr-${{ github.event.pull_request.number }}/"
+
+      - name: Prepare dist for GitHub Pages
+        if: github.event.action != 'closed'
+        run: |
+          # SPA fallback - GitHub Pages serves 404.html for unknown paths
+          cp dist/public/index.html dist/public/404.html
+
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: dist/public/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: auto
